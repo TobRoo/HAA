@@ -1,0 +1,26 @@
+﻿  stdafx.cpp
+  agentPlayback.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+  autonomic.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+..\Autonomic\autonomic.cpp(59): warning C4477: 'sprintf_s' : format string '%ls' requires an argument of type 'wchar_t *', but variadic argument 2 has type 'RPC_WSTR'
+  dataStream.cpp
+  fImage.cpp
+  Logger.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+..\Autonomic\Logger.cpp(187): warning C4477: 'sprintf_s' : format string '%ls' requires an argument of type 'wchar_t *', but variadic argument 1 has type 'RPC_WSTR'
+  RandomGenerator.cpp
+  RR_API.cpp
+..\RoboRealmAPI\RR_API.cpp(197): warning C4996: 'gethostbyname': Use getaddrinfo() or GetAddrInfoW() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+  C:\Program Files (x86)\Windows Kits\8.1\Include\um\winsock2.h(2238): note: see declaration of 'gethostbyname'
+  AgentSensorFloorFinder.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+AgentSensorFloorFinder.cpp(164): warning C4477: 'sprintf_s' : format string '%ls' requires an argument of type 'wchar_t *', but variadic argument 3 has type 'RPC_WSTR'
+AgentSensorFloorFinder.cpp(2023): warning C4101: 'buf': unreferenced local variable
+     Creating library C:\Steven_Daniluk\HAA_Clean\Release\AgentSensorFloorFinder.lib and object C:\Steven_Daniluk\HAA_Clean\Release\AgentSensorFloorFinder.exp
+  Generating code
+  All 3703 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+cximage.lib(ximaenc.obj) : warning LNK4049: locally defined symbol _fscanf imported
+cximage.lib(ximaexif.obj) : warning LNK4049: locally defined symbol _printf imported
+  AgentSensorFloorFinder.vcxproj -> C:\Steven_Daniluk\HAA_Clean\Release\AgentSensorFloorFinder.dll

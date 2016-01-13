@@ -1,0 +1,8 @@
+; AvatarSurveyor.def : Declares the module parameters for the DLL.
+
+LIBRARY      "AvatarSurveyor"
+
+EXPORTS
+    ; Explicit exports can go here
+	Spawn @1
+	Playback @2

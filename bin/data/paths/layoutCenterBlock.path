@@ -1,0 +1,10 @@
+point=1	2
+point=1	4	
+point=2	4
+point=2	2
+point=1	2
+static=block1
+pose=0.0	0.0	0.0	1.0
+width=2.0
+colour=0.7529	0.3137	0.3020
+solid=1

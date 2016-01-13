@@ -1,0 +1,261 @@
+[17:47:22.613] Setting log level: 6
+[17:47:22.613] AgentPathPlanner 00.01.00019.00
+[17:47:22.613] Agent UUID 7c71d332-71fc-4639-ba64-435f64b84a4f
+[17:47:22.613] AgentPlayback UUID eee5c26b-7d3b-4b67-83ea-9cf80a7f9d33
+[17:47:22.613] AgentBase::backup: starting backup 8b621493-3fe5-42bb-8b77-db0607d7106f
+[17:47:22.613] AgentBase::backup: got backup, 142 bytes
+[17:47:22.613] AgentBase::step: made connection! (127.0.0.1:51000)
+[17:47:22.613] AgentBase::conFDAlive: connection trusted (00000000-0000-0000-0000-000000000000)
+[17:47:22.644] AgentPathPlanner::configureParameters: ownerId 6b13d5d4-8538-41f8-a81b-39dc1d8f4725 mapId 36c4dc92-2a06-4034-bda7-efa7c007dd2e regionId bdc4a977-9fa0-41d5-830a-a164efa42660 pfId 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:22.644] AgentBase::backup: starting backup 0b13ef13-e44c-4f5a-8615-c2d36a99f6f6
+[17:47:22.644] AgentBase::backup: got backup, 142 bytes
+[17:47:22.644] AgentBase::start: parsing mission file data\missions\missionSample.ini
+[17:47:22.644] AgentBase::parseMissionFile: parsing data\missions\missionSample.ini
+[17:47:22.644] AgentBase::start: Starting!
+[17:47:22.644] AgentBase::backup: starting backup 538bb98a-7488-42bc-b104-db7dec8d6eb7
+[17:47:22.644] AgentBase::backup: got backup, 173 bytes
+[17:47:22.644] AgentBase::backup: starting backup ac712f0a-c8b7-4ce9-96d6-025f5897cb42
+[17:47:22.644] AgentBase::backup: got backup, 173 bytes
+[17:47:22.676] AgentPathPlanner::convGetAvatarList: recieved 3 avatars
+[17:47:22.676] AgentPathPlanner::convGetAvatarInfo: recieved avatar (2a7ece12-e511-4d1e-a71c-d755aad610a9) pf id: 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:22.676] AgentPathPlanner::convGetAvatarInfo: recieved avatar (843435eb-36b6-4070-ab43-9cef8d53d452) pf id: 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:22.676] AgentPathPlanner::convGetAvatarInfo: recieved avatar (e36bb47b-ee84-443e-a868-cbb699164a8b) pf id: 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:22.676] AgentPathPlanner::setTarget: 1.650000 0.750000 0.874597 1
+[17:47:22.676] AgentPathPlanner::goTarget: mapDirty 1 pfDirty 1 avatars 3 updateId 0
+[17:47:22.676] AgentPathPlanner::goTarget: requesting map region -nan(ind) -nan(ind) -nan(ind) -nan(ind)
+[17:47:22.676] AgentPathPlanner::convPFInfo: state x 1.366702 y 0.452118 r 1.570657 (tb=1452725242.254, cur=1452725242.676)
+[17:47:22.676] AgentPathPlanner::planPath: startPose 1.366702 0.452118 1.570657 endPose 1.650000 0.750000 0.874597 1
+[17:47:22.676] AgentPathPlanner::planPath: we are stuck!
+[17:47:22.676] AgentPathPlanner::planPath: no nearby vacant cell found!
+[17:47:22.676] AgentPathPlanner::planPath: no path 0
+[17:47:22.676] AgentPathPlanner::planPath: AA_ROTATE 0.003862
+[17:47:22.676] AgentPathPlanner::planPath: AA_WAIT 0.500000
+[17:47:23.190] AgentPathPlanner::convAction: action complete, waiting for 1 more actions (thread 15b242a5-114d-4b94-a1e4-d590b281df02)
+[17:47:24. 82] AgentPathPlanner::convAction: action complete, waiting for 0 more actions (thread 15b242a5-114d-4b94-a1e4-d590b281df02)
+[17:47:24. 82] AgentPathPlanner::goTarget: mapDirty 2 pfDirty 1 avatars 3 updateId 1
+[17:47:24. 82] AgentPathPlanner::goTarget: requesting map region 0.000000 0.000000 1.900000 1.000000
+[17:47:24. 82] AgentPathPlanner::goTarget: requesting map region 1.800000 3.300000 1.100000 1.300000
+[17:47:24. 82] AgentPathPlanner::convPFInfo: requesting more recent data (in 250 ms)
+[17:47:24.348] AgentPathPlanner::convPFInfo: state x 1.368801 y 0.453527 r 1.574691 (tb=1452725244.285, cur=1452725244.348)
+[17:47:24.348] AgentPathPlanner::planPath: startPose 1.368801 0.453527 1.574691 endPose 1.650000 0.750000 0.874597 1
+[17:47:24.348] AgentPathPlanner::planPath: we are stuck!
+[17:47:24.348] AgentPathPlanner::planPath: no nearby vacant cell found!
+[17:47:24.348] AgentPathPlanner::planPath: no path 1
+[17:47:24.348] AgentPathPlanner::planPath: AA_ROTATE 0.417669
+[17:47:24.348] AgentPathPlanner::planPath: AA_WAIT 0.500000
+[17:47:25.488] AgentPathPlanner::convAction: action complete, waiting for 1 more actions (thread 0b98024b-9c0f-42ac-9ba3-8d10fde190d3)
+[17:47:26.392] AgentPathPlanner::convAction: action complete, waiting for 0 more actions (thread 0b98024b-9c0f-42ac-9ba3-8d10fde190d3)
+[17:47:26.392] AgentPathPlanner::goTarget: mapDirty 1 pfDirty 1 avatars 3 updateId 2
+[17:47:26.392] AgentPathPlanner::goTarget: requesting map region 0.000000 0.000000 3.400000 4.900000
+[17:47:26.392] AgentPathPlanner::convPFInfo: requesting more recent data (in 250 ms)
+[17:47:26.658] AgentPathPlanner::convPFInfo: state x 1.373314 y 0.452611 r 1.991271 (tb=1452725246.580, cur=1452725246.658)
+[17:47:26.658] AgentPathPlanner::planPath: startPose 1.373314 0.452611 1.991271 endPose 1.650000 0.750000 0.874597 1
+[17:47:26.658] AgentPathPlanner::planPath: waypoint 1.373314 0.452611 1.991271 to 1.350000 0.550000
+[17:47:26.658] AgentPathPlanner::planPath: AA_ROTATE -0.185506
+[17:47:26.658] AgentPathPlanner::planPath: AA_MOVE 0.100141
+[17:47:26.658] AgentPathPlanner::planPath: waypoint 1.350000 0.550000 1.805765 to 1.650000 0.750000
+[17:47:26.658] AgentPathPlanner::planPath: AA_ROTATE -0.349066
+[17:47:26.658] AgentPathPlanner::planPath: AA_ROTATE -0.349066
+[17:47:26.658] AgentPathPlanner::planPath: AA_ROTATE -0.349066
+[17:47:26.658] AgentPathPlanner::planPath: AA_ROTATE -0.170564
+[17:47:26.658] AgentPathPlanner::planPath: AA_MOVE 0.200000
+[17:47:26.658] AgentPathPlanner::planPath: AA_MOVE 0.160555
+[17:47:26.658] AgentPathPlanner::planPath: AA_ROTATE 0.286594
+[17:47:27.594] AgentPathPlanner::convAction: action complete, waiting for 1 more actions (thread e170547a-7390-46f8-9280-97b7b7339415)
+[17:47:27.656] AgentBase::cbUpdateCpuUsage: used 0, elapsed 5012, %0.000000
+[17:47:29. 93] AgentPathPlanner::convAction: action complete, waiting for 0 more actions (thread e170547a-7390-46f8-9280-97b7b7339415)
+[17:47:29. 93] AgentPathPlanner::goTarget: mapDirty 1 pfDirty 1 avatars 3 updateId 3
+[17:47:29. 93] AgentPathPlanner::goTarget: requesting map region 0.000000 0.000000 3.400000 4.900000
+[17:47:29. 93] AgentPathPlanner::convPFInfo: requesting more recent data (in 250 ms)
+[17:47:29.358] AgentPathPlanner::convPFInfo: requesting more recent data (in 250 ms)
+[17:47:29.624] AgentPathPlanner::convPFInfo: requesting more recent data (in 250 ms)
+[17:47:29.889] AgentPathPlanner::convPFInfo: state x 1.345228 y 0.557844 r 1.806707 (tb=1452725249.686, cur=1452725249.889)
+[17:47:29.889] AgentPathPlanner::planPath: startPose 1.345228 0.557844 1.806707 endPose 1.650000 0.750000 0.874597 1
+[17:47:29.889] AgentPathPlanner::planPath: waypoint 1.345228 0.557844 1.806707 to 1.350000 0.650000
+[17:47:29.889] AgentPathPlanner::planPath: AA_ROTATE -0.287651
+[17:47:29.889] AgentPathPlanner::planPath: AA_MOVE 0.092279
+[17:47:29.889] AgentPathPlanner::planPath: waypoint 1.350000 0.650000 1.519056 to 1.650000 0.750000
+[17:47:29.889] AgentPathPlanner::planPath: AA_ROTATE -0.349066
+[17:47:29.889] AgentPathPlanner::planPath: AA_ROTATE -0.349066
+[17:47:29.889] AgentPathPlanner::planPath: AA_ROTATE -0.349066
+[17:47:29.889] AgentPathPlanner::planPath: AA_ROTATE -0.150108
+[17:47:29.889] AgentPathPlanner::planPath: AA_MOVE 0.200000
+[17:47:29.889] AgentPathPlanner::planPath: AA_MOVE 0.116228
+[17:47:29.889] AgentPathPlanner::planPath: AA_ROTATE 0.349066
+[17:47:29.889] AgentPathPlanner::planPath: AA_ROTATE 0.203780
+[17:47:31. 90] AgentPathPlanner::convAction: action complete, waiting for 1 more actions (thread f5222c6e-00ad-467f-a116-51f90f33d10a)
+[17:47:32.495] AgentPathPlanner::convAction: action complete, waiting for 0 more actions (thread f5222c6e-00ad-467f-a116-51f90f33d10a)
+[17:47:32.495] AgentPathPlanner::goTarget: mapDirty 1 pfDirty 1 avatars 3 updateId 4
+[17:47:32.495] AgentPathPlanner::goTarget: requesting map region 0.000000 0.000000 3.400000 4.900000
+[17:47:32.495] AgentPathPlanner::convPFInfo: requesting more recent data (in 250 ms)
+[17:47:32.651] AgentBase::cbUpdateCpuUsage: used 0, elapsed 4995, %0.000000
+[17:47:32.760] AgentPathPlanner::convPFInfo: requesting more recent data (in 250 ms)
+[17:47:33. 25] AgentPathPlanner::convPFInfo: state x 1.351568 y 0.654059 r 1.581147 (tb=1452725252.979, cur=1452725253.25)
+[17:47:33. 25] AgentPathPlanner::planPath: startPose 1.351568 0.654059 1.581147 endPose 1.650000 0.750000 0.874597 1
+[17:47:33. 25] AgentPathPlanner::planPath: waypoint 1.351568 0.654059 1.581147 to 1.650000 0.750000
+[17:47:33. 25] AgentPathPlanner::planPath: AA_ROTATE -0.349066
+[17:47:33. 25] AgentPathPlanner::planPath: AA_ROTATE -0.349066
+[17:47:33. 25] AgentPathPlanner::planPath: AA_ROTATE -0.349066
+[17:47:33. 25] AgentPathPlanner::planPath: AA_ROTATE -0.222900
+[17:47:33. 25] AgentPathPlanner::planPath: AA_MOVE 0.200000
+[17:47:33. 25] AgentPathPlanner::planPath: AA_MOVE 0.113475
+[17:47:33. 25] AgentPathPlanner::planPath: AA_ROTATE 0.349066
+[17:47:33. 25] AgentPathPlanner::planPath: AA_ROTATE 0.214482
+[17:47:34.196] AgentPathPlanner::convAction: action complete, waiting for 2 more actions (thread b4c80925-0ad8-4b7f-add7-c703f24f0435)
+[17:47:35.398] AgentPathPlanner::convAction: action complete, waiting for 1 more actions (thread b4c80925-0ad8-4b7f-add7-c703f24f0435)
+[17:47:36.678] AgentPathPlanner::convAction: action complete, waiting for 0 more actions (thread b4c80925-0ad8-4b7f-add7-c703f24f0435)
+[17:47:36.678] AgentPathPlanner::goTarget: mapDirty 1 pfDirty 1 avatars 3 updateId 5
+[17:47:36.678] AgentPathPlanner::goTarget: requesting map region 0.000000 0.000000 3.400000 4.900000
+[17:47:36.678] AgentPathPlanner::convPFInfo: requesting more recent data (in 250 ms)
+[17:47:36.943] AgentPathPlanner::convPFInfo: requesting more recent data (in 250 ms)
+[17:47:37.195] AgentPathPlanner::convPFInfo: state x 1.340418 y 0.650312 r 0.562286 (tb=1452725257.179, cur=1452725257.195)
+[17:47:37.195] AgentPathPlanner::planPath: startPose 1.340418 0.650312 0.562286 endPose 1.650000 0.750000 0.874597 1
+[17:47:37.195] AgentPathPlanner::planPath: waypoint 1.340418 0.650312 0.562286 to 1.650000 0.750000
+[17:47:37.195] AgentPathPlanner::planPath: AA_ROTATE -0.250763
+[17:47:37.195] AgentPathPlanner::planPath: AA_MOVE 0.200000
+[17:47:37.195] AgentPathPlanner::planPath: AA_MOVE 0.125237
+[17:47:37.195] AgentPathPlanner::planPath: AA_ROTATE 0.349066
+[17:47:37.195] AgentPathPlanner::planPath: AA_ROTATE 0.214008
+[17:47:37.647] AgentBase::cbUpdateCpuUsage: used 0, elapsed 4996, %0.000000
+[17:47:38.287] AgentPathPlanner::convAction: action complete, waiting for 1 more actions (thread 1eb41cab-254f-4224-a0d1-08dbdac47f4b)
+[17:47:40.191] AgentPathPlanner::convAction: action complete, waiting for 0 more actions (thread 1eb41cab-254f-4224-a0d1-08dbdac47f4b)
+[17:47:40.191] AgentPathPlanner::goTarget: mapDirty 1 pfDirty 1 avatars 3 updateId 6
+[17:47:40.191] AgentPathPlanner::goTarget: requesting map region 0.000000 0.000000 3.400000 4.900000
+[17:47:40.191] AgentPathPlanner::convPFInfo: requesting more recent data (in 250 ms)
+[17:47:40.457] AgentPathPlanner::convPFInfo: requesting more recent data (in 250 ms)
+[17:47:40.722] AgentPathPlanner::convPFInfo: state x 1.530184 y 0.698513 r 0.316421 (tb=1452725260.675, cur=1452725260.722)
+[17:47:40.722] AgentPathPlanner::planPath: startPose 1.530184 0.698513 0.316421 endPose 1.650000 0.750000 0.874597 1
+[17:47:40.722] AgentPathPlanner::planPath: waypoint 1.530184 0.698513 0.316421 to 1.650000 0.750000
+[17:47:40.722] AgentPathPlanner::planPath: AA_ROTATE 0.089437
+[17:47:40.722] AgentPathPlanner::planPath: AA_MOVE 0.130410
+[17:47:40.722] AgentPathPlanner::planPath: AA_ROTATE 0.349066
+[17:47:40.722] AgentPathPlanner::planPath: AA_ROTATE 0.119672
+[17:47:41.487] AgentPathPlanner::convAction: action complete, waiting for 1 more actions (thread 4c7d3cea-deb1-456f-b704-9d34fd329f16)
+[17:47:42.660] AgentBase::cbUpdateCpuUsage: used 0, elapsed 5013, %0.000000
+[17:47:43.190] AgentPathPlanner::convAction: action complete, waiting for 0 more actions (thread 4c7d3cea-deb1-456f-b704-9d34fd329f16)
+[17:47:43.190] AgentPathPlanner::goTarget: mapDirty 1 pfDirty 1 avatars 3 updateId 7
+[17:47:43.190] AgentPathPlanner::goTarget: requesting map region 0.000000 0.000000 3.400000 4.900000
+[17:47:43.190] AgentPathPlanner::convPFInfo: requesting more recent data (in 250 ms)
+[17:47:43.455] AgentPathPlanner::convPFInfo: requesting more recent data (in 250 ms)
+[17:47:43.720] AgentPathPlanner::convPFInfo: state x 1.660220 y 0.744002 r 0.389555 (tb=1452725263.674, cur=1452725263.720)
+[17:47:43.720] AgentPathPlanner::planPath: startPose 1.660220 0.744002 0.389555 endPose 1.650000 0.750000 0.874597 1
+[17:47:43.720] AgentPathPlanner::planPath: AA_ROTATE 0.349066
+[17:47:43.720] AgentPathPlanner::planPath: AA_ROTATE 0.135976
+[17:47:44.892] AgentPathPlanner::convAction: action complete, waiting for 1 more actions (thread cd31db0f-cfe5-46f9-af43-ecc395ecacfb)
+[17:47:45.797] AgentPathPlanner::convAction: action complete, waiting for 0 more actions (thread cd31db0f-cfe5-46f9-af43-ecc395ecacfb)
+[17:47:45.797] AgentPathPlanner::goTarget: mapDirty 1 pfDirty 1 avatars 3 updateId 8
+[17:47:45.797] AgentPathPlanner::goTarget: requesting map region 0.000000 0.000000 3.400000 4.900000
+[17:47:45.797] AgentPathPlanner::convPFInfo: requesting more recent data (in 250 ms)
+[17:47:46. 63] AgentPathPlanner::convPFInfo: requesting more recent data (in 250 ms)
+[17:47:46.315] AgentPathPlanner::convPFInfo: state x 1.654548 y 0.738029 r 0.865016 (tb=1452725266.284, cur=1452725266.315)
+[17:47:46.315] AgentPathPlanner::checkArrival: target reached
+[17:47:46.315] AgentPathPlanner::setTarget: 2.550000 0.850000 1.207589 1
+[17:47:46.315] AgentPathPlanner::goTarget: mapDirty 1 pfDirty 0 avatars 3 updateId 9
+[17:47:46.315] AgentPathPlanner::goTarget: requesting map region 0.000000 0.000000 3.400000 3.200000
+[17:47:46.315] AgentPathPlanner::planPath: startPose 1.654548 0.738029 0.865016 endPose 2.550000 0.850000 1.207589 1
+[17:47:46.315] AgentPathPlanner::planPath: waypoint 1.654548 0.738029 0.865016 to 1.650000 0.550000
+[17:47:46.315] AgentPathPlanner::planPath: AA_ROTATE -0.349066
+[17:47:46.331] AgentPathPlanner::planPath: AA_ROTATE -0.349066
+[17:47:46.331] AgentPathPlanner::planPath: AA_ROTATE -0.349066
+[17:47:46.331] AgentPathPlanner::planPath: AA_ROTATE -0.349066
+[17:47:46.331] AgentPathPlanner::planPath: AA_ROTATE -0.349066
+[17:47:46.331] AgentPathPlanner::planPath: AA_ROTATE -0.349066
+[17:47:46.331] AgentPathPlanner::planPath: AA_ROTATE -0.349066
+[17:47:46.331] AgentPathPlanner::planPath: AA_ROTATE -0.016533
+[17:47:46.331] AgentPathPlanner::planPath: AA_MOVE 0.188084
+[17:47:46.331] AgentPathPlanner::planPath: waypoint 1.650000 0.550000 -1.594978 to 1.750000 0.350000
+[17:47:46.331] AgentPathPlanner::planPath: AA_ROTATE 0.349066
+[17:47:46.331] AgentPathPlanner::planPath: AA_ROTATE 0.138763
+[17:47:46.331] AgentPathPlanner::planPath: AA_MOVE 0.200000
+[17:47:46.331] AgentPathPlanner::planPath: AA_MOVE 0.023607
+[17:47:46.331] AgentPathPlanner::planPath: waypoint 1.750000 0.350000 -1.107149 to 2.250000 0.350000
+[17:47:46.331] AgentPathPlanner::planPath: AA_ROTATE 0.349066
+[17:47:46.331] AgentPathPlanner::planPath: AA_ROTATE 0.349066
+[17:47:46.331] AgentPathPlanner::planPath: AA_ROTATE 0.349066
+[17:47:46.331] AgentPathPlanner::planPath: AA_ROTATE 0.059951
+[17:47:46.331] AgentPathPlanner::planPath: AA_MOVE 0.200000
+[17:47:46.331] AgentPathPlanner::planPath: AA_MOVE 0.200000
+[17:47:46.331] AgentPathPlanner::planPath: AA_MOVE 0.100000
+[17:47:47.579] AgentPathPlanner::convAction: action complete, waiting for 2 more actions (thread 59b01e2c-f414-45cf-b565-19b5d70f7746)
+[17:47:47.657] AgentBase::cbUpdateCpuUsage: used 0, elapsed 4997, %0.000000
+[17:47:48.795] AgentPathPlanner::convAction: action complete, waiting for 1 more actions (thread 59b01e2c-f414-45cf-b565-19b5d70f7746)
+[17:47:49.998] AgentPathPlanner::convAction: action complete, waiting for 0 more actions (thread 59b01e2c-f414-45cf-b565-19b5d70f7746)
+[17:47:49.998] AgentPathPlanner::goTarget: mapDirty 1 pfDirty 1 avatars 3 updateId 10
+[17:47:49.998] AgentPathPlanner::goTarget: requesting map region 0.000000 0.000000 3.400000 4.900000
+[17:47:49.998] AgentPathPlanner::convPFInfo: requesting more recent data (in 250 ms)
+[17:47:50.263] AgentPathPlanner::convPFInfo: requesting more recent data (in 250 ms)
+[17:47:50.528] AgentPathPlanner::convPFInfo: requesting more recent data (in 250 ms)
+[17:47:50.793] AgentPathPlanner::convPFInfo: state x 1.663218 y 0.751086 r -0.160742 (tb=1452725270.575, cur=1452725270.793)
+[17:47:50.793] AgentPathPlanner::planPath: startPose 1.663218 0.751086 -0.160742 endPose 2.550000 0.850000 1.207589 1
+[17:47:50.793] AgentPathPlanner::planPath: waypoint 1.663218 0.751086 -0.160742 to 1.650000 0.450000
+[17:47:50.793] AgentPathPlanner::planPath: AA_ROTATE -0.349066
+[17:47:50.793] AgentPathPlanner::planPath: AA_ROTATE -0.349066
+[17:47:50.793] AgentPathPlanner::planPath: AA_ROTATE -0.349066
+[17:47:50.793] AgentPathPlanner::planPath: AA_ROTATE -0.349066
+[17:47:50.793] AgentPathPlanner::planPath: AA_ROTATE -0.057665
+[17:47:50.793] AgentPathPlanner::planPath: AA_MOVE 0.200000
+[17:47:50.793] AgentPathPlanner::planPath: AA_MOVE 0.101376
+[17:47:50.793] AgentPathPlanner::planPath: waypoint 1.650000 0.450000 -1.614671 to 1.850000 0.350000
+[17:47:50.793] AgentPathPlanner::planPath: AA_ROTATE 0.349066
+[17:47:50.793] AgentPathPlanner::planPath: AA_ROTATE 0.349066
+[17:47:50.793] AgentPathPlanner::planPath: AA_ROTATE 0.349066
+[17:47:50.793] AgentPathPlanner::planPath: AA_ROTATE 0.103825
+[17:47:50.793] AgentPathPlanner::planPath: AA_MOVE 0.200000
+[17:47:50.793] AgentPathPlanner::planPath: AA_MOVE 0.023607
+[17:47:50.793] AgentPathPlanner::planPath: waypoint 1.850000 0.350000 -0.463648 to 2.250000 0.350000
+[17:47:50.793] AgentPathPlanner::planPath: AA_ROTATE 0.349066
+[17:47:50.793] AgentPathPlanner::planPath: AA_ROTATE 0.114582
+[17:47:50.793] AgentPathPlanner::planPath: AA_MOVE 0.200000
+[17:47:50.793] AgentPathPlanner::planPath: AA_MOVE 0.200000
+[17:47:50.793] AgentPathPlanner::planPath: waypoint 2.250000 0.350000 0.000000 to 2.550000 0.450000
+[17:47:50.793] AgentPathPlanner::planPath: AA_ROTATE 0.321751
+[17:47:50.793] AgentPathPlanner::planPath: AA_MOVE 0.200000
+[17:47:50.793] AgentPathPlanner::planPath: AA_MOVE 0.116228
+[17:47:50.793] AgentPathPlanner::planPath: waypoint 2.550000 0.450000 0.321751 to 2.750000 0.650000
+[17:47:50.793] AgentPathPlanner::planPath: AA_ROTATE 0.349066
+[17:47:50.793] AgentPathPlanner::planPath: AA_ROTATE 0.114582
+[17:47:50.793] AgentPathPlanner::planPath: AA_MOVE 0.200000
+[17:47:50.793] AgentPathPlanner::planPath: AA_MOVE 0.082843
+[17:47:51.994] AgentPathPlanner::convAction: action complete, waiting for 2 more actions (thread ea5c1383-c9f5-4cf0-8c1a-a34936ee392f)
+[17:47:52.650] AgentBase::cbUpdateCpuUsage: used 0, elapsed 4993, %0.000000
+[17:47:53.196] AgentPathPlanner::convAction: action complete, waiting for 1 more actions (thread ea5c1383-c9f5-4cf0-8c1a-a34936ee392f)
+[17:47:54.398] AgentPathPlanner::convAction: action complete, waiting for 0 more actions (thread ea5c1383-c9f5-4cf0-8c1a-a34936ee392f)
+[17:47:54.398] AgentPathPlanner::goTarget: mapDirty 1 pfDirty 1 avatars 3 updateId 11
+[17:47:54.398] AgentPathPlanner::goTarget: requesting map region 0.000000 0.000000 3.400000 4.900000
+[17:47:54.398] AgentPathPlanner::convPFInfo: requesting more recent data (in 250 ms)
+[17:47:54.649] AgentPathPlanner::convPFInfo: requesting more recent data (in 250 ms)
+[17:47:54.915] AgentPathPlanner::convPFInfo: state x 1.656767 y 0.756863 r -1.210416 (tb=1452725274.883, cur=1452725274.915)
+[17:47:54.915] AgentPathPlanner::planPath: startPose 1.656767 0.756863 -1.210416 endPose 2.550000 0.850000 1.207589 1
+[17:47:54.915] AgentPathPlanner::planPath: waypoint 1.656767 0.756863 -1.210416 to 1.650000 0.550000
+[17:47:54.915] AgentPathPlanner::planPath: AA_ROTATE -0.349066
+[17:47:54.915] AgentPathPlanner::planPath: AA_ROTATE -0.044014
+[17:47:54.915] AgentPathPlanner::planPath: AA_MOVE 0.200000
+[17:47:54.915] AgentPathPlanner::planPath: AA_MOVE 0.006973
+[17:47:54.915] AgentPathPlanner::planPath: waypoint 1.650000 0.550000 -1.603495 to 1.750000 0.350000
+[17:47:54.915] AgentPathPlanner::planPath: AA_ROTATE 0.349066
+[17:47:54.915] AgentPathPlanner::planPath: AA_ROTATE 0.147280
+[17:47:54.915] AgentPathPlanner::planPath: AA_MOVE 0.200000
+[17:47:54.915] AgentPathPlanner::planPath: AA_MOVE 0.023607
+[17:47:54.915] AgentPathPlanner::planPath: waypoint 1.750000 0.350000 -1.107149 to 2.450000 0.350000
+[17:47:54.915] AgentPathPlanner::planPath: AA_ROTATE 0.349066
+[17:47:54.915] AgentPathPlanner::planPath: AA_ROTATE 0.349066
+[17:47:54.915] AgentPathPlanner::planPath: AA_ROTATE 0.349066
+[17:47:54.915] AgentPathPlanner::planPath: AA_ROTATE 0.059951
+[17:47:54.915] AgentPathPlanner::planPath: AA_MOVE 0.200000
+[17:47:54.915] AgentPathPlanner::planPath: AA_MOVE 0.200000
+[17:47:54.915] AgentPathPlanner::planPath: AA_MOVE 0.200000
+[17:47:54.915] AgentPathPlanner::planPath: AA_MOVE 0.100000
+[17:47:54.915] AgentPathPlanner::planPath: waypoint 2.450000 0.350000 0.000000 to 2.750000 0.650000
+[17:47:54.915] AgentPathPlanner::planPath: AA_ROTATE 0.349066
+[17:47:54.915] AgentPathPlanner::planPath: AA_ROTATE 0.349066
+[17:47:54.915] AgentPathPlanner::planPath: AA_ROTATE 0.087267
+[17:47:54.915] AgentPathPlanner::planPath: AA_MOVE 0.200000
+[17:47:54.915] AgentPathPlanner::planPath: AA_MOVE 0.200000
+[17:47:54.915] AgentPathPlanner::planPath: AA_MOVE 0.024264
+[17:47:56.178] AgentPathPlanner::convAction: action complete, waiting for 2 more actions (thread 765c98c9-4688-4199-a8a1-06e0d1cbe97b)
+[17:47:57.224] AgentBase::cbWatchHostConnection: connection to host closed, shutting down
+[17:47:57.224] AgentBase::conReceiveData: connection closed (00000000-0000-0000-0000-000000000000)
+[17:47:57.224] AgentBase::stop: average cpu usage %0.000000
+[17:47:57.224] AgentBase::~AgentBase: agent shutdown
+[17:47:57.224] AgentBase::~AgentBase: Warning! Unclean dynamic state buffers remaining! (i.e. memory leak)
+Logger::~Logger: shutdown...

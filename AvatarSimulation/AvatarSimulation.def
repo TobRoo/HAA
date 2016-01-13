@@ -1,0 +1,8 @@
+; AvatarSimulation.def : Declares the module parameters for the DLL.
+
+LIBRARY      "AvatarSimulation"
+
+EXPORTS
+    ; Explicit exports can go here
+	Spawn @1
+    Playback @2

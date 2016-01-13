@@ -1,0 +1,1159 @@
+[17:47:22.395] Setting log level: 6
+[17:47:22.395] SupervisorSLAM 00.01.00049.00
+[17:47:22.395] Agent UUID b3f9ee21-538a-4e38-b22b-93f25894c04c
+[17:47:22.395] AgentPlayback UUID 3c6d05f6-2d65-4b16-8c9c-af9c3c671ca3
+[17:47:22.395] AgentBase::backup: starting backup ceedc22e-a041-4b9b-bbfe-fdace46ab6d9
+[17:47:22.395] AgentBase::backup: got backup, 46 bytes
+[17:47:22.395] AgentBase::step: made connection! (127.0.0.1:51000)
+[17:47:22.395] AgentBase::conFDAlive: connection trusted (00000000-0000-0000-0000-000000000000)
+[17:47:22.410] AgentBase::backup: starting backup d41b17d1-10be-45bb-97a3-3e36c34459a8
+[17:47:22.410] AgentBase::backup: got backup, 46 bytes
+[17:47:22.410] AgentBase::start: parsing mission file data\missions\missionSample.ini
+[17:47:22.410] AgentBase::parseMissionFile: parsing data\missions\missionSample.ini
+[17:47:22.410] AgentBase::start: Starting!
+[17:47:22.410] AgentBase::backup: starting backup a2c347b3-6156-433c-b768-f6ac6661947b
+[17:47:22.410] AgentBase::backup: got backup, 77 bytes
+[17:47:22.442] SupervisorSLAM::updateHostGroup: size 2
+[17:47:23. 50] SupervisorSLAM::newSensorReading: type 256-0 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:23. 50] SupervisorSLAM::requestAgentSpawn: requesting agent 042865f2-737b-4230-8d60-76b43f98eeb0 256-0 (thread 12eaa109-e876-41c3-b7e3-73d64e7fb3c1)
+[17:47:23. 97] SupervisorSLAM::newSensorReading: type 256-0 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:23.112] SupervisorSLAM::newSensorReading: type 256-0 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:23.175] SupervisorSLAM::convRequestAgentSpawn: spawn succeeded 256-0 (de1c4197-99ce-4b51-8cfc-d80fa45c18ee) (thread 12eaa109-e876-41c3-b7e3-73d64e7fb3c1)
+[17:47:23.175] SupervisorSLAM::assignSensorReading: queue reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:23.175] SupervisorSLAM::assignSensorReading: queue reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:23.175] SupervisorSLAM::assignSensorReading: queue reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:23.175] AgentBase::backup: starting backup 35909702-455c-422f-8fe8-32bd14e07aab
+[17:47:23.175] AgentBase::backup: got backup, 288 bytes
+[17:47:23.190] SupervisorSLAM::convAgentInfo: status 2
+[17:47:23.190] SupervisorSLAM::nextSensorReading: assign next reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:23.222] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:23.222] SupervisorSLAM::requestAgentSpawn: requesting agent 318aaeb9-ba10-4d1c-a1a6-9d747104f83b 16-0 (thread 9f7a6f9a-5af2-4de7-b146-70d6687814a2)
+[17:47:23.331] SupervisorSLAM::convRequestAgentSpawn: spawn succeeded 16-0 (50bb669e-8ba5-4a6e-8015-e55a922bbcc5) (thread 9f7a6f9a-5af2-4de7-b146-70d6687814a2)
+[17:47:23.331] SupervisorSLAM::assignSensorReading: queue reading, agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:23.331] AgentBase::backup: starting backup 63d53237-d4a8-4128-95e8-17edb3bdafa5
+[17:47:23.331] AgentBase::backup: got backup, 402 bytes
+[17:47:23.346] SupervisorSLAM::convAgentInfo: status 2
+[17:47:23.346] SupervisorSLAM::nextSensorReading: assign next reading, agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:23.346] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:23.362] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:23.362] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:23.362] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:23.409] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:23.409] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:23.409] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:23.456] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:23.456] SupervisorSLAM::nextSensorReading: assign next reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:23.456] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:23.456] SupervisorSLAM::requestAgentSpawn: requesting agent c0a5f153-7b27-4adf-a6f8-c81f503d6da5 256-1 (thread 5401f673-daab-4123-9b16-fcb80b62d2c4)
+[17:47:23.471] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:23.471] SupervisorSLAM::nextSensorReading: assign next reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:23.471] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:23.471] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:23.471] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:23.612] SupervisorSLAM::newSensorReading: type 256-0 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:23.612] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:23.612] SupervisorSLAM::convRequestAgentSpawn: spawn succeeded 256-1 (ab013177-33b4-4be6-a281-33937f45dafc) (thread 5401f673-daab-4123-9b16-fcb80b62d2c4)
+[17:47:23.612] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:23.612] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:23.612] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:23.612] AgentBase::backup: starting backup eb166e1f-4445-42f4-b2ff-bcd4ab61345e
+[17:47:23.612] AgentBase::backup: got backup, 468 bytes
+[17:47:23.627] SupervisorSLAM::convAgentInfo: status 2
+[17:47:23.627] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:23.627] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 0
+[17:47:23.627] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:23.627] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 1
+[17:47:23.627] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:23.627] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 0
+[17:47:23.627] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:23.627] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 1
+[17:47:23.627] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:23.627] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 0
+[17:47:23.627] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:23.627] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 2
+[17:47:23.627] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:23.627] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 0
+[17:47:23.627] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:23.627] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 2
+[17:47:23.627] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:23.627] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 0
+[17:47:23.627] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:23.627] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 3
+[17:47:23.627] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:23.627] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 0
+[17:47:23.627] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:23.627] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 3
+[17:47:23.627] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:23.627] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 0
+[17:47:23.627] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:23.627] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 4
+[17:47:23.627] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:23.627] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 0
+[17:47:23.627] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:23.627] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 4
+[17:47:23.627] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:23.627] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 0
+[17:47:23.627] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:23.627] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 5
+[17:47:23.627] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:23.627] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 0
+[17:47:23.627] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:23.627] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 5
+[17:47:23.627] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:23.627] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 0
+[17:47:23.627] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:23.627] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 6
+[17:47:23.627] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 0
+[17:47:23.627] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:23.627] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 6
+[17:47:23.627] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 0
+[17:47:23.627] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 1
+[17:47:23.627] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:23.627] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 0
+[17:47:23.627] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 2
+[17:47:23.627] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:23.627] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 0
+[17:47:23.627] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 3
+[17:47:23.627] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:23.627] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 0
+[17:47:23.627] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 4
+[17:47:23.627] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:23.627] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 0
+[17:47:23.627] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 5
+[17:47:23.627] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:23.627] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 0
+[17:47:23.627] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 6
+[17:47:23.658] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:23.658] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:23.658] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:23.877] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:23.877] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:23.877] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:24.  2] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:24.  2] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:24.  2] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:24. 48] SupervisorSLAM::newSensorReading: type 256-0 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:24. 48] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:24. 97] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:24. 97] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:24. 97] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:24.128] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:24.144] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:24.144] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:24.144] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:24.301] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:24.301] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:24.301] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:24.317] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:24.488] SupervisorSLAM::newSensorReading: type 256-0 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:24.488] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:24.597] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:24.597] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:24.597] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:24.644] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:24.644] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:24.644] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:24.691] SupervisorSLAM::newSensorReading: type 256-0 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:24.691] SupervisorSLAM::assignSensorReading: queue reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:24.753] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:24.753] SupervisorSLAM::nextSensorReading: assign next reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:24.753] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:24.753] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:24.800] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:24.800] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:24.800] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:25. 34] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:25. 34] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:25. 34] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:25. 34] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:25.143] SupervisorSLAM::newSensorReading: type 256-0 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:25.143] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:25.299] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:25.393] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:25.393] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:25.393] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:25.409] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:25.409] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:25.409] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:25.424] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:25.456] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:25.456] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:25.456] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:25.503] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:25.503] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:25.503] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:25.597] SupervisorSLAM::newSensorReading: type 256-0 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:25.597] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:25.690] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:25.690] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:25.690] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:25.846] SupervisorSLAM::newSensorReading: type 256-0 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:25.846] SupervisorSLAM::assignSensorReading: queue reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:25.862] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:25.862] SupervisorSLAM::nextSensorReading: assign next reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:25.862] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:25.862] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:25.909] SupervisorSLAM::newSensorReading: type 256-0 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:25.909] SupervisorSLAM::assignSensorReading: queue reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:25.940] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:25.940] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:25.940] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:26.112] SupervisorSLAM::newSensorReading: type 256-0 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:26.112] SupervisorSLAM::assignSensorReading: queue reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:26.127] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:26.127] SupervisorSLAM::nextSensorReading: assign next reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:26.127] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:26.127] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:26.143] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:26.143] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:26.392] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:26.392] SupervisorSLAM::nextSensorReading: assign next reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:26.392] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:26.392] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:26.424] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:26.424] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:26.424] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:26.424] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:26.424] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:26.455] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:26.455] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:26.455] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:26.704] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:26.704] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:26.720] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:26.892] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:26.892] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:26.892] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:26.954] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:26.954] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:26.954] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:27.  1] SupervisorSLAM::newSensorReading: type 256-0 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:27.  1] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:27.172] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:27.172] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:27.172] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:27.188] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:27.188] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:27.188] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:27.266] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:27.266] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:27.266] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:27.422] AgentBase::cbUpdateCpuUsage: used 0, elapsed 5012, %0.000000
+[17:47:27.500] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:27.500] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:27.500] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:27.516] SupervisorSLAM::newSensorReading: type 256-0 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:27.516] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:27.516] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:27.516] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:27.516] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:27.547] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:27.547] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:27.562] SupervisorSLAM::newSensorReading: type 256-0 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:27.562] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:27.609] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:27.609] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:27.609] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:27.750] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:27.750] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:27.750] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:27.828] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:27.828] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:27.828] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:27.843] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:27.843] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:27.859] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:27.999] SupervisorSLAM::newSensorReading: type 256-0 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:27.999] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:28. 15] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:28. 15] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:28. 15] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:28. 62] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:28. 62] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:28. 62] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:28.186] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:28.186] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:28.186] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:28.264] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:28.264] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:28.264] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:28.281] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:28.328] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:28.328] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:28.328] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:28.687] SupervisorSLAM::newSensorReading: type 256-0 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:28.687] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:28.702] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:28.702] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:28.702] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:28.796] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:28.796] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:28.796] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:28.952] SupervisorSLAM::newSensorReading: type 256-0 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:28.952] SupervisorSLAM::assignSensorReading: queue reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:28.952] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:28.952] SupervisorSLAM::nextSensorReading: assign next reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:28.952] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:28.952] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:29.109] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:29.109] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:29.109] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:29.140] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:29.140] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:29.140] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:29.234] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:29.234] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:29.234] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:29.234] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:29.234] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:29.296] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:29.296] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:29.296] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:29.468] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:29.468] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:29.468] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:29.514] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:29.592] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:29.592] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:29.592] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:29.702] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:29.702] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:29.702] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:29.842] SupervisorSLAM::newSensorReading: type 256-0 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:29.842] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:29.951] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:29.951] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:29.951] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:29.998] SupervisorSLAM::newSensorReading: type 256-0 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:29.998] SupervisorSLAM::assignSensorReading: queue reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:30. 92] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:30. 92] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:30. 92] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:30.107] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:30.107] SupervisorSLAM::nextSensorReading: assign next reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:30.107] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:30.107] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:30.107] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:30.107] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:30.107] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:30.294] SupervisorSLAM::newSensorReading: type 256-0 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:30.294] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:30.357] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:30.357] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:30.357] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:30.372] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:30.372] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:30.388] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:30.513] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:30.513] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:30.513] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:30.575] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:30.575] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:30.575] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:30.591] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:30.747] SupervisorSLAM::newSensorReading: type 256-0 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:30.747] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:30.887] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:30.887] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:30.887] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:30.950] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:30.950] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:30.950] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:31. 12] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:31. 12] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:31. 12] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:31. 12] AgentBase::backup: starting backup db961e7d-21dc-40e9-b144-13425324b258
+[17:47:31. 12] AgentBase::backup: got backup, 323 bytes
+[17:47:31. 90] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:31. 90] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:31. 90] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:31.106] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:31.106] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:31.106] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:31.262] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:31.262] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:31.262] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:31.340] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:31.496] SupervisorSLAM::newSensorReading: type 256-0 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:31.496] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:31.589] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:31.589] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:31.589] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:31.605] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:31.605] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:31.605] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:31.698] SupervisorSLAM::newSensorReading: type 256-0 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:31.698] SupervisorSLAM::assignSensorReading: queue reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:31.761] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:31.761] SupervisorSLAM::nextSensorReading: assign next reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:31.761] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:31.761] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:31.776] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:32.151] SupervisorSLAM::newSensorReading: type 256-0 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:32.151] SupervisorSLAM::assignSensorReading: queue reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:32.198] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:32.198] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:32.198] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:32.213] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:32.213] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:32.213] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:32.292] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:32.292] SupervisorSLAM::nextSensorReading: assign next reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:32.292] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:32.292] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:32.308] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:32.323] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:32.323] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:32.323] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:32.370] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:32.370] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:32.370] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:32.417] AgentBase::cbUpdateCpuUsage: used 0, elapsed 4995, %0.000000
+[17:47:32.526] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:32.526] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:32.557] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:32.557] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:32.557] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:32.557] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:32.573] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:32.682] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:32.682] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:32.682] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:32.713] SupervisorSLAM::newSensorReading: type 256-0 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:32.713] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:32.791] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:32.791] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:32.791] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:32.979] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:32.979] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:32.979] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:33. 10] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:33. 10] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:33. 10] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:33. 41] SupervisorSLAM::newSensorReading: type 256-0 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:33. 41] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:33.150] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:33.150] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:33.150] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:33.244] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:33.306] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:33.306] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:33.306] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:33.400] SupervisorSLAM::newSensorReading: type 256-0 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:33.400] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:33.415] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:33.415] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:33.415] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:33.556] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:33.556] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:33.556] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:33.587] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:33.587] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:33.587] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:33.587] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:33.681] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:33.681] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:33.681] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:33.696] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:33.946] SupervisorSLAM::newSensorReading: type 256-0 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:33.946] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:34.  8] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:34.  8] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:34.  8] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:34. 40] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:34. 40] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:34. 40] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:34. 87] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:34. 87] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:34. 87] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:34.212] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:34.212] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:34.212] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:34.212] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:34.212] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:34.212] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:34.228] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:34.228] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:34.228] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:34.228] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:34.462] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:34.462] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:34.462] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:34.602] SupervisorSLAM::newSensorReading: type 256-0 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:34.602] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:34.805] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:34.805] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:34.805] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:34.883] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:34.883] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:34.883] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:35.164] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:35.351] SupervisorSLAM::newSensorReading: type 256-0 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:35.351] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:35.413] SupervisorSLAM::newSensorReading: type 256-0 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:35.413] SupervisorSLAM::assignSensorReading: queue reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:35.413] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:35.413] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:35.413] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:35.429] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:35.429] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:35.429] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:35.554] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:35.554] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:35.554] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:35.616] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:35.616] SupervisorSLAM::nextSensorReading: assign next reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:35.616] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:35.616] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:35.616] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:35.616] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:35.616] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:35.632] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:35.632] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:35.647] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:35.710] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:35.710] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:35.710] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:35.788] SupervisorSLAM::newSensorReading: type 256-0 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:35.788] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:35.866] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:35.866] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:35.866] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:35.990] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:35.990] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:35.990] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:36. 53] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:36. 53] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:36. 53] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:36.115] SupervisorSLAM::newSensorReading: type 256-0 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:36.115] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:36.193] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:36.193] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:36.193] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:36.240] SupervisorSLAM::newSensorReading: type 256-0 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:36.240] SupervisorSLAM::assignSensorReading: queue reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:36.335] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:36.350] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:36.350] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:36.350] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:36.381] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:36.381] SupervisorSLAM::nextSensorReading: assign next reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:36.381] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:36.381] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:36.381] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:36.381] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:36.381] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:36.491] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:36.491] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:36.491] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:36.647] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:36.647] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:36.678] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:36.709] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:36.709] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:36.709] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:36.709] SupervisorSLAM::assignSensorReading: queue reading, agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:36.709] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:36.709] SupervisorSLAM::nextSensorReading: assign next reading, agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:36.725] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:36.943] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:36.943] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:36.943] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:37.210] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:37.210] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:37.210] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:37.351] SupervisorSLAM::newSensorReading: type 256-0 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:37.351] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:37.413] AgentBase::cbUpdateCpuUsage: used 0, elapsed 4996, %0.000000
+[17:47:37.413] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:37.413] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:37.413] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:37.616] SupervisorSLAM::newSensorReading: type 256-0 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:37.616] SupervisorSLAM::assignSensorReading: queue reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:37.616] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:37.616] SupervisorSLAM::nextSensorReading: assign next reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:37.616] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:37.616] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:37.787] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:37.787] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:37.787] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:37.865] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:37.865] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:37.865] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:37.897] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:38.146] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 0
+[17:47:38.146] SupervisorSLAM::newSensorReading: type 256-0 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 1
+[17:47:38.146] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:38.162] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:38.162] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:38.162] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:38.177] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:38.302] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:38.302] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:38.302] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:38.614] SupervisorSLAM::newSensorReading: type 256-0 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:38.614] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:38.614] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:38.614] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:38.614] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:38.692] SupervisorSLAM::newSensorReading: type 256-0 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:38.692] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:38.801] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:38.801] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:38.801] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:38.989] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:38.989] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:38.989] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:39. 68] SupervisorSLAM::newSensorReading: type 256-0 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:39. 68] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:39. 68] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:39. 68] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:39. 68] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:39.114] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:39.114] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:39.114] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:39.146] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:39.146] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:39.302] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:39.302] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:39.302] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:39.364] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:39.364] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:39.364] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:39.411] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:39.411] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:39.411] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:39.442] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:39.442] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:39.458] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:39.754] SupervisorSLAM::newSensorReading: type 256-0 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:39.754] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:39.801] SupervisorSLAM::newSensorReading: type 256-0 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:39.801] SupervisorSLAM::assignSensorReading: queue reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:39.894] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:39.894] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:39.894] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:39.941] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:39.941] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:39.941] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:39.988] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:39.988] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:39.988] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:40. 19] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:40. 19] SupervisorSLAM::nextSensorReading: assign next reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:40. 19] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:40. 19] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:40. 19] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:40. 19] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:40. 19] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:40. 35] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:40. 35] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:40. 50] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:40.206] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:40.206] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:40.206] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:40.441] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:40.441] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:40.441] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:40.488] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:40.488] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:40.488] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:40.613] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:40.613] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:40.613] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:40.691] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:40.691] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:40.691] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:40.956] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:40.956] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:40.956] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:40.987] SupervisorSLAM::newSensorReading: type 256-0 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:40.987] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:41. 97] SupervisorSLAM::newSensorReading: type 256-0 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:41. 97] SupervisorSLAM::assignSensorReading: queue reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:41.190] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:41.190] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:41.190] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:41.206] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:41.206] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:41.206] AgentBase::backup: starting backup 9bb97a86-2234-478f-b6e8-508bd16318f9
+[17:47:41.206] AgentBase::backup: got backup, 420 bytes
+[17:47:41.206] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:41.253] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:41.253] SupervisorSLAM::nextSensorReading: assign next reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:41.253] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:41.253] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:41.253] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:41.253] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:41.253] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:41.268] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:41.268] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:41.502] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:41.502] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:41.502] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:41.549] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:41.549] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:41.549] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:41.799] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:41.799] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:41.814] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:41.814] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:41.892] SupervisorSLAM::newSensorReading: type 256-0 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:41.892] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:41.908] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:41.908] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:41.908] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:42.  1] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:42.  1] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:42.  1] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:42.145] SupervisorSLAM::newSensorReading: type 256-0 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:42.145] SupervisorSLAM::assignSensorReading: queue reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:42.145] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:42.145] SupervisorSLAM::nextSensorReading: assign next reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:42.145] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:42.145] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:42.426] AgentBase::cbUpdateCpuUsage: used 0, elapsed 5013, %0.000000
+[17:47:42.426] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:42.550] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:42.550] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:42.550] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:42.597] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:42.597] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:42.597] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:42.660] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:42.660] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:42.660] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:42.691] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:42.691] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:42.691] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:42.706] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:42.800] SupervisorSLAM::newSensorReading: type 256-0 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:42.800] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:42.894] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:42.894] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:42.894] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:43. 50] SupervisorSLAM::newSensorReading: type 256-0 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:43. 50] SupervisorSLAM::assignSensorReading: queue reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:43. 65] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:43. 65] SupervisorSLAM::nextSensorReading: assign next reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:43. 65] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:43. 65] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:43.128] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:43.128] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:43.128] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:43.143] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:43.143] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:43.143] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:43.190] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:43.190] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:43.190] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:43.330] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:43.330] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:43.330] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:43.346] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:43.346] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:43.362] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:43.455] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:43.455] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:43.455] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:43.502] SupervisorSLAM::newSensorReading: type 256-0 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:43.502] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:43.705] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:43.705] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:43.705] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:43.767] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:43.767] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:43.767] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:43.783] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:43.845] SupervisorSLAM::newSensorReading: type 256-0 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:43.845] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:43.954] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:43.954] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:43.954] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:44.111] SupervisorSLAM::newSensorReading: type 256-0 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:44.111] SupervisorSLAM::assignSensorReading: queue reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:44.111] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:44.111] SupervisorSLAM::nextSensorReading: assign next reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:44.111] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:44.111] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:44.189] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:44.189] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:44.189] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:44.205] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:44.205] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:44.205] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:44.378] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:44.378] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:44.378] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:44.393] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:44.393] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:44.549] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:44.549] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:44.549] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:44.674] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:44.705] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:44.705] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:44.705] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:44.705] SupervisorSLAM::assignSensorReading: queue reading, agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:44.705] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:44.705] SupervisorSLAM::nextSensorReading: assign next reading, agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:44.721] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:44.908] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:44.908] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:44.908] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:45. 17] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:45. 17] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:45. 33] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:45.298] SupervisorSLAM::newSensorReading: type 256-0 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:45.298] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:45.501] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:45.501] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:45.501] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:45.828] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:45.828] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:45.828] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 0
+[17:47:45.828] SupervisorSLAM::newSensorReading: type 256-0 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 1
+[17:47:45.828] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:45.828] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:45.860] SupervisorSLAM::newSensorReading: type 256-0 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:45.860] SupervisorSLAM::assignSensorReading: queue reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:45.860] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:45.860] SupervisorSLAM::nextSensorReading: assign next reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:45.860] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:45.860] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:45.891] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:46. 62] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:46. 62] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:46. 65] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:46.112] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:46.112] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:46.112] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:46.128] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:46.190] SupervisorSLAM::newSensorReading: type 256-0 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:46.190] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:46.299] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:46.299] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:46.299] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:46.502] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:46.502] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:46.502] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:46.549] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:46.549] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:46.549] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:46.689] SupervisorSLAM::newSensorReading: type 256-0 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:46.689] SupervisorSLAM::assignSensorReading: queue reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:46.721] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:46.721] SupervisorSLAM::nextSensorReading: assign next reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:46.721] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:46.721] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:46.736] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:46.892] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:46.892] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:46.892] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:46.908] SupervisorSLAM::newSensorReading: type 256-0 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:46.908] SupervisorSLAM::assignSensorReading: queue reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:46.955] SupervisorSLAM::newSensorReading: type 256-0 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:46.955] SupervisorSLAM::assignSensorReading: queue reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:47.  1] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:47.  1] SupervisorSLAM::nextSensorReading: assign next reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:47.  1] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:47.  1] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:47. 48] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:47. 48] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:47. 48] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:47.267] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:47.267] SupervisorSLAM::nextSensorReading: assign next reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:47.267] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:47.267] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:47.267] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:47.267] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:47.267] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:47.282] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:47.282] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:47.313] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:47.313] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:47.423] AgentBase::cbUpdateCpuUsage: used 0, elapsed 4997, %0.000000
+[17:47:47.469] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:47.469] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:47.469] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:47.501] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:47.501] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:47.501] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:47.516] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:47.516] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:47.516] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:47.594] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:47.594] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:47.594] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:47.594] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:47.844] SupervisorSLAM::newSensorReading: type 256-0 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:47.844] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:48.  0] SupervisorSLAM::newSensorReading: type 256-0 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:48.  0] SupervisorSLAM::assignSensorReading: queue reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:48. 47] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:48. 47] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:48. 47] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:48. 93] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:48. 93] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:48. 93] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:48.109] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:48.109] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:48.109] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:48.109] SupervisorSLAM::nextSensorReading: assign next reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:48.109] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:48.109] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:48.109] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:48.125] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:48.125] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:48.125] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:48.125] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:48.125] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:48.156] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:48.374] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:48.374] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:48.374] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:48.405] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:48.405] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:48.405] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:48.686] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:48.686] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:48.686] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:48.749] SupervisorSLAM::newSensorReading: type 256-0 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:48.749] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:48.811] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:48.811] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:48.811] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:48.842] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:48.842] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:48.842] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:49. 14] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:49. 14] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:49. 14] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:49. 29] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:49.218] SupervisorSLAM::newSensorReading: type 256-0 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:49.218] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:49.264] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:49.264] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:49.264] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:49.296] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:49.296] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:49.296] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:49.483] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:49.483] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:49.483] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:49.592] SupervisorSLAM::newSensorReading: type 256-0 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:49.592] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:49.592] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:49.592] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:49.592] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:49.748] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:49.748] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:49.842] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:49.842] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:49.842] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:49.888] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:49.888] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:49.888] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:50. 13] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:50. 13] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:50. 13] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:50. 29] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:50. 91] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:50. 91] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:50. 91] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:50.403] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:50.403] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:50.403] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:50.466] SupervisorSLAM::newSensorReading: type 256-0 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:50.466] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:50.466] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:50.466] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:50.466] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:50.746] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:50.793] SupervisorSLAM::newSensorReading: type 256-0 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:50.793] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:50.871] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:50.871] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:50.871] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:50.996] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:50.996] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:50.996] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:51. 58] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:51. 58] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:51. 58] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:51.214] SupervisorSLAM::newSensorReading: type 256-0 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:51.214] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:51.214] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:51.214] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:51.214] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:51.261] SupervisorSLAM::newSensorReading: type 256-0 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:51.261] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:51.308] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:51.308] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:51.308] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:51.339] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:51.339] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:51.370] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:51.370] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:51.370] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:51.542] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:51.542] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:51.542] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:51.542] AgentBase::backup: starting backup 8a8afa1a-d537-4f1d-a10e-c9cf15fe137c
+[17:47:51.542] AgentBase::backup: got backup, 371 bytes
+[17:47:51.620] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:51.620] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:51.651] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:51.792] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:51.792] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:51.792] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:51.948] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:51.948] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:51.948] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:52. 10] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:52. 10] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:52. 10] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:52.400] SupervisorSLAM::newSensorReading: type 256-0 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:52.400] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:52.416] AgentBase::cbUpdateCpuUsage: used 0, elapsed 4993, %0.000000
+[17:47:52.494] SupervisorSLAM::newSensorReading: type 256-0 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:52.494] SupervisorSLAM::assignSensorReading: queue reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:52.540] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:52.540] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:52.540] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:52.587] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:52.587] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:52.587] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:52.665] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:52.665] SupervisorSLAM::nextSensorReading: assign next reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:52.665] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:52.665] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:52.665] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:52.665] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:52.665] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:52.681] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:52.681] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:52.696] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:53. 55] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:53. 55] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:53. 55] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:53. 86] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:53. 86] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:53. 86] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:53.211] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:53.211] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:53.211] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:53.227] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:53.227] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:53.227] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:53.305] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:53.305] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:53.305] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:53.445] SupervisorSLAM::newSensorReading: type 256-0 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:53.445] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:53.617] SupervisorSLAM::newSensorReading: type 256-0 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:53.617] SupervisorSLAM::assignSensorReading: queue reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:53.648] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:53.648] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:53.648] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:53.695] SupervisorSLAM::newSensorReading: type 256-0 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:53.695] SupervisorSLAM::assignSensorReading: queue reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:53.710] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:53.710] SupervisorSLAM::nextSensorReading: assign next reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:53.710] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:53.710] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:53.788] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:53.788] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:53.788] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:53.898] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:53.898] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:53.898] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:53.960] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:53.960] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:53.960] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:53.976] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:53.976] SupervisorSLAM::nextSensorReading: assign next reading, agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:53.976] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:53.976] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:53.991] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:53.991] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:53.991] SupervisorSLAM::assignSensorReading: queue reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:53.991] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:53.991] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:54.  7] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:54.  7] SupervisorSLAM::nextSensorReading: assign next reading, agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:54. 22] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:54.304] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:54.304] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:54.304] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:54.351] SupervisorSLAM::newSensorReading: type 256-0 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:54.351] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:54.398] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:54.398] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:54.398] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:54.413] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:54.413] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:54.413] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:54.462] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:54.462] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:54.462] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:54.509] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:54.509] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:54.509] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:54.603] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:54.603] SupervisorSLAM::newSensorReading: type 256-1 id 8a409ef6-63fe-436d-9869-05a4b1a1be76 attempt 0
+[17:47:54.603] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:54.618] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 8a409ef6-63fe-436d-9869-05a4b1a1be76 success 1
+[17:47:54.915] SupervisorSLAM::newSensorReading: type 256-0 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:54.915] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:54.961] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:54.961] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:54.961] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:55. 86] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:55. 86] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:55. 86] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:55.180] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:55.180] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:55.180] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:55.195] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:55.289] SupervisorSLAM::newSensorReading: type 256-0 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:55.289] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:55.398] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:55.398] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:55.398] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:55.554] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:55.554] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:55.554] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:55.554] SupervisorSLAM::newSensorReading: type 256-1 id 9d3c77f4-8f47-47d8-b207-906d285ee5f4 attempt 0
+[17:47:55.554] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:55.554] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:55.601] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:55.601] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:55.601] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:55.663] SupervisorSLAM::newSensorReading: type 16-0 id 6ad8bfd8-681b-45ca-839a-e244f4b4391c attempt 0
+[17:47:55.663] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:55.663] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6ad8bfd8-681b-45ca-839a-e244f4b4391c success 1
+[17:47:55.835] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success 1
+[17:47:55.991] SupervisorSLAM::newSensorReading: type 256-0 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:55.991] SupervisorSLAM::assignSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:56.  7] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:56.  7] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:56.  7] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:56.116] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:56.116] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:56.116] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:56.194] SupervisorSLAM::newSensorReading: type 16-0 id 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 attempt 0
+[17:47:56.194] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:56.194] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 34b107e4-9a4b-41b2-91bd-928ecc3b7b26 success 1
+[17:47:56.256] SupervisorSLAM::doneSensorReading: agent de1c4197-99ce-4b51-8cfc-d80fa45c18ee sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:56.256] SupervisorSLAM::newSensorReading: type 256-1 id 61b867cb-13e2-4877-bd52-8bdee2f74309 attempt 0
+[17:47:56.256] SupervisorSLAM::assignSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:56.272] SupervisorSLAM::doneSensorReading: agent ab013177-33b4-4be6-a281-33937f45dafc sensor 61b867cb-13e2-4877-bd52-8bdee2f74309 success 1
+[17:47:56.319] SupervisorSLAM::newSensorReading: type 16-0 id 6f3cd7da-d6f0-4238-b12f-3cede88bf307 attempt 0
+[17:47:56.319] SupervisorSLAM::assignSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:56.319] SupervisorSLAM::doneSensorReading: agent 50bb669e-8ba5-4a6e-8015-e55a922bbcc5 sensor 6f3cd7da-d6f0-4238-b12f-3cede88bf307 success 1
+[17:47:57.334] AgentBase::cbWatchHostConnection: connection to host closed, shutting down
+[17:47:57.334] AgentBase::conReceiveData: connection closed (00000000-0000-0000-0000-000000000000)
+[17:47:57.334] AgentBase::stop: average cpu usage %0.000000
+[17:47:57.334] AgentBase::~AgentBase: agent shutdown
+Logger::~Logger: shutdown...

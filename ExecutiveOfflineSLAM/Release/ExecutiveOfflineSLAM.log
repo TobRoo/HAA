@@ -1,0 +1,27 @@
+﻿  stdafx.cpp
+  agentPlayback.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+  autonomic.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+..\Autonomic\autonomic.cpp(59): warning C4477: 'sprintf_s' : format string '%ls' requires an argument of type 'wchar_t *', but variadic argument 2 has type 'RPC_WSTR'
+  dataStream.cpp
+  Logger.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+..\Autonomic\Logger.cpp(187): warning C4477: 'sprintf_s' : format string '%ls' requires an argument of type 'wchar_t *', but variadic argument 1 has type 'RPC_WSTR'
+  RandomGenerator.cpp
+  ExecutiveOfflineSLAM.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+ExecutiveOfflineSLAM.cpp(163): warning C4101: 'id': unreferenced local variable
+ExecutiveOfflineSLAM.cpp(248): warning C4101: 'thread': unreferenced local variable
+ExecutiveOfflineSLAM.cpp(608): warning C4101: 'i': unreferenced local variable
+ExecutiveOfflineSLAM.cpp(870): warning C4477: 'sscanf_s' : format string '%d' requires an argument of type 'int *', but variadic argument 5 has type 'short *'
+  ExecutiveOfflineSLAM.cpp(870): note: consider using '%hd' in the format string
+ExecutiveOfflineSLAM.cpp(870): warning C4477: 'sscanf_s' : format string '%d' requires an argument of type 'int *', but variadic argument 6 has type 'short *'
+  ExecutiveOfflineSLAM.cpp(870): note: consider using '%hd' in the format string
+ExecutiveOfflineSLAM.cpp(1430): warning C4101: 'i': unreferenced local variable
+ExecutiveOfflineSLAM.cpp(1751): warning C4101: 'reading': unreferenced local variable
+     Creating library C:\Steven_Daniluk\HAA_Clean\Release\ExecutiveOfflineSLAM.lib and object C:\Steven_Daniluk\HAA_Clean\Release\ExecutiveOfflineSLAM.exp
+  Generating code
+  All 4151 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  ExecutiveOfflineSLAM.vcxproj -> C:\Steven_Daniluk\HAA_Clean\Release\ExecutiveOfflineSLAM.dll

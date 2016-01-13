@@ -1,0 +1,45 @@
+﻿  stdafx.cpp
+  agentPlayback.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+  dataStream.cpp
+  DDBStore.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+  fImage.cpp
+  Logger.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+..\Autonomic\Logger.cpp(187): warning C4477: 'sprintf_s' : format string '%ls' requires an argument of type 'wchar_t *', but variadic argument 1 has type 'RPC_WSTR'
+  RandomGenerator.cpp
+  RR_API.cpp
+..\RoboRealmAPI\RR_API.cpp(197): warning C4996: 'gethostbyname': Use getaddrinfo() or GetAddrInfoW() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+  C:\Program Files (x86)\Windows Kits\8.1\Include\um\winsock2.h(2238): note: see declaration of 'gethostbyname'
+  AgentMirror.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+c:\steven_daniluk\haa_clean\autonomicgui\..\\autonomic\\AgentHostVersion.h(125): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+  AgentMirrorGUI.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+c:\steven_daniluk\haa_clean\autonomicgui\..\\autonomic\\AgentHostVersion.h(125): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+AgentMirrorGUI.cpp(457): warning C4477: 'sprintf_s' : format string '%ls' requires an argument of type 'wchar_t *', but variadic argument 1 has type 'RPC_WSTR'
+AgentMirrorGUI.cpp(488): warning C4477: 'sprintf_s' : format string '%ls' requires an argument of type 'wchar_t *', but variadic argument 1 has type 'RPC_WSTR'
+  AutonomicGUI.cpp
+  AutonomicGUIDlg.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+AutonomicGUIDlg.cpp(469): warning C4477: 'sprintf_s' : format string '%ws' requires an argument of type 'wchar_t *', but variadic argument 1 has type 'CString'
+  GUIObject.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+GUIObject.cpp(183): warning C4477: 'swprintf_s' : format string '%s' requires an argument of type 'wchar_t *', but variadic argument 1 has type 'RPC_WSTR'
+GUIObject.cpp(183): warning C4477: 'swprintf_s' : format string '%s' requires an argument of type 'wchar_t *', but variadic argument 2 has type 'RPC_WSTR'
+GUIObject.cpp(183): warning C4477: 'swprintf_s' : format string '%s' requires an argument of type 'wchar_t *', but variadic argument 3 has type 'RPC_WSTR'
+GUIObject.cpp(183): warning C4477: 'swprintf_s' : format string '%s' requires an argument of type 'wchar_t *', but variadic argument 5 has type 'RPC_WSTR'
+GUIObject.cpp(485): warning C4477: 'swprintf_s' : format string '%s' requires an argument of type 'wchar_t *', but variadic argument 6 has type 'RPC_WSTR'
+GUIObject.cpp(875): warning C4477: 'swprintf_s' : format string '%s' requires an argument of type 'wchar_t *', but variadic argument 1 has type 'RPC_WSTR'
+GUIObject.cpp(1203): warning C4477: 'swprintf_s' : format string '%s' requires an argument of type 'wchar_t *', but variadic argument 2 has type 'RPC_WSTR'
+GUIObject.cpp(1203): warning C4477: 'swprintf_s' : format string '%s' requires an argument of type 'wchar_t *', but variadic argument 3 has type 'RPC_WSTR'
+  OpenGLControl.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+  ThinSocket.cpp
+  Visualize.cpp
+  Generating code
+  All 5158 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  AutonomicGUI.vcxproj -> C:\Steven_Daniluk\HAA_Clean\Release\AutonomicGUI.exe
+          1 file(s) copied.

@@ -1,0 +1,18 @@
+﻿  stdafx.cpp
+  agentPlayback.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+  autonomic.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+..\Autonomic\autonomic.cpp(59): warning C4477: 'sprintf_s' : format string '%ls' requires an argument of type 'wchar_t *', but variadic argument 2 has type 'RPC_WSTR'
+  dataStream.cpp
+  Logger.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+..\Autonomic\Logger.cpp(187): warning C4477: 'sprintf_s' : format string '%ls' requires an argument of type 'wchar_t *', but variadic argument 1 has type 'RPC_WSTR'
+  RandomGenerator.cpp
+  ExecutiveAvatar.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+     Creating library C:\Steven_Daniluk\HAA_Clean\Release\ExecutiveAvatar.lib and object C:\Steven_Daniluk\HAA_Clean\Release\ExecutiveAvatar.exp
+  Generating code
+  All 2423 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  ExecutiveAvatar.vcxproj -> C:\Steven_Daniluk\HAA_Clean\Release\ExecutiveAvatar.dll

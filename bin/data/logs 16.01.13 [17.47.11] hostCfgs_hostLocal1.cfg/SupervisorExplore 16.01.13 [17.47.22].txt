@@ -1,0 +1,114 @@
+[17:47:22.395] Setting log level: 6
+[17:47:22.395] SupervisorExplore 00.01.00040.00
+[17:47:22.395] Agent UUID de8c3eae-2424-4b58-9e0d-388f281ddf75
+[17:47:22.395] AgentPlayback UUID 606a8297-f664-43b5-8f6a-d7dfcd3714cc
+[17:47:22.395] AgentBase::backup: starting backup 5154d311-c970-4ca4-a7ec-1f233059b3e1
+[17:47:22.395] AgentBase::backup: got backup, 74 bytes
+[17:47:22.395] AgentBase::step: made connection! (127.0.0.1:51000)
+[17:47:22.395] AgentBase::conFDAlive: connection trusted (00000000-0000-0000-0000-000000000000)
+[17:47:22.426] AgentBase::backup: starting backup 319f5c09-5f1a-493b-8c92-4b9363b536f8
+[17:47:22.426] AgentBase::backup: got backup, 74 bytes
+[17:47:22.426] AgentBase::backup: starting backup d5a9417b-62b4-49ec-9143-83d1ebff3b1b
+[17:47:22.426] AgentBase::backup: got backup, 74 bytes
+[17:47:22.426] AgentBase::backup: starting backup 92bc26d0-4a01-454e-ba90-3a1b66f47644
+[17:47:22.426] AgentBase::backup: got backup, 106 bytes
+[17:47:22.426] AgentBase::start: parsing mission file data\missions\missionSample.ini
+[17:47:22.426] AgentBase::parseMissionFile: parsing data\missions\missionSample.ini
+[17:47:22.426] AgentBase::start: Starting!
+[17:47:22.426] AgentBase::backup: starting backup c4cdc400-30b3-4512-8acf-45a7cbfe75da
+[17:47:22.426] AgentBase::backup: got backup, 137 bytes
+[17:47:22.426] AgentBase::backup: starting backup d4e31774-0100-4f88-87bb-5ca0a265011d
+[17:47:22.426] AgentBase::backup: got backup, 137 bytes
+[17:47:22.457] SupervisorExplore::convGetAvatarList: recieved 3 avatars
+[17:47:22.457] SupervisorExplore::convGetAvatarInfo: recieved avatar (2a7ece12-e511-4d1e-a71c-d755aad610a9) agent: 017e4d01-a17f-458e-8afb-8f31ed1b9249, pf id: 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:22.457] SupervisorExplore::avatarUpdateController: recieved avatar (2a7ece12-e511-4d1e-a71c-d755aad610a9) controller de8c3eae-2424-4b58-9e0d-388f281ddf75, old controller 00000000-0000-0000-0000-000000000000
+[17:47:22.457] SupervisorExplore::addAvatar: adding avatar 2a7ece12-e511-4d1e-a71c-d755aad610a9 (agent 017e4d01-a17f-458e-8afb-8f31ed1b9249)
+[17:47:22.457] SupervisorExplore::updatePartitions: requesting map region 0.000000 0.000000 3.400000 4.900000
+[17:47:22.457] SupervisorExplore::updatePartitions: requesting avatar pos 017e4d01-a17f-458e-8afb-8f31ed1b9249
+[17:47:22.457] SupervisorExplore::convGetAvatarInfo: recieved avatar (843435eb-36b6-4070-ab43-9cef8d53d452) agent: 6b13d5d4-8538-41f8-a81b-39dc1d8f4725, pf id: 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:22.457] SupervisorExplore::avatarUpdateController: recieved avatar (843435eb-36b6-4070-ab43-9cef8d53d452) controller de8c3eae-2424-4b58-9e0d-388f281ddf75, old controller 00000000-0000-0000-0000-000000000000
+[17:47:22.457] SupervisorExplore::addAvatar: adding avatar 843435eb-36b6-4070-ab43-9cef8d53d452 (agent 6b13d5d4-8538-41f8-a81b-39dc1d8f4725)
+[17:47:22.457] SupervisorExplore::updatePartitions: requesting avatar pos 017e4d01-a17f-458e-8afb-8f31ed1b9249
+[17:47:22.457] SupervisorExplore::updatePartitions: requesting avatar pos 6b13d5d4-8538-41f8-a81b-39dc1d8f4725
+[17:47:22.457] SupervisorExplore::convGetAvatarInfo: recieved avatar (e36bb47b-ee84-443e-a868-cbb699164a8b) agent: 984fea6f-93bd-4795-be25-1d54d082522a, pf id: 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:22.457] SupervisorExplore::avatarUpdateController: recieved avatar (e36bb47b-ee84-443e-a868-cbb699164a8b) controller de8c3eae-2424-4b58-9e0d-388f281ddf75, old controller 00000000-0000-0000-0000-000000000000
+[17:47:22.457] SupervisorExplore::addAvatar: adding avatar e36bb47b-ee84-443e-a868-cbb699164a8b (agent 984fea6f-93bd-4795-be25-1d54d082522a)
+[17:47:22.457] SupervisorExplore::updatePartitions: requesting avatar pos 017e4d01-a17f-458e-8afb-8f31ed1b9249
+[17:47:22.457] SupervisorExplore::updatePartitions: requesting avatar pos 6b13d5d4-8538-41f8-a81b-39dc1d8f4725
+[17:47:22.457] SupervisorExplore::updatePartitions: requesting avatar pos 984fea6f-93bd-4795-be25-1d54d082522a
+[17:47:22.457] SupervisorExplore::convGetAvatarPos: recieved avatar pos 017e4d01-a17f-458e-8afb-8f31ed1b9249 (0.460275 0.455745)
+[17:47:22.457] SupervisorExplore::convGetAvatarPos: recieved avatar pos 6b13d5d4-8538-41f8-a81b-39dc1d8f4725 (1.366702 0.452118)
+[17:47:22.457] SupervisorExplore::convGetAvatarPos: recieved avatar pos 984fea6f-93bd-4795-be25-1d54d082522a (2.495098 3.994917)
+[17:47:22.457] SupervisorExplore::_updatePartitions: starting update
+[17:47:22.457] SupervisorExplore::_updatePartitions: sections updated
+[17:47:22.457] SupervisorExplore::_updatePartitions: updating partitions
+[17:47:22.457] SupervisorExplore::calculatePartitions: done, n 3, m 1666, tarSize 555.333333, steps 6, change 3595.902399, stepDif 85.205474
+[17:47:22.457] SupervisorExplore::calculatePartitions: nsplit[0] 657.814445 cells 690
+[17:47:22.457] SupervisorExplore::calculatePartitions: nsplit[1] 580.660432 cells 570
+[17:47:22.457] SupervisorExplore::calculatePartitions: nsplit[2] 427.525123 cells 406
+[17:47:22.457] SupervisorExplore::_updatePartitions: partitions finished
+[17:47:22.457] SupervisorExplore::_updatePartitions: search threshold not reached 1.000000 >= 0.050000 (or avatars are not valid)
+[17:47:22.457] SupervisorExplore::_updatePartitions: finished update
+[17:47:22.473] SupervisorExplore::convGetAvatarInfo: recieved avatar (843435eb-36b6-4070-ab43-9cef8d53d452) controller: de8c3eae-2424-4b58-9e0d-388f281ddf75, index 2, priority 3
+[17:47:22.473] SupervisorExplore::avatarUpdateController: recieved avatar (843435eb-36b6-4070-ab43-9cef8d53d452) controller de8c3eae-2424-4b58-9e0d-388f281ddf75, old controller de8c3eae-2424-4b58-9e0d-388f281ddf75
+[17:47:22.488] SupervisorExplore::convGetAvatarInfo: recieved avatar (e36bb47b-ee84-443e-a868-cbb699164a8b) controller: de8c3eae-2424-4b58-9e0d-388f281ddf75, index 3, priority 3
+[17:47:22.488] SupervisorExplore::avatarUpdateController: recieved avatar (e36bb47b-ee84-443e-a868-cbb699164a8b) controller de8c3eae-2424-4b58-9e0d-388f281ddf75, old controller de8c3eae-2424-4b58-9e0d-388f281ddf75
+[17:47:22.488] SupervisorExplore::convAgentInfo: status 2
+[17:47:22.488] SupervisorExplore::nextSearchCell: avatar 017e4d01-a17f-458e-8afb-8f31ed1b9249 thread 50652346-5d61-477d-88d0-48a6d7a84d4e search 0.450000 0.750000, look from 0.550000 0.250000
+[17:47:22.488] SupervisorExplore::convGetAvatarInfo: recieved avatar (e36bb47b-ee84-443e-a868-cbb699164a8b) controller: de8c3eae-2424-4b58-9e0d-388f281ddf75, index 3, priority 3
+[17:47:22.488] SupervisorExplore::avatarUpdateController: recieved avatar (e36bb47b-ee84-443e-a868-cbb699164a8b) controller de8c3eae-2424-4b58-9e0d-388f281ddf75, old controller de8c3eae-2424-4b58-9e0d-388f281ddf75
+[17:47:22.488] SupervisorExplore::convAgentInfo: status 2
+[17:47:22.488] SupervisorExplore::nextSearchCell: avatar 6b13d5d4-8538-41f8-a81b-39dc1d8f4725 thread 89a78665-2c77-42a9-ae75-d80c7041d21d search 1.950000 1.150000, look from 1.650000 0.750000
+[17:47:22.488] SupervisorExplore::convAgentInfo: status 2
+[17:47:22.488] SupervisorExplore::nextSearchCell: avatar 984fea6f-93bd-4795-be25-1d54d082522a thread a3fae0de-6b77-43ba-bc6a-f32a96eddc58 search 1.550000 4.850000, look from 2.050000 4.450000
+[17:47:27.438] AgentBase::cbUpdateCpuUsage: used 0, elapsed 5012, %0.000000
+[17:47:32.433] AgentBase::cbUpdateCpuUsage: used 0, elapsed 4995, %0.000000
+[17:47:37.429] AgentBase::cbUpdateCpuUsage: used 0, elapsed 4996, %0.000000
+[17:47:42.441] AgentBase::cbUpdateCpuUsage: used 0, elapsed 5012, %0.000000
+[17:47:46.315] SupervisorExplore::convReachedPoint: avatar thread 89a78665-2c77-42a9-ae75-d80c7041d21d target success
+[17:47:46.315] SupervisorExplore::updatePartitions: requesting map region 0.000000 0.000000 3.400000 4.900000
+[17:47:46.315] SupervisorExplore::updatePartitions: requesting avatar pos 017e4d01-a17f-458e-8afb-8f31ed1b9249
+[17:47:46.315] SupervisorExplore::updatePartitions: requesting avatar pos 6b13d5d4-8538-41f8-a81b-39dc1d8f4725
+[17:47:46.315] SupervisorExplore::updatePartitions: requesting avatar pos 984fea6f-93bd-4795-be25-1d54d082522a
+[17:47:46.315] SupervisorExplore::convGetAvatarPos: recieved avatar pos 017e4d01-a17f-458e-8afb-8f31ed1b9249 (0.510654 0.433974)
+[17:47:46.315] SupervisorExplore::convGetAvatarPos: recieved avatar pos 6b13d5d4-8538-41f8-a81b-39dc1d8f4725 (1.654548 0.738029)
+[17:47:46.315] SupervisorExplore::convGetAvatarPos: recieved avatar pos 984fea6f-93bd-4795-be25-1d54d082522a (2.261482 4.395567)
+[17:47:46.315] SupervisorExplore::_updatePartitions: starting update
+[17:47:46.315] SupervisorExplore::_updatePartitions: sections updated
+[17:47:46.315] SupervisorExplore::_updatePartitions: updating partitions
+[17:47:46.315] SupervisorExplore::calculatePartitions: done, n 3, m 1346, tarSize 448.666667, steps 3, change 18683.234809, stepDif 5.942313
+[17:47:46.315] SupervisorExplore::calculatePartitions: nsplit[0] 439.753197 cells 428
+[17:47:46.315] SupervisorExplore::calculatePartitions: nsplit[1] 456.976119 cells 447
+[17:47:46.315] SupervisorExplore::calculatePartitions: nsplit[2] 449.270684 cells 471
+[17:47:46.315] SupervisorExplore::_updatePartitions: partitions finished
+[17:47:46.315] SupervisorExplore::_updatePartitions: search threshold not reached 0.807923 >= 0.050000 (or avatars are not valid)
+[17:47:46.315] SupervisorExplore::nextSearchCell: avatar 017e4d01-a17f-458e-8afb-8f31ed1b9249 thread adca5ddc-9c05-431e-ad6d-489f7df10b6b search 1.450000 0.050000, look from 0.950000 0.350000
+[17:47:46.315] SupervisorExplore::nextSearchCell: avatar 6b13d5d4-8538-41f8-a81b-39dc1d8f4725 thread b016e65a-3035-4628-b26a-e25ee7440810 search 2.750000 1.350000, look from 2.550000 0.850000
+[17:47:46.315] SupervisorExplore::_updatePartitions: finished update
+[17:47:46.315] SupervisorExplore::convReachedPoint: avatar thread 50652346-5d61-477d-88d0-48a6d7a84d4e target fail 0
+[17:47:47.438] AgentBase::cbUpdateCpuUsage: used 0, elapsed 4997, %0.000000
+[17:47:52. 88] SupervisorExplore::convReachedPoint: avatar thread a3fae0de-6b77-43ba-bc6a-f32a96eddc58 target success
+[17:47:52. 88] SupervisorExplore::updatePartitions: requesting map region 0.000000 0.000000 3.400000 4.900000
+[17:47:52. 88] SupervisorExplore::updatePartitions: requesting avatar pos 017e4d01-a17f-458e-8afb-8f31ed1b9249
+[17:47:52. 88] SupervisorExplore::updatePartitions: requesting avatar pos 6b13d5d4-8538-41f8-a81b-39dc1d8f4725
+[17:47:52. 88] SupervisorExplore::updatePartitions: requesting avatar pos 984fea6f-93bd-4795-be25-1d54d082522a
+[17:47:52. 88] SupervisorExplore::convGetAvatarPos: recieved avatar pos 017e4d01-a17f-458e-8afb-8f31ed1b9249 (0.656598 0.418785)
+[17:47:52. 88] SupervisorExplore::convGetAvatarPos: recieved avatar pos 6b13d5d4-8538-41f8-a81b-39dc1d8f4725 (1.663111 0.748992)
+[17:47:52. 88] SupervisorExplore::convGetAvatarPos: recieved avatar pos 984fea6f-93bd-4795-be25-1d54d082522a (2.076260 4.442399)
+[17:47:52. 88] SupervisorExplore::_updatePartitions: starting update
+[17:47:52. 88] SupervisorExplore::_updatePartitions: sections updated
+[17:47:52. 88] SupervisorExplore::_updatePartitions: updating partitions
+[17:47:52. 88] SupervisorExplore::calculatePartitions: done, n 3, m 1267, tarSize 422.333333, steps 3, change 18051.964202, stepDif 8.609437
+[17:47:52. 88] SupervisorExplore::calculatePartitions: nsplit[0] 435.247490 cells 421
+[17:47:52. 88] SupervisorExplore::calculatePartitions: nsplit[1] 415.784521 cells 409
+[17:47:52. 88] SupervisorExplore::calculatePartitions: nsplit[2] 415.967990 cells 437
+[17:47:52. 88] SupervisorExplore::_updatePartitions: partitions finished
+[17:47:52. 88] SupervisorExplore::_updatePartitions: search threshold not reached 0.760504 >= 0.050000 (or avatars are not valid)
+[17:47:52. 88] SupervisorExplore::nextSearchCell: avatar 984fea6f-93bd-4795-be25-1d54d082522a thread cd8e9ae0-798a-45ae-b02e-3192b77e6a33 search 0.950000 4.150000, look from 1.550000 4.350000
+[17:47:52. 88] SupervisorExplore::_updatePartitions: finished update
+[17:47:52.431] AgentBase::cbUpdateCpuUsage: used 0, elapsed 4993, %0.000000
+[17:47:57.349] AgentBase::cbWatchHostConnection: connection to host closed, shutting down
+[17:47:57.349] AgentBase::conReceiveData: connection closed (00000000-0000-0000-0000-000000000000)
+[17:47:57.349] AgentBase::stop: average cpu usage %0.000000
+[17:47:57.349] AgentBase::~AgentBase: agent shutdown
+Logger::~Logger: shutdown...

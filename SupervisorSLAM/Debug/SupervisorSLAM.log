@@ -1,0 +1,18 @@
+﻿  stdafx.cpp
+  SupervisorSLAM.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicversion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+c:\steven_daniluk\haa_clean\supervisorslam\supervisorslam.cpp(81): warning C4477: 'sprintf_s' : format string '%ls' requires an argument of type 'wchar_t *', but variadic argument 3 has type 'RPC_WSTR'
+  RandomGenerator.cpp
+  Logger.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicversion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+c:\steven_daniluk\haa_clean\autonomic\logger.cpp(187): warning C4477: 'sprintf_s' : format string '%ls' requires an argument of type 'wchar_t *', but variadic argument 1 has type 'RPC_WSTR'
+  dataStream.cpp
+  autonomic.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicversion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+c:\steven_daniluk\haa_clean\autonomic\autonomic.cpp(59): warning C4477: 'sprintf_s' : format string '%ls' requires an argument of type 'wchar_t *', but variadic argument 2 has type 'RPC_WSTR'
+  agentPlayback.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicversion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+  Generating Code...
+agentPlayback.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/SAFESEH' specification
+     Creating library C:\Steven_Daniluk\HAA_Clean\Debug\SupervisorSLAM.lib and object C:\Steven_Daniluk\HAA_Clean\Debug\SupervisorSLAM.exp
+  SupervisorSLAM.vcxproj -> C:\Steven_Daniluk\HAA_Clean\Debug\SupervisorSLAM.dll

@@ -1,0 +1,27 @@
+﻿  stdafx.cpp
+  agentPlayback.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+  autonomic.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+..\Autonomic\autonomic.cpp(59): warning C4477: 'sprintf_s' : format string '%ls' requires an argument of type 'wchar_t *', but variadic argument 2 has type 'RPC_WSTR'
+  dataStream.cpp
+  Logger.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+..\Autonomic\Logger.cpp(187): warning C4477: 'sprintf_s' : format string '%ls' requires an argument of type 'wchar_t *', but variadic argument 1 has type 'RPC_WSTR'
+  RandomGenerator.cpp
+  AvatarBase.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+c:\steven_daniluk\haa_clean\avatarbase\AvatarBaseVersion.h(69): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+c:\steven_daniluk\haa_clean\avatarbase\..\\ExecutiveMission\\ExecutiveMissionVersion.h(43): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+  AvatarSurveyor.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+c:\steven_daniluk\haa_clean\avatarsurveyor\..\\AvatarBase\\AvatarBaseVersion.h(69): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+AvatarSurveyor.cpp(80): warning C4477: 'sprintf_s' : format string '%ls' requires an argument of type 'wchar_t *', but variadic argument 3 has type 'RPC_WSTR'
+AvatarSurveyor.cpp(307): warning C4101: 'i': unreferenced local variable
+AvatarSurveyor.cpp(669): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt\stdio.h(205): note: see declaration of 'fopen'
+     Creating library C:\Steven_Daniluk\HAA_Clean\Release\AvatarSurveyor.lib and object C:\Steven_Daniluk\HAA_Clean\Release\AvatarSurveyor.exp
+  Generating code
+  All 3390 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  AvatarSurveyor.vcxproj -> C:\Steven_Daniluk\HAA_Clean\Release\AvatarSurveyor.dll

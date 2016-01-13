@@ -1,0 +1,21 @@
+﻿  stdafx.cpp
+  agentPlayback.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+  autonomic.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+..\Autonomic\autonomic.cpp(59): warning C4477: 'sprintf_s' : format string '%ls' requires an argument of type 'wchar_t *', but variadic argument 2 has type 'RPC_WSTR'
+  dataStream.cpp
+  Logger.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+..\Autonomic\Logger.cpp(187): warning C4477: 'sprintf_s' : format string '%ls' requires an argument of type 'wchar_t *', but variadic argument 1 has type 'RPC_WSTR'
+  RandomGenerator.cpp
+  AvatarBase.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+c:\steven_daniluk\haa_clean\avatarbase\AvatarBaseVersion.h(69): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+c:\steven_daniluk\haa_clean\avatarbase\..\\ExecutiveMission\\ExecutiveMissionVersion.h(43): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+  AvatarPioneer.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+c:\steven_daniluk\haa_clean\avatarpioneer\..\\AvatarBase\\AvatarBaseVersion.h(69): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+  Generating Code...
+     Creating library C:\Steven_Daniluk\HAA_Clean\Debug\AvatarPioneer.lib and object C:\Steven_Daniluk\HAA_Clean\Debug\AvatarPioneer.exp
+  AvatarPioneer.vcxproj -> C:\Steven_Daniluk\HAA_Clean\Debug\AvatarPioneer.dll

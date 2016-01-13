@@ -1,0 +1,35 @@
+﻿  stdafx.cpp
+  agentHost.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+c:\steven_daniluk\haa_clean\autonomic\agentHostVersion.h(125): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+agentHost.cpp(291): warning C4996: 'gethostbyname': Use getaddrinfo() or GetAddrInfoW() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+  C:\Program Files (x86)\Windows Kits\8.1\Include\um\winsock2.h(2238): note: see declaration of 'gethostbyname'
+agentHost.cpp(302): warning C4996: 'inet_ntoa': Use inet_ntop() or InetNtop() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+  C:\Program Files (x86)\Windows Kits\8.1\Include\um\winsock2.h(1868): note: see declaration of 'inet_ntoa'
+agentHost.cpp(3497): warning C4477: 'fscanf_s' : format string '%d' requires an argument of type 'int *', but variadic argument 1 has type 'unsigned char *'
+  agentHost.cpp(3497): note: consider using '%hhd' in the format string
+agentHost.cpp(3497): warning C4477: 'fscanf_s' : format string '%d' requires an argument of type 'int *', but variadic argument 2 has type 'unsigned char *'
+  agentHost.cpp(3497): note: consider using '%hhd' in the format string
+agentHost.cpp(3497): warning C4477: 'fscanf_s' : format string '%d' requires an argument of type 'int *', but variadic argument 3 has type 'unsigned short *'
+  agentHost.cpp(3497): note: consider using '%hd' in the format string
+agentHost.cpp(3497): warning C4477: 'fscanf_s' : format string '%d' requires an argument of type 'int *', but variadic argument 4 has type 'unsigned char *'
+  agentHost.cpp(3497): note: consider using '%hhd' in the format string
+  agentPlayback.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+  autonomic.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+autonomic.cpp(59): warning C4477: 'sprintf_s' : format string '%ls' requires an argument of type 'wchar_t *', but variadic argument 2 has type 'RPC_WSTR'
+  dataStream.cpp
+  DDBStore.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+  Logger.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+Logger.cpp(187): warning C4477: 'sprintf_s' : format string '%ls' requires an argument of type 'wchar_t *', but variadic argument 1 has type 'RPC_WSTR'
+  main.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+  RandomGenerator.cpp
+  Generating code
+  All 8926 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  Autonomic.vcxproj -> C:\Steven_Daniluk\HAA_Clean\Release\Autonomic.exe
+          1 file(s) copied.

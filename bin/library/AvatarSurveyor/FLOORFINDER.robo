@@ -1,0 +1,21 @@
+<head><version>1.8.11.0</version></head>
+<Gaussian Blur>
+  <filter_size>11</filter_size>
+  <theta>2.0000000000</theta>
+</Gaussian Blur>
+<Sample_Color>
+  <point_2_x>229</point_2_x>
+  <point_3_y>20</point_3_y>
+  <point_4_x>206</point_4_x>
+  <point_1_y>3</point_1_y>
+  <point_3_x>120</point_3_x>
+  <point_2_y>2</point_2_y>
+  <point_4_y>20</point_4_y>
+  <point_1_x>83</point_1_x>
+</Sample_Color>
+<Color_Filter>
+  <colors>COLOR_SAMPLE
+</colors>
+  <adjust_lighting>FALSE</adjust_lighting>
+  <min_distance>30</min_distance>
+</Color_Filter>

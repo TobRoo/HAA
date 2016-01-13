@@ -1,0 +1,209 @@
+[17:47:23.580] Setting log level: 6
+[17:47:23.580] AgentSensorFloorFinder 00.01.00017.00
+[17:47:23.580] Agent UUID ab013177-33b4-4be6-a281-33937f45dafc
+[17:47:23.580] AgentPlayback UUID 6157d12a-ebad-4d9d-8e88-1848476d5baa
+[17:47:23.580] AgentBase::backup: starting backup 9b3a5796-514a-4c23-9131-d35c41f3e288
+[17:47:23.580] AgentBase::backup: got backup, 79 bytes
+[17:47:23.580] AgentBase::step: made connection! (127.0.0.1:51000)
+[17:47:23.580] AgentBase::conFDAlive: connection trusted (00000000-0000-0000-0000-000000000000)
+[17:47:23.612] AgentBase::backup: starting backup 484af680-cb04-419c-97a9-23f680b55a9a
+[17:47:23.612] AgentBase::backup: got backup, 79 bytes
+[17:47:23.612] AgentBase::start: parsing mission file data\missions\missionSample.ini
+[17:47:23.612] AgentBase::parseMissionFile: parsing data\missions\missionSample.ini
+[17:47:23.612] AgentBase::start: Starting!
+[17:47:23.612] AgentBase::backup: starting backup 2355ee6e-d7e2-4a2e-a6d7-5a0105cd98ce
+[17:47:23.612] AgentBase::backup: got backup, 97 bytes
+[17:47:23.612] AgentBase::backup: starting backup 89a0550d-169d-4cba-956b-6978f669ad6a
+[17:47:23.612] AgentBase::backup: got backup, 97 bytes
+[17:47:23.627] AgentSensorFloorFinder::addReading: info not available yet, fail reading
+[17:47:23.627] AgentSensorFloorFinder::addReading: info not available yet, fail reading
+[17:47:23.627] AgentSensorFloorFinder::addReading: info not available yet, fail reading
+[17:47:23.627] AgentSensorFloorFinder::addReading: info not available yet, fail reading
+[17:47:23.627] AgentSensorFloorFinder::addReading: info not available yet, fail reading
+[17:47:23.627] AgentSensorFloorFinder::addReading: info not available yet, fail reading
+[17:47:23.627] AgentSensorFloorFinder::addReading: info not available yet, fail reading
+[17:47:23.627] AgentSensorFloorFinder::addReading: info not available yet, fail reading
+[17:47:23.627] AgentSensorFloorFinder::addReading: info not available yet, fail reading
+[17:47:23.627] AgentSensorFloorFinder::addReading: info not available yet, fail reading
+[17:47:23.627] AgentSensorFloorFinder::addReading: info not available yet, fail reading
+[17:47:23.627] AgentSensorFloorFinder::addReading: info not available yet, fail reading
+[17:47:23.627] AgentSensorFloorFinder::addReading: info not available yet, fail reading
+[17:47:23.627] AgentSensorFloorFinder::addReading: info not available yet, fail reading
+[17:47:23.627] AgentSensorFloorFinder::addReading: info not available yet, fail reading
+[17:47:23.627] AgentSensorFloorFinder::addReading: info not available yet, fail reading
+[17:47:23.627] AgentSensorFloorFinder::addReading: info not available yet, fail reading
+[17:47:23.627] AgentSensorFloorFinder::addReading: info not available yet, fail reading
+[17:47:23.643] AgentSensorFloorFinder::convGetAvatarList: recieved 3 avatars
+[17:47:23.643] AgentSensorFloorFinder::convGetAvatarInfo: recieved avatar (2a7ece12-e511-4d1e-a71c-d755aad610a9) pf id: 6ad8bfd8-681b-45ca-839a-e244f4b4391c
+[17:47:23.643] AgentSensorFloorFinder::convGetAvatarInfo: recieved avatar (843435eb-36b6-4070-ab43-9cef8d53d452) pf id: 34b107e4-9a4b-41b2-91bd-928ecc3b7b26
+[17:47:23.643] AgentSensorFloorFinder::convGetAvatarInfo: recieved avatar (e36bb47b-ee84-443e-a868-cbb699164a8b) pf id: 6f3cd7da-d6f0-4238-b12f-3cede88bf307
+[17:47:23.877] AgentSensorFloorFinder::addReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:23.877] AgentBase::backup: starting backup c7960dd7-1a6d-4605-ac25-68a35addf427
+[17:47:23.877] AgentBase::backup: got backup, 325 bytes
+[17:47:23.877] AgentSensorFloorFinder::convRequestFreePort: skipping RoboRealm
+[17:47:23.877] AgentSensorFloorFinder::convRequestFreePort: done
+[17:47:24.128] AgentSensorFloorFinder::finishReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success == 1
+[17:47:24.301] AgentSensorFloorFinder::addReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:24.301] AgentBase::backup: starting backup 82fd8c9d-30b3-4664-8217-643a3ca6bb93
+[17:47:24.301] AgentBase::backup: got backup, 553 bytes
+[17:47:24.301] AgentSensorFloorFinder::convRequestFreePort: skipping RoboRealm
+[17:47:24.301] AgentSensorFloorFinder::convRequestFreePort: done
+[17:47:24.317] AgentSensorFloorFinder::finishReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76 success == 1
+[17:47:24.753] AgentSensorFloorFinder::addReading: 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:24.753] AgentBase::backup: starting backup e3ac183a-4292-433e-b70d-a70691cf1804
+[17:47:24.753] AgentBase::backup: got backup, 782 bytes
+[17:47:24.753] AgentSensorFloorFinder::convRequestFreePort: skipping RoboRealm
+[17:47:24.753] AgentSensorFloorFinder::convRequestFreePort: done
+[17:47:25. 34] AgentSensorFloorFinder::finishReading: 61b867cb-13e2-4877-bd52-8bdee2f74309 success == 1
+[17:47:25. 34] AgentSensorFloorFinder::addReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:25.299] AgentSensorFloorFinder::finishReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success == 1
+[17:47:25.409] AgentSensorFloorFinder::addReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:25.424] AgentSensorFloorFinder::finishReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76 success == 1
+[17:47:25.862] AgentSensorFloorFinder::addReading: 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:26.143] AgentSensorFloorFinder::finishReading: 61b867cb-13e2-4877-bd52-8bdee2f74309 success == 1
+[17:47:26.143] AgentSensorFloorFinder::addReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:26.424] AgentSensorFloorFinder::finishReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76 success == 1
+[17:47:26.424] AgentSensorFloorFinder::addReading: 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:26.704] AgentSensorFloorFinder::finishReading: 61b867cb-13e2-4877-bd52-8bdee2f74309 success == 1
+[17:47:26.704] AgentSensorFloorFinder::addReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:26.720] AgentSensorFloorFinder::finishReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success == 1
+[17:47:27.266] AgentSensorFloorFinder::addReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:27.547] AgentSensorFloorFinder::finishReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success == 1
+[17:47:27.547] AgentSensorFloorFinder::addReading: 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:27.828] AgentSensorFloorFinder::finishReading: 61b867cb-13e2-4877-bd52-8bdee2f74309 success == 1
+[17:47:27.843] AgentSensorFloorFinder::addReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:27.859] AgentSensorFloorFinder::finishReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76 success == 1
+[17:47:28.264] AgentSensorFloorFinder::addReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:28.281] AgentSensorFloorFinder::finishReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success == 1
+[17:47:28.624] AgentBase::cbUpdateCpuUsage: used 171, elapsed 5012, %0.034118
+[17:47:28.952] AgentSensorFloorFinder::addReading: 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:29.218] AgentSensorFloorFinder::finishReading: 61b867cb-13e2-4877-bd52-8bdee2f74309 success == 1
+[17:47:29.234] AgentSensorFloorFinder::addReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:29.514] AgentSensorFloorFinder::finishReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76 success == 1
+[17:47:30.107] AgentSensorFloorFinder::addReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:30.372] AgentSensorFloorFinder::finishReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76 success == 1
+[17:47:30.372] AgentSensorFloorFinder::addReading: 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:30.388] AgentSensorFloorFinder::finishReading: 61b867cb-13e2-4877-bd52-8bdee2f74309 success == 1
+[17:47:30.575] AgentSensorFloorFinder::addReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:30.591] AgentSensorFloorFinder::finishReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success == 1
+[17:47:31. 12] AgentSensorFloorFinder::addReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:31.293] AgentSensorFloorFinder::finishReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76 success == 1
+[17:47:31.761] AgentSensorFloorFinder::addReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:31.776] AgentSensorFloorFinder::finishReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success == 1
+[17:47:32.292] AgentSensorFloorFinder::addReading: 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:32.308] AgentSensorFloorFinder::finishReading: 61b867cb-13e2-4877-bd52-8bdee2f74309 success == 1
+[17:47:32.557] AgentSensorFloorFinder::addReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:32.573] AgentSensorFloorFinder::finishReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76 success == 1
+[17:47:32.979] AgentSensorFloorFinder::addReading: 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:33.244] AgentSensorFloorFinder::finishReading: 61b867cb-13e2-4877-bd52-8bdee2f74309 success == 1
+[17:47:33.306] AgentSensorFloorFinder::addReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:33.587] AgentSensorFloorFinder::finishReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76 success == 1
+[17:47:33.618] AgentBase::cbUpdateCpuUsage: used 124, elapsed 4994, %0.024830
+[17:47:33.681] AgentSensorFloorFinder::addReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:33.696] AgentSensorFloorFinder::finishReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success == 1
+[17:47:34.212] AgentSensorFloorFinder::addReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:34.228] AgentSensorFloorFinder::finishReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76 success == 1
+[17:47:34.883] AgentSensorFloorFinder::addReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:35.164] AgentSensorFloorFinder::finishReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success == 1
+[17:47:35.616] AgentSensorFloorFinder::addReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:35.632] AgentSensorFloorFinder::finishReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76 success == 1
+[17:47:35.632] AgentSensorFloorFinder::addReading: 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:35.632] AgentSensorFloorFinder::finishReading: 61b867cb-13e2-4877-bd52-8bdee2f74309 success == 1
+[17:47:36. 53] AgentSensorFloorFinder::addReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:36.335] AgentSensorFloorFinder::finishReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success == 1
+[17:47:36.381] AgentSensorFloorFinder::addReading: 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:36.647] AgentSensorFloorFinder::finishReading: 61b867cb-13e2-4877-bd52-8bdee2f74309 success == 1
+[17:47:36.647] AgentSensorFloorFinder::addReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:36.678] AgentSensorFloorFinder::finishReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76 success == 1
+[17:47:37.616] AgentSensorFloorFinder::addReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:37.897] AgentSensorFloorFinder::finishReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76 success == 1
+[17:47:38.162] AgentSensorFloorFinder::addReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:38.177] AgentSensorFloorFinder::finishReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success == 1
+[17:47:38.614] AgentBase::cbUpdateCpuUsage: used 140, elapsed 4996, %0.028022
+[17:47:38.614] AgentSensorFloorFinder::addReading: 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:39.146] AgentSensorFloorFinder::finishReading: 61b867cb-13e2-4877-bd52-8bdee2f74309 success == 1
+[17:47:39.146] AgentSensorFloorFinder::addReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:39.442] AgentSensorFloorFinder::finishReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76 success == 1
+[17:47:39.442] AgentSensorFloorFinder::addReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:39.458] AgentSensorFloorFinder::finishReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success == 1
+[17:47:40. 19] AgentSensorFloorFinder::addReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:40. 35] AgentSensorFloorFinder::finishReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76 success == 1
+[17:47:40. 35] AgentSensorFloorFinder::addReading: 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:40. 50] AgentSensorFloorFinder::finishReading: 61b867cb-13e2-4877-bd52-8bdee2f74309 success == 1
+[17:47:41.253] AgentSensorFloorFinder::addReading: 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:41.268] AgentSensorFloorFinder::finishReading: 61b867cb-13e2-4877-bd52-8bdee2f74309 success == 1
+[17:47:41.268] AgentSensorFloorFinder::addReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:41.814] AgentSensorFloorFinder::finishReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success == 1
+[17:47:42.145] AgentSensorFloorFinder::addReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:42.426] AgentSensorFloorFinder::finishReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success == 1
+[17:47:42.691] AgentSensorFloorFinder::addReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:42.706] AgentSensorFloorFinder::finishReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76 success == 1
+[17:47:43. 65] AgentSensorFloorFinder::addReading: 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:43.330] AgentSensorFloorFinder::finishReading: 61b867cb-13e2-4877-bd52-8bdee2f74309 success == 1
+[17:47:43.346] AgentSensorFloorFinder::addReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:43.362] AgentSensorFloorFinder::finishReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76 success == 1
+[17:47:43.627] AgentBase::cbUpdateCpuUsage: used 156, elapsed 5013, %0.031119
+[17:47:43.767] AgentSensorFloorFinder::addReading: 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:43.783] AgentSensorFloorFinder::finishReading: 61b867cb-13e2-4877-bd52-8bdee2f74309 success == 1
+[17:47:44.111] AgentSensorFloorFinder::addReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:44.393] AgentSensorFloorFinder::finishReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76 success == 1
+[17:47:44.393] AgentSensorFloorFinder::addReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:44.674] AgentSensorFloorFinder::finishReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success == 1
+[17:47:45.860] AgentSensorFloorFinder::addReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:45.891] AgentSensorFloorFinder::finishReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success == 1
+[17:47:46.112] AgentSensorFloorFinder::addReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:46.128] AgentSensorFloorFinder::finishReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76 success == 1
+[17:47:46.721] AgentSensorFloorFinder::addReading: 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:46.736] AgentSensorFloorFinder::finishReading: 61b867cb-13e2-4877-bd52-8bdee2f74309 success == 1
+[17:47:47.  1] AgentSensorFloorFinder::addReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:47.282] AgentSensorFloorFinder::finishReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success == 1
+[17:47:47.282] AgentSensorFloorFinder::addReading: 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:47.313] AgentSensorFloorFinder::finishReading: 61b867cb-13e2-4877-bd52-8bdee2f74309 success == 1
+[17:47:47.313] AgentSensorFloorFinder::addReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:47.594] AgentSensorFloorFinder::finishReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76 success == 1
+[17:47:48.109] AgentSensorFloorFinder::addReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:48.125] AgentSensorFloorFinder::finishReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76 success == 1
+[17:47:48.125] AgentSensorFloorFinder::addReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:48.156] AgentSensorFloorFinder::finishReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success == 1
+[17:47:48.624] AgentBase::cbUpdateCpuUsage: used 187, elapsed 4997, %0.037422
+[17:47:49. 14] AgentSensorFloorFinder::addReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:49. 29] AgentSensorFloorFinder::finishReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76 success == 1
+[17:47:49.483] AgentSensorFloorFinder::addReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:49.748] AgentSensorFloorFinder::finishReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success == 1
+[17:47:49.748] AgentSensorFloorFinder::addReading: 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:50. 29] AgentSensorFloorFinder::finishReading: 61b867cb-13e2-4877-bd52-8bdee2f74309 success == 1
+[17:47:50.466] AgentSensorFloorFinder::addReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:50.746] AgentSensorFloorFinder::finishReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76 success == 1
+[17:47:51. 58] AgentSensorFloorFinder::addReading: 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:51.339] AgentSensorFloorFinder::finishReading: 61b867cb-13e2-4877-bd52-8bdee2f74309 success == 1
+[17:47:51.339] AgentSensorFloorFinder::addReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:51.620] AgentSensorFloorFinder::finishReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success == 1
+[17:47:51.620] AgentSensorFloorFinder::addReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:51.651] AgentSensorFloorFinder::finishReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76 success == 1
+[17:47:52.665] AgentSensorFloorFinder::addReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:52.681] AgentSensorFloorFinder::finishReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success == 1
+[17:47:52.681] AgentSensorFloorFinder::addReading: 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:52.696] AgentSensorFloorFinder::finishReading: 61b867cb-13e2-4877-bd52-8bdee2f74309 success == 1
+[17:47:53.617] AgentBase::cbUpdateCpuUsage: used 109, elapsed 4993, %0.021831
+[17:47:53.710] AgentSensorFloorFinder::addReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:53.991] AgentSensorFloorFinder::finishReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76 success == 1
+[17:47:53.991] AgentSensorFloorFinder::addReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:54.  7] AgentSensorFloorFinder::finishReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success == 1
+[17:47:54.  7] AgentSensorFloorFinder::addReading: 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:54. 22] AgentSensorFloorFinder::finishReading: 61b867cb-13e2-4877-bd52-8bdee2f74309 success == 1
+[17:47:54.603] AgentSensorFloorFinder::addReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76
+[17:47:54.618] AgentSensorFloorFinder::finishReading: 8a409ef6-63fe-436d-9869-05a4b1a1be76 success == 1
+[17:47:55.180] AgentSensorFloorFinder::addReading: 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:55.195] AgentSensorFloorFinder::finishReading: 61b867cb-13e2-4877-bd52-8bdee2f74309 success == 1
+[17:47:55.554] AgentSensorFloorFinder::addReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4
+[17:47:55.835] AgentSensorFloorFinder::finishReading: 9d3c77f4-8f47-47d8-b207-906d285ee5f4 success == 1
+[17:47:56.256] AgentSensorFloorFinder::addReading: 61b867cb-13e2-4877-bd52-8bdee2f74309
+[17:47:56.272] AgentSensorFloorFinder::finishReading: 61b867cb-13e2-4877-bd52-8bdee2f74309 success == 1
+[17:47:57.178] AgentBase::cbWatchHostConnection: connection to host closed, shutting down
+[17:47:57.178] AgentBase::conReceiveData: connection closed (00000000-0000-0000-0000-000000000000)
+[17:47:57.178] AgentSensorFloorFinder::stop: skipping closing RR
+[17:47:57.178] AgentSensorFloorFinder::stop: skipping closing RR
+[17:47:57.178] AgentSensorFloorFinder::stop: skipping closing RR
+[17:47:57.178] AgentBase::stop: average cpu usage %2.956174
+[17:47:57.178] AgentBase::~AgentBase: agent shutdown
+Logger::~Logger: shutdown...

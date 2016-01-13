@@ -1,0 +1,30 @@
+﻿  stdafx.cpp
+  AvatarSimulation.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicversion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+c:\steven_daniluk\haa_clean\avatarbase\avatarbaseversion.h(69): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+c:\steven_daniluk\haa_clean\executivesimulation\executivesimulationversion.h(60): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+c:\steven_daniluk\haa_clean\avatarsimulation\avatarsimulation.cpp(100): warning C4477: 'sprintf_s' : format string '%ls' requires an argument of type 'wchar_t *', but variadic argument 3 has type 'RPC_WSTR'
+c:\steven_daniluk\haa_clean\avatarsimulation\avatarsimulation.cpp(310): warning C4473: 'fscanf_s' : not enough arguments passed for format string
+  c:\steven_daniluk\haa_clean\avatarsimulation\avatarsimulation.cpp(310): note: placeholders and their parameters expect 8 variadic arguments, but 7 were provided
+  c:\steven_daniluk\haa_clean\avatarsimulation\avatarsimulation.cpp(310): note: the missing variadic argument 8 is required by format string '%f'
+c:\steven_daniluk\haa_clean\avatarsimulation\avatarsimulation.cpp(345): warning C4473: 'fscanf_s' : not enough arguments passed for format string
+  c:\steven_daniluk\haa_clean\avatarsimulation\avatarsimulation.cpp(345): note: placeholders and their parameters expect 7 variadic arguments, but 6 were provided
+  c:\steven_daniluk\haa_clean\avatarsimulation\avatarsimulation.cpp(345): note: the missing variadic argument 7 is required by format string '%f'
+  AvatarBase.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicversion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+c:\steven_daniluk\haa_clean\avatarbase\avatarbaseversion.h(69): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+c:\steven_daniluk\haa_clean\executivemission\executivemissionversion.h(43): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+  RandomGenerator.cpp
+  Logger.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicversion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+c:\steven_daniluk\haa_clean\autonomic\logger.cpp(187): warning C4477: 'sprintf_s' : format string '%ls' requires an argument of type 'wchar_t *', but variadic argument 1 has type 'RPC_WSTR'
+  dataStream.cpp
+  autonomic.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicversion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+c:\steven_daniluk\haa_clean\autonomic\autonomic.cpp(59): warning C4477: 'sprintf_s' : format string '%ls' requires an argument of type 'wchar_t *', but variadic argument 2 has type 'RPC_WSTR'
+  agentPlayback.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicversion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+  Generating Code...
+agentPlayback.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/SAFESEH' specification
+     Creating library C:\Steven_Daniluk\HAA_Clean\Debug\AvatarSimulation.lib and object C:\Steven_Daniluk\HAA_Clean\Debug\AvatarSimulation.exp
+  AvatarSimulation.vcxproj -> C:\Steven_Daniluk\HAA_Clean\Debug\AvatarSimulation.dll

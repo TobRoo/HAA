@@ -1,0 +1,8 @@
+; SupervisorSLAM.def : Declares the module parameters for the DLL.
+
+LIBRARY      "SupervisorSLAM"
+
+EXPORTS
+    ; Explicit exports can go here
+	Spawn @1
+	Playback @2

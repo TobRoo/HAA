@@ -1,0 +1,40 @@
+﻿  stdafx.cpp
+  agentHost.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+c:\steven_daniluk\haa_clean\autonomic\agentHostVersion.h(125): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+..\Autonomic\agentHost.cpp(291): warning C4996: 'gethostbyname': Use getaddrinfo() or GetAddrInfoW() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+  C:\Program Files (x86)\Windows Kits\8.1\Include\um\winsock2.h(2238): note: see declaration of 'gethostbyname'
+..\Autonomic\agentHost.cpp(302): warning C4996: 'inet_ntoa': Use inet_ntop() or InetNtop() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+  C:\Program Files (x86)\Windows Kits\8.1\Include\um\winsock2.h(1868): note: see declaration of 'inet_ntoa'
+..\Autonomic\agentHost.cpp(3497): warning C4477: 'fscanf_s' : format string '%d' requires an argument of type 'int *', but variadic argument 1 has type 'unsigned char *'
+  ..\Autonomic\agentHost.cpp(3497): note: consider using '%hhd' in the format string
+..\Autonomic\agentHost.cpp(3497): warning C4477: 'fscanf_s' : format string '%d' requires an argument of type 'int *', but variadic argument 2 has type 'unsigned char *'
+  ..\Autonomic\agentHost.cpp(3497): note: consider using '%hhd' in the format string
+..\Autonomic\agentHost.cpp(3497): warning C4477: 'fscanf_s' : format string '%d' requires an argument of type 'int *', but variadic argument 3 has type 'unsigned short *'
+  ..\Autonomic\agentHost.cpp(3497): note: consider using '%hd' in the format string
+..\Autonomic\agentHost.cpp(3497): warning C4477: 'fscanf_s' : format string '%d' requires an argument of type 'int *', but variadic argument 4 has type 'unsigned char *'
+  ..\Autonomic\agentHost.cpp(3497): note: consider using '%hhd' in the format string
+  agentPlayback.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+  autonomic.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+..\Autonomic\autonomic.cpp(59): warning C4477: 'sprintf_s' : format string '%ls' requires an argument of type 'wchar_t *', but variadic argument 2 has type 'RPC_WSTR'
+  dataStream.cpp
+  DDBStore.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+  Logger.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+..\Autonomic\Logger.cpp(187): warning C4477: 'sprintf_s' : format string '%ls' requires an argument of type 'wchar_t *', but variadic argument 1 has type 'RPC_WSTR'
+  RandomGenerator.cpp
+  AutonomicPlayback.cpp
+c:\steven_daniluk\haa_clean\autonomic\autonomicVersion.h(401): warning C4838: conversion from 'int' to 'const unsigned int' requires a narrowing conversion
+  Generating Code...
+c:\steven_daniluk\haa_clean\autonomic\logger.cpp(137): warning C4793: 'Logger::log': function compiled as native:
+  	varargs not supported under /clr
+c:\steven_daniluk\haa_clean\autonomic\logger.cpp(145): warning C4793: 'Logger::log': function compiled as native:
+  	Found an intrinsic not supported in managed code
+  .NETFramework,Version=v4.0.AssemblyAttributes.cpp
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppBuild.targets(1189,5): warning MSB8012: TargetPath(C:\Steven_Daniluk\HAA_Clean\Debug\AutonomicPlayback.exe) does not match the Linker's OutputFile property value (C:\Steven_Daniluk\HAA_Clean\Debug\AutonomicPlaybackD.exe). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Link.OutputFile).
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppBuild.targets(1191,5): warning MSB8012: TargetName(AutonomicPlayback) does not match the Linker's OutputFile property value (AutonomicPlaybackD). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Link.OutputFile).
+  AutonomicPlayback.vcxproj -> C:\Steven_Daniluk\HAA_Clean\Debug\AutonomicPlayback.exe
+          1 file(s) copied.
