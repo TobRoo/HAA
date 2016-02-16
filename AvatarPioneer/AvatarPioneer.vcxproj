@@ -104,7 +104,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>C:\Program Files\boost\boost_1_60_0; C:\Program Files\MobileRobots\Aria\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\boost\boost_1_60_0; ..\include\Aria</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -112,13 +112,13 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>WS2_32.lib;rpcrt4.lib;AriaDebugVC12.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>WS2_32.lib;rpcrt4.lib;AriaVC12.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\AvatarPioneer.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AssemblyDebug>true</AssemblyDebug>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>C:\Program Files\MobileRobots\Aria\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\lib32;</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>$(SolutionDir)AgentPostBuild.py "$(OutDir)$(ProjectName).dll" "$(SolutionDir)bin\library\\"  "$(ProjectDir)$(ProjectName)Version.h" "$(ProjectName)" "DEBUG"</Command>
@@ -141,7 +141,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>C:\Program Files\boost\boost_1_60_0; C:\Program Files\MobileRobots\Aria\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\boost\boost_1_60_0; ..\include\Aria</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -149,12 +149,12 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>WS2_32.lib;rpcrt4.lib;AriaDebugVC12.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>WS2_32.lib;rpcrt4.lib;AriaVC12.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\AvatarPioneer.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AssemblyDebug>true</AssemblyDebug>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>C:\Program Files\MobileRobots\Aria\lib64</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\lib64;</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>$(SolutionDir)AgentPostBuild.py "$(OutDir)$(ProjectName).dll" "$(SolutionDir)bin\library\\"  "$(ProjectDir)$(ProjectName)Version.h" "$(ProjectName)" "DEBUG"</Command>
@@ -174,7 +174,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>C:\Program Files\boost\boost_1_60_0; C:\Program Files\MobileRobots\Aria\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\boost\boost_1_60_0; ..\include\Aria</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -182,14 +182,14 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>WS2_32.lib;rpcrt4.lib;AriaDebugVC12.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>WS2_32.lib;rpcrt4.lib;AriaVC12.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\AvatarPioneer.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>C:\Program Files\MobileRobots\Aria\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\lib32;</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>$(SolutionDir)AgentPostBuild.py "$(OutDir)$(ProjectName).dll" "$(SolutionDir)bin\library\\"  "$(ProjectDir)$(ProjectName)Version.h" "$(ProjectName)"</Command>
@@ -204,12 +204,12 @@
       <MkTypLibCompatible>false</MkTypLibCompatible>
     </Midl>
     <ClCompile>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;_WINDOWS;NDEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>C:\Program Files\boost\boost_1_60_0; C:\Program Files\MobileRobots\Aria\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\boost\boost_1_60_0; ..\include\Aria</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -217,12 +217,13 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>WS2_32.lib;rpcrt4.lib;Aria.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>WS2_32.lib;rpcrt4.lib;AriaVC12.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\AvatarPioneer.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <AdditionalLibraryDirectories>..\lib64;</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>$(SolutionDir)AgentPostBuild.py "$(OutDir)$(ProjectName).dll" "$(SolutionDir)bin\library\\"  "$(ProjectDir)$(ProjectName)Version.h" "$(ProjectName)"</Command>

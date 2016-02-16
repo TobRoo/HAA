@@ -278,7 +278,7 @@ int AgentBase::simulateCrash() {
 
 //-----------------------------------------------------------------------------
 // Configure
-
+ 
 int AgentBase::configure() {
 
 	Log.log( 0, "Agent UUID %s", Log.formatUUID( 0, this->getUUID() ) );

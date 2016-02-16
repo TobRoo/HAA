@@ -111,7 +111,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>WS2_32.lib;rpcrt4.lib;cximage.lib;jpeg.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\lib;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\lib32;</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\AgentSensorLandmark.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -145,8 +145,8 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>WS2_32.lib;rpcrt4.lib;cximageD.lib;JpegD.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>WS2_32.lib;rpcrt4.lib;cximage.lib;Jpeg.lib;jasper.lib;jbig.lib;libdcr.lib;png.lib;mng.lib;Tiff.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\AgentSensorLandmark.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -178,7 +178,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>WS2_32.lib;rpcrt4.lib;cximage.lib;jpeg.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\lib;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\lib32;</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\AgentSensorLandmark.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -199,7 +199,7 @@
       <MkTypLibCompatible>false</MkTypLibCompatible>
     </Midl>
     <ClCompile>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;_WINDOWS;NDEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -212,8 +212,8 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>WS2_32.lib;rpcrt4.lib;cximage.lib;Jpeg.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>WS2_32.lib;rpcrt4.lib;cximage.lib;Jpeg.lib;jasper.lib;jbig.lib;libdcr.lib;png.lib;mng.lib;Tiff.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\AgentSensorLandmark.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>

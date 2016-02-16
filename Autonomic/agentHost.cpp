@@ -616,6 +616,25 @@ int AgentHost::configure( char *configPath ) {
 			Log.log( 0, "AgentHost::configure: Error reading cluster identification key" );
 			return 1;
 		}
+		// *************************************************************************************************************************************************
+		char logStr1[256];
+		strcpy(logStr1, "AgentHost::configure: cluster identification key REMOVETHISWHENDONE:");
+		strcat(logStr1, this->clusterIDStr);
+		Log.log(0, logStr1);
+		// *************************************************************************************************************************************************
+		// *************************************************************************************************************************************************
+		char logStr2[256];
+		strcpy(logStr2, "AgentHost::configure: cluster identification key REMOVETHISWHENDONE:");
+		strcat(logStr2, STATE(AgentHost)->serverAP.port);
+		Log.log(0, logStr2);
+		// *************************************************************************************************************************************************
+		// *************************************************************************************************************************************************
+		char logStr3[256];
+		strcpy(logStr3, "AgentHost::configure: cluster identification key REMOVETHISWHENDONE:");
+		strcat(logStr3, this->localAP.port);
+		Log.log(0, logStr3);
+		// *************************************************************************************************************************************************
+		
 		this->clusterID[0] = 0;
 		ptr = this->clusterIDStr;
 		for ( i=7; i>=0; i-- ) {

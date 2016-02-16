@@ -14,7 +14,7 @@
 
 #include "JpegDecode.h"
 
-#include "..\\include\\CxImage\\ximage.h"
+//#include "..\\include\\CxImage\\ximage.h"
 
 #include "..\\AvatarBase\\AvatarBaseVersion.h"
 using namespace AvatarBase_Defs;

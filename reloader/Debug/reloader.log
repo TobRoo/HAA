@@ -1,4 +1,0 @@
-﻿  stdafx.cpp
-  reloader.cpp
-reloader.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/SAFESEH' specification
-  reloader.vcxproj -> C:\Steven_Daniluk\HAA_Clean\Debug\reloader.exe
