@@ -2321,7 +2321,7 @@ int AgentBase::_atomicMessageDecide( UUID *id, UUID *q, int orderq, int roundq, 
 }
 
 int AgentBase::_atomicMessageAttemptCommit( UUID queue ) {
-	int lowestOrder;
+	long long lowestOrder; // int lowestOrder;
 	mapAtomicMessage::iterator iM;
 	AtomicMessage *amLow;
 
