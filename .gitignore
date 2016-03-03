@@ -13,7 +13,7 @@ bin/data/*
 !bin/data/offlineSLAMExperiment9AdvancedA
 !bin/data/offlineSLAMExperiment9AdvancedB
 !bin/data/offlineSLAMExperiment9Basic
-bin/"GUI Logs"/*
+bin/GUI\ Logs/*
 
 # Get rid of executables (except Generate UUID)
 bin/**/*.exe
