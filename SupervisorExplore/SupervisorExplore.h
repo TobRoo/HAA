@@ -9,7 +9,9 @@
 typedef std::map<UUID,DDBRegion,UUIDless>	 mapRegions;
 
 struct CELLCOORD {
-	float x, y;
+	float x = 0.0;
+	float y = 0.0;
+
 };
 
 #ifndef CELLCOORDlessDefined
