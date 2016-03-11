@@ -1,0 +1,1 @@
+This files serves as a placeholder for the GUI Logs folder so that it will be included in the Git repo, despite its contents being ignored. otherwise VS will throw an error during the build because this folder does not exist.

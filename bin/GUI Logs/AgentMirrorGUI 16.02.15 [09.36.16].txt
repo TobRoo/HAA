@@ -1,4 +1,0 @@
-[09:36:16.776] Setting log level: 6
-[09:36:16.776] AgentMirrorGUI 00.01.00000.00
-[09:36:51.888] DDBStore::~DDBStore: pfForwardPropCount 0
-Logger::~Logger: shutdown...

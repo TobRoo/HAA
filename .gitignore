@@ -14,6 +14,7 @@ bin/data/*
 !bin/data/offlineSLAMExperiment9AdvancedB
 !bin/data/offlineSLAMExperiment9Basic
 bin/GUI\ Logs/*
+!bin/GUI\ Logs/placeholder.txt
 
 # Get rid of executables (except Generate UUID)
 bin/**/*.exe
