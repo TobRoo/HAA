@@ -45,3 +45,8 @@ x86/
 # Visual Studio Directories
 ipch/
 .vs/
+
+######################
+MATLAB Related
+######################
+*.mexw64
