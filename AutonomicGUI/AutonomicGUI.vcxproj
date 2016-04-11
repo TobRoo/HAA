@@ -282,7 +282,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(OutDir)$(ProjectName).exe $(SolutionDir)\bin\$(ProjectName)64.exe</Command>
+      <Command>copy $(OutDir)$(ProjectName).exe $(SolutionDir)\bin\$(ProjectName).exe</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MEX64|x64'">

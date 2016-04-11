@@ -14,6 +14,7 @@ bin/data/*
 !bin/data/offlineSLAMExperiment9AdvancedB
 !bin/data/offlineSLAMExperiment9Basic
 bin/GUI\ Logs/*
+!bin/GUI\ Logs/placeholder.txt
 
 # Get rid of executables (except Generate UUID)
 bin/**/*.exe
@@ -45,8 +46,4 @@ x86/
 # Visual Studio Directories
 ipch/
 .vs/
-
-######################
-MATLAB Related
-######################
 *.mexw64
