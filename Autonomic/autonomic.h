@@ -569,6 +569,7 @@ public:
 	virtual int   parseMF_HandleLandmarkFile( char *fileName ) { return 0; };
 	virtual int   parseMF_HandlePathFile( char *fileName ) { return 0; };
 	virtual int   parseMF_HandleOfflineSLAM( int SLAMmode, int particleNum, float readingProcessingRate, int processingSlots, char *logPath ) { return 0; };
+	virtual int   parseMF_HandleLearning(bool individualLearning) { return 0; };
 
 	int			  parseMF_Agent( FILE *fp, AgentType *agentType );
 	int			  parseMissionFile( char *misFile );

@@ -54,6 +54,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExecutiveOfflineSLAM", "Exe
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GenerateUUID", "GenerateUUID\GenerateUUID.vcxproj", "{67E5D832-CBEB-48AB-84EC-C68577F6C199}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AgentIndividualLearning", "AgentIndividualLearning\AgentIndividualLearning.vcxproj", "{40BA8070-D54F-4ECB-B526-C8102C8C1F23}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -331,6 +333,18 @@ Global
 		{67E5D832-CBEB-48AB-84EC-C68577F6C199}.Release|Win32.Build.0 = Release|Win32
 		{67E5D832-CBEB-48AB-84EC-C68577F6C199}.Release|x64.ActiveCfg = Release|x64
 		{67E5D832-CBEB-48AB-84EC-C68577F6C199}.Release|x64.Build.0 = Release|x64
+		{40BA8070-D54F-4ECB-B526-C8102C8C1F23}.Debug|Win32.ActiveCfg = Debug|Win32
+		{40BA8070-D54F-4ECB-B526-C8102C8C1F23}.Debug|Win32.Build.0 = Debug|Win32
+		{40BA8070-D54F-4ECB-B526-C8102C8C1F23}.Debug|x64.ActiveCfg = Debug|x64
+		{40BA8070-D54F-4ECB-B526-C8102C8C1F23}.Debug|x64.Build.0 = Debug|x64
+		{40BA8070-D54F-4ECB-B526-C8102C8C1F23}.MEX64|Win32.ActiveCfg = Release|Win32
+		{40BA8070-D54F-4ECB-B526-C8102C8C1F23}.MEX64|Win32.Build.0 = Release|Win32
+		{40BA8070-D54F-4ECB-B526-C8102C8C1F23}.MEX64|x64.ActiveCfg = Release|x64
+		{40BA8070-D54F-4ECB-B526-C8102C8C1F23}.MEX64|x64.Build.0 = Release|x64
+		{40BA8070-D54F-4ECB-B526-C8102C8C1F23}.Release|Win32.ActiveCfg = Release|Win32
+		{40BA8070-D54F-4ECB-B526-C8102C8C1F23}.Release|Win32.Build.0 = Release|Win32
+		{40BA8070-D54F-4ECB-B526-C8102C8C1F23}.Release|x64.ActiveCfg = Release|x64
+		{40BA8070-D54F-4ECB-B526-C8102C8C1F23}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

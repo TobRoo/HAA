@@ -118,9 +118,6 @@ public:
 		// map and target
 		UUID mapId;
 		UUID missionRegionId;
-		UUID agentPathPlanner;
-		char agentPathPlannerSpawned;
-		int  agentPathPlannerStatus; // agent status
 		bool  haveTarget;
 		float targetX;
 		float targetY;
@@ -130,6 +127,14 @@ public:
 		int   targetControllerIndex; // index of the controller
 		UUID  targetThread; // thread to reply to
 
+		// motion planner
+		UUID agentPathPlanner;
+		char agentPathPlannerSpawned;
+		int  agentPathPlannerStatus; // agent status
+		UUID agentIndividualLearning;
+		char agentIndividualLearningSpawned;
+		int  agentIndividualLearningStatus; // agent status
+
 		// actions
 		float maxLinear;   // maximum distance per move
 		float maxRotation; // maximum distance per rotation
@@ -137,6 +142,7 @@ public:
 		float minRotation; // minimum distance per rotation
 		UUID actionTimeout; // timeout id for the current action, if any
 		bool actionInProgress;
+		bool canInteract;  // If the avatar can choose to interact with landmarks
 
 		int SLAMmode;
 		int SLAMreadingsProcessing; // count readings being processed
@@ -168,7 +174,14 @@ protected:
 
 	UUID _parseSensorUuid; // temporary storage
 
-	UUID AvatarBase_recoveryLock; 
+	UUID AvatarBase_recoveryLock;
+
+	int motionPlanner;
+
+	enum MotionPlanner {
+		AgentPathPlanner,
+		AgentIndividualLearning
+	};
 	
 
 //-----------------------------------------------------------------------------
@@ -186,6 +199,7 @@ public:
 	virtual int step();			// run one step
 
 	virtual int parseMF_HandleOptions( int SLAMmode );
+	virtual int parseMF_HandleLearning(bool individualLearning);
 
 protected:
 
@@ -221,9 +235,9 @@ protected:
 	virtual int updatePos( float dForward, float dTangential, float dRotational, _timeb *tb );
 
 	int	  setTargetPos( float x, float y, float r, char useRotation, UUID *initiator, int controllerIndex, UUID *thread );
-	int	  _goTargetPos();
 
 	// actions
+	int getActions();
 	int clearActions( int reason = 0, bool aborted = false );
 	int abortActions( int reason = 0 );
 	virtual int queueAction( UUID *director, UUID *thread, int action, void *data = 0, int len = 0 );
@@ -255,7 +269,9 @@ public:
 		AvatarBase_CBR_cbRequestExecutiveAvatarId = AgentBase_CBR_HIGH,
 		AvatarBase_CBR_convRequestExecutiveAvatarId,
 		AvatarBase_CBR_convRequestAgentPathPlanner,
+		AvatarBase_CBR_convRequestAgentIndividualLearning,
 		AvatarBase_CBR_convPathPlannerSetTarget,
+		AvatarBase_CBR_convIndividualLearningRequestAction,
 		AvatarBase_CBR_convPFInfo,
 		AvatarBase_CBR_convAgentInfo,
 		AvatarBase_CBR_cbPFUpdateTimer,
@@ -268,7 +284,9 @@ public:
 	bool	cbRequestExecutiveAvatarId( void *NA );
 	bool	convRequestExecutiveAvatarId( void *vpConv );
 	bool	convRequestAgentPathPlanner( void *vpConv );
+	bool	convRequestAgentIndividualLearning(void *vpConv);
 	bool	convPathPlannerSetTarget( void *vpConv );
+	bool	convIndividualLearningRequestAction(void *vpConv);
 	bool    convPFInfo( void *vpConv );
 	bool    convAgentInfo( void *vpConv );
 	bool	cbPFUpdateTimer( void *NA );

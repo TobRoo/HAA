@@ -4,25 +4,43 @@
 
 #######################
 
+
 # Get rid of logs (have to keep everything thats not a log)
+
 bin/data/*
+
 !bin/data/maps
+
 !bin/data/missions
+
 !bin/data/paths
+
 !bin/data/sim
+
 !bin/data/offlineSLAMExperiment9AdvancedA
+
 !bin/data/offlineSLAMExperiment9AdvancedB
+
 !bin/data/offlineSLAMExperiment9Basic
 bin/GUI\ Logs/*
+
 !bin/GUI\ Logs/placeholder.txt
 
+
+
 # Get rid of executables (except Generate UUID)
+
 bin/**/*.exe
 bin/*.lnk
+
 !bin/GenerateUUID.exe
 
+
+
 # Get rid of the dll's copied into library (but keep .ini files)
+
 bin/library/**/*.dll
+
 
 
 #######################
@@ -30,20 +48,33 @@ bin/library/**/*.dll
 
 #######################
 
-# Build results
+
+# Build 
+results
 [Dd]ebug/
 [Rr]elease/
 x64/
 x86/
 
+
 # Visual Studio Files
+
 *.ncb
+
 *.opendb
+
 *.sdf
+
 *.suo
+
 *.user
+*.htm
+
+
 
 # Visual Studio Directories
+
 ipch/
+
 .vs/
 *.mexw64

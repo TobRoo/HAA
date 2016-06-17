@@ -314,29 +314,29 @@ int AgentBase::setInstance( char instance ) {
 
 int AgentBase::calcLifeExpectancy() {
 
-	if ( STATE(AgentBase)->noCrash || STATE(AgentBase)->stabilityTimeMin == -1 )
-		return 0; // no crashing
+if (STATE(AgentBase)->noCrash || STATE(AgentBase)->stabilityTimeMin == -1)
+return 0; // no crashing
 
-	float Tmin = STATE(AgentBase)->stabilityTimeMin;
-	float Tdif = STATE(AgentBase)->stabilityTimeMax - Tmin;
-	float y = (float)apb->apbUniform01();
+float Tmin = STATE(AgentBase)->stabilityTimeMin;
+float Tdif = STATE(AgentBase)->stabilityTimeMax - Tmin;
+float y = (float)apb->apbUniform01();
 
-	//// calculate lifetime based on y = 1 - exp(-(x-Tmin-Tdif)^2/(Tdif/3)^2)
-	//float b = 2*Tmin + 2*Tdif;
-	//float c = log(1-y)*Tdif*Tdif/9 + Tmin*Tmin + Tdif*Tdif + 2*Tmin*Tdif;
-	//float x = (b - sqrt(b*b - 4*c))/2;
+//// calculate lifetime based on y = 1 - exp(-(x-Tmin-Tdif)^2/(Tdif/3)^2)
+//float b = 2*Tmin + 2*Tdif;
+//float c = log(1-y)*Tdif*Tdif/9 + Tmin*Tmin + Tdif*Tdif + 2*Tmin*Tdif;
+//float x = (b - sqrt(b*b - 4*c))/2;
 
-	// calculate lifetime based on straight line
-	float x = Tmin + Tdif*y;
+// calculate lifetime based on straight line
+float x = Tmin + Tdif*y;
 
-	Log.log( 0, "AgentBase::calcLifeExpectancy: setting crash for T - %f minutes", x );
+Log.log(0, "AgentBase::calcLifeExpectancy: setting crash for T - %f minutes", x);
 
-	this->addTimeout( (int)(x*60*1000), AgentBase_CBR_cbSimulateCrash );
+this->addTimeout((int)(x * 60 * 1000), AgentBase_CBR_cbSimulateCrash);
 
-	return 0;
+return 0;
 }
 
-int AgentBase::parseMF_HandleStability( float timeMin, float timeMax ) {
+int AgentBase::parseMF_HandleStability(float timeMin, float timeMax) {
 
 	STATE(AgentBase)->stabilityTimeMin = timeMin;
 	STATE(AgentBase)->stabilityTimeMax = timeMax;
@@ -344,75 +344,76 @@ int AgentBase::parseMF_HandleStability( float timeMin, float timeMax ) {
 	return 0;
 }
 
-int AgentBase::parseMF_Agent( FILE *fp, AgentType *agentType ) {
+int AgentBase::parseMF_Agent(FILE *fp, AgentType *agentType) {
 	char nameBuf[256], *writeHead;
 	WCHAR uuidBuf[64];
 
 	agentType->instance = -1;
 
 	writeHead = nameBuf;
-	while ( EOF != (*writeHead = fgetc(fp)) 
-			&& '=' != *writeHead 
-			&& '\n' != *writeHead
-			&& ';' != *writeHead
-			&& '/' != *writeHead ) 
+	while (EOF != (*writeHead = fgetc(fp))
+		&& '=' != *writeHead
+		&& '\n' != *writeHead
+		&& ';' != *writeHead
+		&& '/' != *writeHead)
 		writeHead++;
-	if ( *writeHead == ';' ) {
-		while ( EOF != (*writeHead = fgetc(fp)) 
-				&& '\n' != *writeHead ) 
+	if (*writeHead == ';') {
+		while (EOF != (*writeHead = fgetc(fp))
+			&& '\n' != *writeHead)
 			writeHead++;
 	}
-	if ( *writeHead == EOF )
+	if (*writeHead == EOF)
 		return 1;
-	if ( *writeHead == '\n' )
+	if (*writeHead == '\n')
 		return 0;
-	if ( *writeHead == '/' ) { // scan instance num
+	if (*writeHead == '/') { // scan instance num
 		int instanceInt;
-		fscanf_s( fp, "%d=", &instanceInt );
+		fscanf_s(fp, "%d=", &instanceInt);
 		agentType->instance = (char)instanceInt;
 	}
 
 	*writeHead = '\0';
-	
+
 	*uuidBuf = _T('\0');
-	fscanf_s( fp, "%ls\n", uuidBuf, 64 );
-	if ( UuidFromString( (RPC_WSTR)uuidBuf, &agentType->uuid ) != RPC_S_OK ) {
-		Log.log( 0, "AgentBase::parseMF_Agent: bad uuid for %s", nameBuf );
+	fscanf_s(fp, "%ls\n", uuidBuf, 64);
+	if (UuidFromString((RPC_WSTR)uuidBuf, &agentType->uuid) != RPC_S_OK) {
+		Log.log(0, "AgentBase::parseMF_Agent: bad uuid for %s", nameBuf);
 		return 1;
 	}
 
 	return 0;
 }
 
-int AgentBase::parseMissionFile( char *misFile ) {
+int AgentBase::parseMissionFile(char *misFile) {
 	FILE *fp;
 	int i;
 	char keyBuf[64];
 	char ch;
 
-	if ( fopen_s( &fp, misFile, "r" ) ) {
-		Log.log( 0, "AgentBase::parseMissionFile: failed to open %s", misFile );
+	if (fopen_s(&fp, misFile, "r")) {
+		Log.log(0, "AgentBase::parseMissionFile: failed to open %s", misFile);
 		return 1; // couldn't open file
 	}
 
-	Log.log( 0, "AgentBase::parseMissionFile: parsing %s", misFile );
+	Log.log(0, "AgentBase::parseMissionFile: parsing %s", misFile);
 
 	i = 0;
-	while ( 1 ) {
-		ch = fgetc( fp );
-		
-		if ( ch == EOF ) {
+	while (1) {
+		ch = fgetc(fp);
+
+		if (ch == EOF) {
 			break;
-		} else if ( ch == '\n' ) {
+		}
+		else if (ch == '\n') {
 			keyBuf[i] = '\0';
 
-			if ( i == 0 )
+			if (i == 0)
 				continue; // blank line
 
-			if ( !strncmp( keyBuf, "[options]", 64 ) ) {
+			if (!strncmp(keyBuf, "[options]", 64)) {
 				int SLAMmode;
-				if ( fscanf_s( fp, "SLAMmode=%d\n", &SLAMmode ) != 1 ) { // 0 - JCSLAM, 1 - Discard, 2 - Delay
-					Log.log( 0, "AgentBase::parseMissionFile: badly formatted SLAMmode" );
+				if (fscanf_s(fp, "SLAMmode=%d\n", &SLAMmode) != 1) { // 0 - JCSLAM, 1 - Discard, 2 - Delay
+					Log.log(0, "AgentBase::parseMissionFile: badly formatted SLAMmode");
 					break;
 				}
 
@@ -543,7 +544,17 @@ int AgentBase::parseMissionFile( char *misFile ) {
 
 				this->parseMF_HandleOfflineSLAM( SLAMmode, particleNum, readingProcessingRate, processingSlots, logPath );
 
-			} else { // unknown key
+			}
+			else if (!strncmp(keyBuf, "[learning]", 64)) {
+				bool individualLearning;
+				if (fscanf_s(fp, "individual=%d\n", &individualLearning) != 1) {
+					Log.log(0, "AgentBase::parseMissionFile: badly formatted learning (individual learning)");
+					break;
+				}
+
+				this->parseMF_HandleLearning(individualLearning);
+			}
+			else { // unknown key
 				fclose( fp );
 				Log.log( 0, "AgentBase::parseMissionFile: unknown key: %s", keyBuf );
 				return 1;

@@ -1243,6 +1243,7 @@ int SimAvatar::SimStep( _timeb *simTime, int dt ) {
 				}
 			}
 		} else if ( this->moveTargetA ) { // angular move
+
 			this->moveCurrent += dA;
 
 			// check if we're done
@@ -1424,7 +1425,7 @@ int SimAvatar::crash() {
 //-----------------------------------------------------------------------------
 // Position/Rotation State
 
-int SimAvatar::doLinearMove( float L, char moveId ) {
+int SimAvatar::doLinearMove( float L, char moveId ) {			
 
 	this->moveInProgress = true;
 	this->moveTargetL = L;
