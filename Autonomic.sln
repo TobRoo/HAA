@@ -52,6 +52,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "remoteStart", "remoteStart\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExecutiveOfflineSLAM", "ExecutiveOfflineSLAM\ExecutiveOfflineSLAM.vcxproj", "{7D188DA8-681A-4507-9B94-874591BAFC5C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GenerateUUID", "GenerateUUID\GenerateUUID.vcxproj", "{67E5D832-CBEB-48AB-84EC-C68577F6C199}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -318,6 +320,17 @@ Global
 		{7D188DA8-681A-4507-9B94-874591BAFC5C}.Release|Win32.Build.0 = Release|Win32
 		{7D188DA8-681A-4507-9B94-874591BAFC5C}.Release|x64.ActiveCfg = Release|x64
 		{7D188DA8-681A-4507-9B94-874591BAFC5C}.Release|x64.Build.0 = Release|x64
+		{67E5D832-CBEB-48AB-84EC-C68577F6C199}.Debug|Win32.ActiveCfg = Debug|Win32
+		{67E5D832-CBEB-48AB-84EC-C68577F6C199}.Debug|Win32.Build.0 = Debug|Win32
+		{67E5D832-CBEB-48AB-84EC-C68577F6C199}.Debug|x64.ActiveCfg = Debug|Win32
+		{67E5D832-CBEB-48AB-84EC-C68577F6C199}.MEX64|Win32.ActiveCfg = Release|Win32
+		{67E5D832-CBEB-48AB-84EC-C68577F6C199}.MEX64|Win32.Build.0 = Release|Win32
+		{67E5D832-CBEB-48AB-84EC-C68577F6C199}.MEX64|x64.ActiveCfg = Release|Win32
+		{67E5D832-CBEB-48AB-84EC-C68577F6C199}.MEX64|x64.Build.0 = Release|Win32
+		{67E5D832-CBEB-48AB-84EC-C68577F6C199}.Release|Win32.ActiveCfg = Release|Win32
+		{67E5D832-CBEB-48AB-84EC-C68577F6C199}.Release|Win32.Build.0 = Release|Win32
+		{67E5D832-CBEB-48AB-84EC-C68577F6C199}.Release|x64.ActiveCfg = Release|x64
+		{67E5D832-CBEB-48AB-84EC-C68577F6C199}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
