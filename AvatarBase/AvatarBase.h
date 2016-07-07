@@ -140,6 +140,7 @@ public:
 		float maxRotation; // maximum distance per rotation
 		float minLinear;   // minimum distance per move
 		float minRotation; // minimum distance per rotation
+		UUID actionThread; // thread to reply to
 		UUID actionTimeout; // timeout id for the current action, if any
 		bool actionInProgress;
 		bool canInteract;  // If the avatar can choose to interact with landmarks
@@ -164,6 +165,7 @@ protected:
 	mapTypeQueue typeQueue; // queues of readings by sensor type
 	mapAgentQueue agentQueue; // queues of readings by agent
 
+	std::map<UUID, DDBRegion, UUIDless> collectionRegions;
 
 //-----------------------------------------------------------------------------
 // Non-state member variables	
@@ -237,7 +239,9 @@ protected:
 	int	  setTargetPos( float x, float y, float r, char useRotation, UUID *initiator, int controllerIndex, UUID *thread );
 
 	// actions
-	int getActions();
+	int getActionsFromAgentPathPlanner();
+	int spawnAgentIndividualLearning();
+	int spawnAgentPathPlanner();
 	int clearActions( int reason = 0, bool aborted = false );
 	int abortActions( int reason = 0 );
 	virtual int queueAction( UUID *director, UUID *thread, int action, void *data = 0, int len = 0 );
@@ -271,7 +275,6 @@ public:
 		AvatarBase_CBR_convRequestAgentPathPlanner,
 		AvatarBase_CBR_convRequestAgentIndividualLearning,
 		AvatarBase_CBR_convPathPlannerSetTarget,
-		AvatarBase_CBR_convIndividualLearningRequestAction,
 		AvatarBase_CBR_convPFInfo,
 		AvatarBase_CBR_convAgentInfo,
 		AvatarBase_CBR_cbPFUpdateTimer,
@@ -286,7 +289,6 @@ public:
 	bool	convRequestAgentPathPlanner( void *vpConv );
 	bool	convRequestAgentIndividualLearning(void *vpConv);
 	bool	convPathPlannerSetTarget( void *vpConv );
-	bool	convIndividualLearningRequestAction(void *vpConv);
 	bool    convPFInfo( void *vpConv );
 	bool    convAgentInfo( void *vpConv );
 	bool	cbPFUpdateTimer( void *NA );

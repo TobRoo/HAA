@@ -22,7 +22,7 @@ using namespace AvatarBase_Defs;
 #define new DEBUG_NEW
 #endif
 
-#define LOG_FOR_OFFLINE_SLAM
+//#define LOG_FOR_OFFLINE_SLAM
 
 //*****************************************************************************
 // AvatarBase
@@ -96,7 +96,6 @@ AvatarBase::AvatarBase( spAddressPort ap, UUID *ticket, int logLevel, char *logD
 	this->callback[AvatarBase_CBR_convRequestAgentPathPlanner] = NEW_MEMBER_CB(AvatarBase,convRequestAgentPathPlanner);
 	this->callback[AvatarBase_CBR_convRequestAgentIndividualLearning] = NEW_MEMBER_CB(AvatarBase, convRequestAgentIndividualLearning);
 	this->callback[AvatarBase_CBR_convPathPlannerSetTarget] = NEW_MEMBER_CB(AvatarBase,convPathPlannerSetTarget);
-	this->callback[AvatarBase_CBR_convIndividualLearningRequestAction] = NEW_MEMBER_CB(AvatarBase, convIndividualLearningRequestAction);
 	this->callback[AvatarBase_CBR_convPFInfo] = NEW_MEMBER_CB(AvatarBase,convPFInfo);
 	this->callback[AvatarBase_CBR_convAgentInfo] = NEW_MEMBER_CB(AvatarBase,convAgentInfo);
 	this->callback[AvatarBase_CBR_cbPFUpdateTimer] = NEW_MEMBER_CB(AvatarBase,cbPFUpdateTimer);
@@ -241,13 +240,19 @@ int AvatarBase::parseMF_HandleOptions( int SLAMmode ) {
 }
 
 int AvatarBase::parseMF_HandleLearning(bool individualLearning) {
-	
-	this->motionPlanner = (individualLearning) ? AgentIndividualLearning : AgentPathPlanner;
-	// TODO: handle canInteract
+
+	// Spawn the appropriate motion planner
+	if (individualLearning) {
+		this->motionPlanner = AgentIndividualLearning;
+		this->spawnAgentIndividualLearning();
+	}
+	else {
+		this->motionPlanner = AgentPathPlanner;
+		this->spawnAgentPathPlanner();
+	}
 
 	return 0;
 }
-
 
 int AvatarBase::setAvatarState( bool ready ) {
 
@@ -255,8 +260,11 @@ int AvatarBase::setAvatarState( bool ready ) {
 
 	Log.log( 0, "AvatarBase::setAvatarState: set avatar state %d", ready );
 	
-	if ( this->avatarReady && STATE(AvatarBase)->haveTarget ) {
-		this->getActions();
+	// When the avatar is ready, get the actions to perform
+	if ( this->avatarReady) {
+		if (this->motionPlanner == AgentPathPlanner && STATE(AvatarBase)->haveTarget) {
+			this->getActionsFromAgentPathPlanner();
+		}
 	}
 
 	return 0;
@@ -988,7 +996,9 @@ int AvatarBase::setTargetPos( float x, float y, float r, char useRotation, UUID 
 		return 0;
 	}
 	
-	this->getActions();
+	if (this->motionPlanner == AgentPathPlanner) {
+		this->getActionsFromAgentPathPlanner();
+	}
 
 	return 0;
 }
@@ -996,102 +1006,129 @@ int AvatarBase::setTargetPos( float x, float y, float r, char useRotation, UUID 
 //-----------------------------------------------------------------------------
 // Actions
 
-int AvatarBase::getActions() {
+int AvatarBase::spawnAgentIndividualLearning() {
 	UUID thread;
 
-	switch (this->motionPlanner) {
-	case AgentPathPlanner:
-		{
-			if (!STATE(AvatarBase)->agentPathPlannerSpawned) {
-
-				UUID aPathPlanneruuid;
-				UuidFromString((RPC_WSTR)_T(AgentPathPlanner_UUID), &aPathPlanneruuid);
-				thread = this->conversationInitiate(AvatarBase_CBR_convRequestAgentPathPlanner, REQUESTAGENTSPAWN_TIMEOUT, &aPathPlanneruuid, sizeof(UUID));
-				if (thread == nilUUID) {
-					return 1;
-				}
-				this->ds.reset();
-				this->ds.packUUID(this->getUUID());
-				this->ds.packUUID(&aPathPlanneruuid);
-				this->ds.packChar(-1); // no instance parameters
-				this->ds.packFloat32(0); // affinity
-				this->ds.packChar(DDBAGENT_PRIORITY_CRITICAL);
-				this->ds.packUUID(&thread);
-				this->sendMessage(this->hostCon, MSG_RAGENT_SPAWN, this->ds.stream(), this->ds.length());
-				this->ds.unlock();
-
-				STATE(AvatarBase)->agentPathPlannerSpawned = -1; // in progress
-
-			}
-			else if (STATE(AvatarBase)->agentPathPlannerSpawned == 1) {
-
-				if (STATE(AvatarBase)->agentPathPlannerStatus == DDBAGENT_STATUS_READY
-					|| STATE(AvatarBase)->agentPathPlannerStatus == DDBAGENT_STATUS_FREEZING
-					|| STATE(AvatarBase)->agentPathPlannerStatus == DDBAGENT_STATUS_FROZEN
-					|| STATE(AvatarBase)->agentPathPlannerStatus == DDBAGENT_STATUS_THAWING) {
-					// set path planner target		
-					thread = this->conversationInitiate(AvatarBase_CBR_convPathPlannerSetTarget, -1);
-					if (thread == nilUUID) {
-						return 1;
-					}
-					this->ds.reset();
-					this->ds.packFloat32(STATE(AvatarBase)->targetX);
-					this->ds.packFloat32(STATE(AvatarBase)->targetY);
-					this->ds.packFloat32(STATE(AvatarBase)->targetR);
-					this->ds.packChar(STATE(AvatarBase)->targetUseRotation);
-					this->ds.packUUID(&thread);
-					this->sendMessageEx(this->hostCon, MSGEX(AgentPathPlanner_MSGS, MSG_SET_TARGET), this->ds.stream(), this->ds.length(), &STATE(AvatarBase)->agentPathPlanner);
-					this->ds.unlock();
-				}
-			}
+	if (!STATE(AvatarBase)->agentIndividualLearningSpawned) {
+		UUID aAgentIndividualLearninguuid;
+		UuidFromString((RPC_WSTR)_T(AgentIndividualLearning_UUID), &aAgentIndividualLearninguuid);
+		thread = this->conversationInitiate(AvatarBase_CBR_convRequestAgentIndividualLearning, REQUESTAGENTSPAWN_TIMEOUT, &aAgentIndividualLearninguuid, sizeof(UUID));
+		if (thread == nilUUID) {
+			return 1;
 		}
-		break;
-	case AgentIndividualLearning:
-		{
-			if (!STATE(AvatarBase)->agentIndividualLearningSpawned) {
-				UUID aAgentIndividualLearninguuid;
-				UuidFromString((RPC_WSTR)_T(AgentIndividualLearning_UUID), &aAgentIndividualLearninguuid);
-				thread = this->conversationInitiate(AvatarBase_CBR_convRequestAgentIndividualLearning, REQUESTAGENTSPAWN_TIMEOUT, &aAgentIndividualLearninguuid, sizeof(UUID));
-				if (thread == nilUUID) {
-					return 1;
-				}
-				this->ds.reset();
-				this->ds.packUUID(this->getUUID());
-				this->ds.packUUID(&aAgentIndividualLearninguuid);
-				this->ds.packChar(-1); // no instance parameters
-				this->ds.packFloat32(0); // affinity
-				this->ds.packChar(DDBAGENT_PRIORITY_CRITICAL);
-				this->ds.packUUID(&thread);
-				this->sendMessage(this->hostCon, MSG_RAGENT_SPAWN, this->ds.stream(), this->ds.length());
-				this->ds.unlock();
+		this->ds.reset();
+		this->ds.packUUID(this->getUUID());
+		this->ds.packUUID(&aAgentIndividualLearninguuid);
+		this->ds.packChar(-1); // no instance parameters
+		this->ds.packFloat32(0); // affinity
+		this->ds.packChar(DDBAGENT_PRIORITY_CRITICAL);
+		this->ds.packUUID(&thread);
+		this->sendMessage(this->hostCon, MSG_RAGENT_SPAWN, this->ds.stream(), this->ds.length());
+		this->ds.unlock();
 
-				STATE(AvatarBase)->agentIndividualLearningSpawned = -1; // in progress
-			}
-			else if (STATE(AvatarBase)->agentIndividualLearningSpawned == 1) {
-				if (STATE(AvatarBase)->agentIndividualLearningStatus == DDBAGENT_STATUS_READY
-					|| STATE(AvatarBase)->agentIndividualLearningStatus == DDBAGENT_STATUS_FREEZING
-					|| STATE(AvatarBase)->agentIndividualLearningStatus == DDBAGENT_STATUS_FROZEN
-					|| STATE(AvatarBase)->agentIndividualLearningStatus == DDBAGENT_STATUS_THAWING) {
-
-					thread = this->conversationInitiate(AvatarBase_CBR_convIndividualLearningRequestAction, -1);
-					if (thread == nilUUID) {
-						return 1;
-					}
-					this->ds.reset();
-					this->ds.packFloat32(STATE(AvatarBase)->targetX);
-					this->ds.packFloat32(STATE(AvatarBase)->targetY);
-					this->ds.packFloat32(STATE(AvatarBase)->targetR);
-					this->ds.packChar(STATE(AvatarBase)->targetUseRotation);
-					this->ds.packUUID(&thread);
-					this->sendMessageEx(this->hostCon, MSGEX(AgentIndividualLearning_MSGS, MSG_SEND_ACTION), this->ds.stream(), this->ds.length(), &STATE(AvatarBase)->agentIndividualLearning);
-					this->ds.unlock();
-				}
-			}
-		}
-		break;
-	default:
-		return 1;
+		STATE(AvatarBase)->agentIndividualLearningSpawned = -1; // in progress
 	}
+	return 0;
+}
+
+int AvatarBase::spawnAgentPathPlanner() {
+	UUID thread;
+
+	if (!STATE(AvatarBase)->agentPathPlannerSpawned) {
+
+		UUID aPathPlanneruuid;
+		UuidFromString((RPC_WSTR)_T(AgentPathPlanner_UUID), &aPathPlanneruuid);
+		thread = this->conversationInitiate(AvatarBase_CBR_convRequestAgentPathPlanner, REQUESTAGENTSPAWN_TIMEOUT, &aPathPlanneruuid, sizeof(UUID));
+		if (thread == nilUUID) {
+			return 1;
+		}
+		this->ds.reset();
+		this->ds.packUUID(this->getUUID());
+		this->ds.packUUID(&aPathPlanneruuid);
+		this->ds.packChar(-1); // no instance parameters
+		this->ds.packFloat32(0); // affinity
+		this->ds.packChar(DDBAGENT_PRIORITY_CRITICAL);
+		this->ds.packUUID(&thread);
+		this->sendMessage(this->hostCon, MSG_RAGENT_SPAWN, this->ds.stream(), this->ds.length());
+		this->ds.unlock();
+
+		STATE(AvatarBase)->agentPathPlannerSpawned = -1; // in progress
+
+	}
+
+	return 0;
+}
+
+int AvatarBase::getActionsFromAgentPathPlanner() {
+	UUID thread;
+
+	if (STATE(AvatarBase)->agentPathPlannerSpawned == 1) {
+
+		if (STATE(AvatarBase)->agentPathPlannerStatus == DDBAGENT_STATUS_READY
+			|| STATE(AvatarBase)->agentPathPlannerStatus == DDBAGENT_STATUS_FREEZING
+			|| STATE(AvatarBase)->agentPathPlannerStatus == DDBAGENT_STATUS_FROZEN
+			|| STATE(AvatarBase)->agentPathPlannerStatus == DDBAGENT_STATUS_THAWING) {
+			// set path planner target		
+			thread = this->conversationInitiate(AvatarBase_CBR_convPathPlannerSetTarget, -1);
+			if (thread == nilUUID) {
+				return 1;
+			}
+			this->ds.reset();
+			this->ds.packFloat32(STATE(AvatarBase)->targetX);
+			this->ds.packFloat32(STATE(AvatarBase)->targetY);
+			this->ds.packFloat32(STATE(AvatarBase)->targetR);
+			this->ds.packChar(STATE(AvatarBase)->targetUseRotation);
+			this->ds.packUUID(&thread);
+			this->sendMessageEx(this->hostCon, MSGEX(AgentPathPlanner_MSGS, MSG_SET_TARGET), this->ds.stream(), this->ds.length(), &STATE(AvatarBase)->agentPathPlanner);
+			this->ds.unlock();
+		}
+	}
+	/*
+
+	if (!STATE(AvatarBase)->agentPathPlannerSpawned) {
+
+		UUID aPathPlanneruuid;
+		UuidFromString((RPC_WSTR)_T(AgentPathPlanner_UUID), &aPathPlanneruuid);
+		thread = this->conversationInitiate(AvatarBase_CBR_convRequestAgentPathPlanner, REQUESTAGENTSPAWN_TIMEOUT, &aPathPlanneruuid, sizeof(UUID));
+		if (thread == nilUUID) {
+			return 1;
+		}
+		this->ds.reset();
+		this->ds.packUUID(this->getUUID());
+		this->ds.packUUID(&aPathPlanneruuid);
+		this->ds.packChar(-1); // no instance parameters
+		this->ds.packFloat32(0); // affinity
+		this->ds.packChar(DDBAGENT_PRIORITY_CRITICAL);
+		this->ds.packUUID(&thread);
+		this->sendMessage(this->hostCon, MSG_RAGENT_SPAWN, this->ds.stream(), this->ds.length());
+		this->ds.unlock();
+
+		STATE(AvatarBase)->agentPathPlannerSpawned = -1; // in progress
+
+	}
+	else if (STATE(AvatarBase)->agentPathPlannerSpawned == 1) {
+
+		if (STATE(AvatarBase)->agentPathPlannerStatus == DDBAGENT_STATUS_READY
+			|| STATE(AvatarBase)->agentPathPlannerStatus == DDBAGENT_STATUS_FREEZING
+			|| STATE(AvatarBase)->agentPathPlannerStatus == DDBAGENT_STATUS_FROZEN
+			|| STATE(AvatarBase)->agentPathPlannerStatus == DDBAGENT_STATUS_THAWING) {
+			// set path planner target		
+			thread = this->conversationInitiate(AvatarBase_CBR_convPathPlannerSetTarget, -1);
+			if (thread == nilUUID) {
+				return 1;
+			}
+			this->ds.reset();
+			this->ds.packFloat32(STATE(AvatarBase)->targetX);
+			this->ds.packFloat32(STATE(AvatarBase)->targetY);
+			this->ds.packFloat32(STATE(AvatarBase)->targetR);
+			this->ds.packChar(STATE(AvatarBase)->targetUseRotation);
+			this->ds.packUUID(&thread);
+			this->sendMessageEx(this->hostCon, MSGEX(AgentPathPlanner_MSGS, MSG_SET_TARGET), this->ds.stream(), this->ds.length(), &STATE(AvatarBase)->agentPathPlanner);
+			this->ds.unlock();
+		}
+	}
+	*/
+	
 
 	return 0;
 }
@@ -1137,7 +1174,6 @@ int AvatarBase::abortActions( int reason ) {
 }
 
 int AvatarBase::queueAction( UUID *director, UUID *thread, int action, void *data, int len ) {
-
 	ActionInfo AI;
 	AI.action = action;
 	AI.director = *director;
@@ -1187,8 +1223,7 @@ int AvatarBase::nextAction() {
 	if ( STATE(AvatarBase)->actionInProgress ) { // finish the currect action
 		pAI = &(*this->actionQueue.begin());
 
-		if ( pAI->action == AA_MOVE
-		  || pAI->action == AA_ROTATE ) {
+		if ( pAI->action == AA_MOVE || pAI->action == AA_ROTATE ) {
 			this->updatePFState(); // update our state
 		}
 		
@@ -1232,7 +1267,6 @@ int AvatarBase::nextAction() {
 			apb->apb_ftime_s( &tb );
 			this->updatePos( 0, 0, 0, &tb ); // refresh our pos to begin move
 		}
-
 		STATE(AvatarBase)->actionInProgress = true;
 	}
 
@@ -1317,7 +1351,7 @@ int AvatarBase::ddbNotification( char *data, int len ) {
 			}
 		}
 	}
-	else if (type == DDB_AGENT && uuid == STATE(AvatarBase)->agentIndividualLearning) { // agent path planner
+	else if (type == DDB_AGENT && uuid == STATE(AvatarBase)->agentIndividualLearning) { // agent individual learning
 		if (evt == DDBE_AGENT_UPDATE) {
 			int infoFlags = lds.unpackInt32();
 			if (infoFlags & DDBAGENTINFO_STATUS) { // status changed
@@ -1702,10 +1736,24 @@ int AvatarBase::conProcessMessage( spConnection con, unsigned char message, char
 		}
 		break;
 	case AvatarBase_MSGS::MSG_ADD_REGION:
-		if ( STATE(AvatarBase)->missionRegionId == nilUUID ) {
-			STATE(AvatarBase)->missionRegionId = *(UUID *)data;
-			this->backup(); // backup missionRegionId
+
+		if (len == sizeof(UUID)) {
+			// Message is the mission region
+			if (STATE(AvatarBase)->missionRegionId == nilUUID) {
+				STATE(AvatarBase)->missionRegionId = *(UUID *)data;
+				this->backup(); // backup missionRegionId
+			}
 		}
+		else if (len > sizeof(UUID)) {
+			// Message is collection region(s)
+			UUID uuid;
+			lds.setData(data, len);
+			while (lds.unpackBool()) {
+				lds.unpackUUID(&uuid);
+				this->collectionRegions[uuid] = *(DDBRegion *)lds.unpackData(sizeof(DDBRegion));
+			}
+		}
+		
 		break;
 	case AvatarBase_MSGS::MSG_SET_POS:
 		{
@@ -1922,6 +1970,18 @@ bool AvatarBase::convRequestAgentIndividualLearning(void *vpConv) {
 
 		lds.reset();
 		lds.packUUID(&STATE(AgentBase)->uuid);
+		lds.packUUID(&STATE(AvatarBase)->missionRegionId);
+		std::map<UUID, DDBRegion, UUIDless>::iterator iR;
+		for (iR = this->collectionRegions.begin(); iR != this->collectionRegions.end(); iR++) {
+			lds.packBool(1);
+			lds.packUUID((UUID *)&iR->first);
+			lds.packData(&iR->second, sizeof(DDBRegion));
+		}
+		lds.packBool(0);
+		lds.packFloat32(STATE(AvatarBase)->maxLinear);
+		lds.packFloat32(STATE(AvatarBase)->maxRotation);
+		lds.packFloat32(STATE(AvatarBase)->minLinear);
+		lds.packFloat32(STATE(AvatarBase)->minRotation);
 		this->sendMessageEx(this->hostCon, MSGEX(AgentIndividualLearning_MSGS, MSG_CONFIGURE), lds.stream(), lds.length(), &STATE(AvatarBase)->agentIndividualLearning);
 		lds.unlock();
 
@@ -1937,47 +1997,6 @@ bool AvatarBase::convRequestAgentIndividualLearning(void *vpConv) {
 		lds.unlock();
 
 		// TODO try again?
-	}
-
-	return 0;
-}
-
-bool AvatarBase::convIndividualLearningRequestAction( void *vpConv ) {
-	spConversation conv = (spConversation)vpConv;
-
-	if ( conv->response == NULL ) { // spawn timed out
-		Log.log( 0, "AvatarBase::convIndividualLearningRequestAction: conversation timed out" );
-		return 0; // end conversation
-	}
-
-	this->ds.setData( conv->response, conv->responseLen );
-	this->ds.unpackData(sizeof(UUID)); // discard thread
-	
-	if ( this->ds.unpackChar() ) { // succeeded
-		this->ds.unlock();
-		
-		// notify initiator
-		this->ds.reset();
-		this->ds.packUUID( &STATE(AvatarBase)->targetThread );
-		this->ds.packChar( true );
-		this->sendMessage( this->hostCon, MSG_RESPONSE, this->ds.stream(), this->ds.length(), &STATE(AvatarBase)->targetInitiator );
-		this->ds.unlock();
-
-	} else {
-		int reason = this->ds.unpackInt32();
-		this->ds.unlock();
-		Log.log(0, "AvatarBase::convIndividualLearningRequestAction: send action fail %d", reason );
-		if ( reason == AvatarBase_Defs::TP_NEW_TARGET ) { 
-			// we gave them a new target, no reason to do anything
-		} else {
-			// notify initiator
-			this->ds.reset();
-			this->ds.packUUID( &STATE(AvatarBase)->targetThread );
-			this->ds.packChar( false );
-			this->ds.packInt32( reason );
-			this->sendMessage( this->hostCon, MSG_RESPONSE, this->ds.stream(), this->ds.length(), &STATE(AvatarBase)->targetInitiator );
-			this->ds.unlock();
-		}
 	}
 
 	return 0;
@@ -2122,13 +2141,11 @@ bool AvatarBase::convAgentInfo( void *vpConv ) {
 		if (id == STATE(AvatarBase)->agentPathPlanner) {
 			STATE(AvatarBase)->agentPathPlannerStatus = status;
 
-			if (STATE(AvatarBase)->haveTarget && this->avatarReady)
-			{
-				this->getActions();
+			if (STATE(AvatarBase)->haveTarget && this->avatarReady) {
+				this->getActionsFromAgentPathPlanner();
 			}
 		} else if (id == STATE(AvatarBase)->agentIndividualLearning) {
 			STATE(AvatarBase)->agentIndividualLearningStatus = status;
-			this->getActions();
 		} else if ( id == STATE(AvatarBase)->avatarExecutiveUUID ) {
 			if ( status == DDBAGENT_STATUS_READY ) {
 				// register with executive
@@ -2254,7 +2271,6 @@ bool AvatarBase::convRequestAgentSpawn( void *vpConv ) {
 // State functions
 
 int AvatarBase::freeze( UUID *ticket ) {
-
 	return AgentBase::freeze( ticket );
 }
 
@@ -2265,7 +2281,6 @@ int AvatarBase::thaw( DataStream *ds, bool resumeReady ) {
 }
 
 int	AvatarBase::writeState( DataStream *ds, bool top ) {
-
 	if ( top ) _WRITE_STATE(AvatarBase);
 
 	// pack actions
@@ -2308,7 +2323,6 @@ int	AvatarBase::writeState( DataStream *ds, bool top ) {
 }
 
 int	AvatarBase::readState( DataStream *ds, bool top ) {
-
 	if ( top ) _READ_STATE(AvatarBase);
 
 	// unpack actions
@@ -2343,7 +2357,6 @@ int	AvatarBase::readState( DataStream *ds, bool top ) {
 
 	return AgentBase::readState( ds, false );
 }
-
 
 int AvatarBase::recoveryFinish() {
 	DataStream lds;
@@ -2393,6 +2406,16 @@ int AvatarBase::recoveryFinish() {
 			this->sendMessage( this->hostCon, MSG_DDB_RAGENTINFO, lds.stream(), lds.length() );
 			lds.unlock();
 		}
+		// get individual learning status
+		if (STATE(AvatarBase)->agentIndividualLearning != nilUUID) {
+			UUID thread = this->conversationInitiate(AvatarBase_CBR_convAgentInfo, DDB_REQUEST_TIMEOUT, &STATE(AvatarBase)->agentIndividualLearning, sizeof(UUID));
+			lds.reset();
+			lds.packUUID(&STATE(AvatarBase)->agentIndividualLearning);
+			lds.packInt32(DDBAGENTINFO_RSTATUS);
+			lds.packUUID(&thread);
+			this->sendMessage(this->hostCon, MSG_DDB_RAGENTINFO, lds.stream(), lds.length());
+			lds.unlock();
+		}
 		// get avatar executive status
 		if ( STATE(AvatarBase)->avatarExecutiveUUID != nilUUID ) {
 			UUID thread = this->conversationInitiate( AvatarBase_CBR_convAgentInfo, DDB_REQUEST_TIMEOUT, &STATE(AvatarBase)->avatarExecutiveUUID, sizeof(UUID) );
@@ -2417,7 +2440,6 @@ int AvatarBase::recoveryFinish() {
 }
 
 int AvatarBase::writeBackup( DataStream *ds ) {
-
 	// avatar
 	ds->packUUID( &STATE(AvatarBase)->avatarExecutiveUUID );
 	ds->packUUID( &STATE(AvatarBase)->avatarUUID );
@@ -2493,7 +2515,7 @@ int AvatarBase::readBackup( DataStream *ds ) {
 		STATE(AvatarBase)->agentPathPlannerSpawned = 1; // we have a path planner
 	ds->unpackUUID(&STATE(AvatarBase)->agentIndividualLearning);
 	if (STATE(AvatarBase)->agentIndividualLearning != nilUUID)
-		STATE(AvatarBase)->agentIndividualLearningSpawned = 1; // we have a path planner
+		STATE(AvatarBase)->agentIndividualLearningSpawned = 1; // we have individual learning
 	STATE(AvatarBase)->haveTarget = ds->unpackBool();
 	STATE(AvatarBase)->targetX = ds->unpackFloat32();
 	STATE(AvatarBase)->targetY = ds->unpackFloat32();

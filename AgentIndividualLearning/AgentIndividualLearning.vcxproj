@@ -164,6 +164,7 @@
     <ClInclude Include="..\Autonomic\RandomGenerator.h" />
     <ClInclude Include="AgentIndividualLearning.h" />
     <ClInclude Include="AgentIndividualLearningVersion.h" />
+    <ClInclude Include="QLearning.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
@@ -173,6 +174,7 @@
     <ClCompile Include="..\Autonomic\Logger.cpp" />
     <ClCompile Include="..\Autonomic\RandomGenerator.cpp" />
     <ClCompile Include="AgentIndividualLearning.cpp" />
+    <ClCompile Include="QLearning.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

@@ -436,7 +436,20 @@ int ExecutiveMission::registerAvatar( UUID *id, UUID *avatarId, AgentType *agent
 
 	this->sendMessageEx( this->hostCon, MSGEX(AvatarBase_MSGS,MSG_ADD_MAP), (char *)&STATE(ExecutiveMission)->pogUUID, sizeof(UUID), id );
 	this->sendMessageEx( this->hostCon, MSGEX(AvatarBase_MSGS,MSG_ADD_REGION), (char *)&STATE(ExecutiveMission)->missionRegion, sizeof(UUID), id );
-
+	
+	// Send the collection region(s)
+	DataStream lds;
+	lds.reset();
+	std::map<UUID, DDBRegion, UUIDless>::iterator iR;
+	for (iR = this->collectionRegions.begin(); iR != this->collectionRegions.end(); iR++) {
+		lds.packBool(1);
+		lds.packUUID((UUID *)&iR->first);
+		lds.packData(&iR->second, sizeof(DDBRegion));
+	}
+	lds.packBool(0);
+	this->sendMessageEx(this->hostCon, MSGEX(AvatarBase_MSGS, MSG_ADD_REGION), lds.stream(), lds.length(), id);
+	lds.unlock();
+	
 	this->allocateAvatars(); // update allocation
 
 	return 0;

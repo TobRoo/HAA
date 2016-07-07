@@ -58,7 +58,7 @@ namespace AvatarBase_MSGS {
 	
 	static const unsigned int MSG_SIZE[] = { // array of message size by MSGID - MSG_FIRST
 		sizeof(UUID),	// MSG_ADD_MAP
-		sizeof(UUID),	// MSG_ADD_REGION
+		-2,				// MSG_ADD_REGION
 
 		4 + 4 + 4,		// MSG_SET_POSE
 		4 + 4 + 4 + 1 + sizeof(UUID)*2 + 4, // MSG_SET_TARGET
