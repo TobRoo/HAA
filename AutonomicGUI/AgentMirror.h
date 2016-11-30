@@ -97,7 +97,7 @@ protected:
 	int ddbAddRegion( UUID *id, float x, float y, float w, float h );
 	int ddbRemoveRegion( UUID *id );
 
-	int ddbAddLandmark( UUID *id, unsigned char code, UUID *owner, float height, float elevation, float x, float y, bool estimatedPos );
+	int ddbAddLandmark( UUID *id, unsigned char code, UUID *owner, float height, float elevation, float x, float y, bool estimatedPos, ITEM_TYPES landmarkType );
 	int ddbRemoveLandmark( UUID *id );
 	int ddbLandmarkSetInfo( DataStream *ds );
 

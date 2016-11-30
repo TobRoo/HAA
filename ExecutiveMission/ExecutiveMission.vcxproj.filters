@@ -35,6 +35,9 @@
     <ClCompile Include="..\Autonomic\RandomGenerator.cpp">
       <Filter>Shared</Filter>
     </ClCompile>
+    <ClCompile Include="..\Autonomic\fImage.cpp">
+      <Filter>Shared</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="ExecutiveMission.def">
@@ -61,6 +64,9 @@
       <Filter>Shared</Filter>
     </ClInclude>
     <ClInclude Include="..\Autonomic\RandomGenerator.h">
+      <Filter>Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Autonomic\fImage.h">
       <Filter>Shared</Filter>
     </ClInclude>
   </ItemGroup>

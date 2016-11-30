@@ -78,7 +78,10 @@ protected:
 // Non-state member variables	
 
 protected:
-
+	bool mapReveal;			// Flag for starting with an explored (true) or unexplored (false) map
+	bool mapRandom;			// Flag for starting with a random (true) map or one loaded from a file (false) 
+	bool individualLearning;// Flag showing if individual learning is enabled (true) or disabled (false)
+	bool teamLearning;		// Flag showing if team learning is enabled (true) or disabled (false)
 
 //-----------------------------------------------------------------------------
 // Functions	
@@ -94,6 +97,11 @@ public:
 	virtual int   parseMF_HandleCollectionRegion( DDBRegion *region );
 	virtual int   parseMF_HandleTravelTarget( float x, float y, float r, bool useRotation );
 	virtual int   parseMF_HandleLandmarkFile( char *fileName );
+	virtual int	  parseMF_HandleMapOptions(bool mapReveal, bool mapRandom);
+	virtual int   parseMF_HandleLearning(bool individualLearning, bool teamLearning) ;
+	virtual int   parseMF_HandleTeamLearning(bool teamLearning);
+
+	virtual int	  doMapReveal();
 
 	virtual int start( char *missionFile );		// start agent
 	virtual int stop();			// stop agent

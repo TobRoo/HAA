@@ -15,7 +15,7 @@
 class AgentPlayback;
 
 class Logger {
-	
+
 public:
 	Logger();
 	~Logger();

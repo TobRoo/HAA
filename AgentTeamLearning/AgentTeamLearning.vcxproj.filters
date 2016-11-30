@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="AgentTeamLearning.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Autonomic\agentPlayback.cpp">
+      <Filter>Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Autonomic\autonomic.cpp">
+      <Filter>Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Autonomic\dataStream.cpp">
+      <Filter>Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Autonomic\Logger.cpp">
+      <Filter>Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Autonomic\RandomGenerator.cpp">
+      <Filter>Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="LAlliance.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AgentTeamLearningVersion.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AgentTeamLearning.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Autonomic\autonomic.h">
+      <Filter>Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Autonomic\dataStream.h">
+      <Filter>Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Autonomic\DDB.h">
+      <Filter>Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Autonomic\Logger.h">
+      <Filter>Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Autonomic\RandomGenerator.h">
+      <Filter>Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="LAlliance.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="AgentTeamLearning.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{034579c9-25b7-4a85-90ba-b73a069b3cc9}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{0b7c6473-74d3-42db-bc9e-cbac916c8699}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Shared">
+      <UniqueIdentifier>{50d326b2-926f-41b0-b492-29fdb98293a4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -607,9 +607,9 @@ int AgentMirror::ddbRemoveRegion( UUID *id ) {
 	return 0;
 }
 
-int AgentMirror::ddbAddLandmark( UUID *id, unsigned char code, UUID *owner, float height, float elevation, float x, float y, bool estimatedPos ) {
+int AgentMirror::ddbAddLandmark( UUID *id, unsigned char code, UUID *owner, float height, float elevation, float x, float y, bool estimatedPos, ITEM_TYPES landmarkType ) {
 
-	this->dStore->AddLandmark( id, code, owner, height, elevation, x, y, estimatedPos ); // add locally
+	this->dStore->AddLandmark( id, code, owner, height, elevation, x, y, estimatedPos, landmarkType); // add locally
 
 	// notify watchers
 	this->_ddbNotifyWatcherCBs( DDB_LANDMARK, DDBE_ADD, id );
@@ -1357,6 +1357,7 @@ int AgentMirror::conProcessMessage( unsigned char message, char *data, unsigned 
 			float height, elevation, x, y;
 			char estimatedPos;
 			UUID sender;
+			ITEM_TYPES landmarkType;
 			lds.setData( data, len );
 			lds.unpackUUID( &sender );
 			lds.unpackUUID( &uuid );
@@ -1367,7 +1368,8 @@ int AgentMirror::conProcessMessage( unsigned char message, char *data, unsigned 
 			x = lds.unpackFloat32();
 			y = lds.unpackFloat32();
 			estimatedPos = lds.unpackChar();
-			this->ddbAddLandmark( &uuid, code, &owner, height, elevation, x, y, (estimatedPos ? true : false) );
+			landmarkType = (ITEM_TYPES) lds.unpackInt32();
+			this->ddbAddLandmark( &uuid, code, &owner, height, elevation, x, y, (estimatedPos ? true : false), landmarkType );
 			lds.unlock();
 		}
 		break;

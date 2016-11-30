@@ -396,7 +396,6 @@ int AgentBase::parseMissionFile(char *misFile) {
 	}
 
 	Log.log(0, "AgentBase::parseMissionFile: parsing %s", misFile);
-
 	i = 0;
 	while (1) {
 		ch = fgetc(fp);
@@ -410,7 +409,35 @@ int AgentBase::parseMissionFile(char *misFile) {
 			if (i == 0)
 				continue; // blank line
 
-			if (!strncmp(keyBuf, "[options]", 64)) {
+			if (!strncmp(keyBuf, "[map_options]", 64)) {
+				int mapReveal = 0;
+				int mapRandom = 0;
+				int numObstacles;
+				int numTargets;
+				if (fscanf_s(fp, "mapReveal=%d\n", &mapReveal) != 1) { // 0 - Unexplored, 1 - Explored 
+					Log.log(0, "AgentBase::parseMissionFile: badly formatted mapReveal");
+					break;
+				}
+				if (fscanf_s(fp, "mapRandom=%d\n", &mapRandom) != 1) { // 0 - Layout from file, 1 - Random 
+					Log.log(0, "AgentBase::parseMissionFile: badly formatted mapRandom");
+					break;
+				}
+				if (mapRandom){
+					if (fscanf_s(fp, "	numObstacles=%d\n", &numObstacles) != 1) { 
+						Log.log(0, "AgentBase::parseMissionFile: badly formatted numObstacles");
+						break;
+						}
+				}
+				if (mapRandom) {
+					if (fscanf_s(fp, "	numTargets=%d\n", &numTargets) != 1) {
+						Log.log(0, "AgentBase::parseMissionFile: badly formatted numTargets");
+						break;
+					}
+				}
+				this->parseMF_HandleMapOptions(mapReveal, mapRandom);
+
+
+			} else if (!strncmp(keyBuf, "[options]", 64)) {
 				int SLAMmode;
 				if (fscanf_s(fp, "SLAMmode=%d\n", &SLAMmode) != 1) { // 0 - JCSLAM, 1 - Discard, 2 - Delay
 					Log.log(0, "AgentBase::parseMissionFile: badly formatted SLAMmode");
@@ -467,7 +494,6 @@ int AgentBase::parseMissionFile(char *misFile) {
 					Log.log( 0, "AgentBase::parseMissionFile: badly formatted region (mission)" );
 					break;
 				}
-
 				this->parseMF_HandleMissionRegion( &region );
 
 			} else if ( !strncmp( keyBuf, "[forbidden_region]", 64 ) ) {
@@ -499,17 +525,22 @@ int AgentBase::parseMissionFile(char *misFile) {
 				this->parseMF_HandleTravelTarget( x, y, r, useRotation > 0 );
 
 			} else if ( !strncmp( keyBuf, "[landmark_file]", 64 ) ) {
+				//Log.log(0, "AgentBase::parseMissionFile: DEBUG::LANDMARK FILE");
+
 				char fileName[256];
-				if ( fscanf_s( fp, "file=%s\n", fileName, 256 ) != 1 ) {
+				if ( fscanf_s( fp, "file=%[^\n]s", fileName, 256 ) != 1 ) {
 					Log.log( 0, "AgentBase::parseMissionFile: badly formatted file name (landmark)" );
 					break;
 				}
-
+				//Log.log(0, "AgentBase::parseMissionFile: DEBUG::LANDMARK FILE:: Scanning completed");
+				//Log.log(0, "AgentBase::parseMissionFile: DEBUG::LANDMARK FILE:: File name is: %s \n", fileName);
 				this->parseMF_HandleLandmarkFile( fileName );
 
 			} else if ( !strncmp( keyBuf, "[path_file]", 64 ) ) {
+				//Log.log(0, "AgentBase::parseMissionFile: DEBUG::PATH FILE");
+
 				char fileName[256];
-				if ( fscanf_s( fp, "file=%s\n", fileName, 256 ) != 1 ) {
+				if ( fscanf_s( fp, "file=%[^\n]s", fileName, 256 ) != 1 ) {
 					Log.log( 0, "AgentBase::parseMissionFile: badly formatted file name (path)" );
 					break;
 				}
@@ -546,14 +577,32 @@ int AgentBase::parseMissionFile(char *misFile) {
 
 			}
 			else if (!strncmp(keyBuf, "[learning]", 64)) {
-				bool individualLearning;
-				if (fscanf_s(fp, "individual=%d\n", &individualLearning) != 1) {
+				int individualLearning = 0;
+				int teamLearning = 0;
+				int individualLearningParseResult;
+				int teamLearningParseResult;
+				individualLearningParseResult = fscanf_s(fp, "individual=%d\n", &individualLearning);
+				Log.log(0, "AgentBase::parseMissionFile: individual learning is %d, team learning is %d", individualLearning, teamLearning);
+				teamLearningParseResult = fscanf_s(fp, "team=%d\n", &teamLearning);
+				Log.log(0, "AgentBase::parseMissionFile: individual learning is %d, team learning is %d", individualLearning, teamLearning);
+				
+				if (individualLearningParseResult != 1) {
 					Log.log(0, "AgentBase::parseMissionFile: badly formatted learning (individual learning)");
 					break;
 				}
+				if (teamLearningParseResult != 1) {
+					Log.log(0, "AgentBase::parseMissionFile: badly formatted learning (team learning)");
+					break;
+				}
+				int runCount;
+				this->parseMF_HandleLearning(individualLearning, teamLearning);
 
-				this->parseMF_HandleLearning(individualLearning);
+				Log.log(0, "AgentBase::parseMissionFile: individual learning is %d, team learning is %d", individualLearning, teamLearning);
+	
 			}
+
+
+
 			else { // unknown key
 				fclose( fp );
 				Log.log( 0, "AgentBase::parseMissionFile: unknown key: %s", keyBuf );
@@ -568,7 +617,6 @@ int AgentBase::parseMissionFile(char *misFile) {
 	}
 
 	fclose( fp );
-
 	return 0;
 }
 
@@ -1263,7 +1311,6 @@ int AgentBase::closeListener( spConnection con ) {
 }
 
 int AgentBase::sendAgentMessage( UUID *agent, unsigned char message, char *data, unsigned int len ) {
-	
 	if ( this->isHost ) {
 		return 1; // should be handled through the override function
 	}
@@ -1271,6 +1318,10 @@ int AgentBase::sendAgentMessage( UUID *agent, unsigned char message, char *data,
 	if ( *agent == *this->getUUID() ) { // this is for us
 		this->_queueLocalMessage( message, data, len );
 		return 0;
+	}
+	Log.log(0, "AgentBase::sendAgentMessage");
+	if (message == 164) {
+		Log.log(0, "AgentBase::sendAgentMessage: Requesting acquiescence");
 	}
 
 	return this->sendMessage( this->hostCon, message, data, len, agent );

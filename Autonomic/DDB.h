@@ -3,9 +3,11 @@
 
 #include <list>
 #include <map>
+#include <vector>
 
 #include <sys/types.h>
 #include <sys/timeb.h>
+
 
 #ifndef UUIDlessDefined
 // UUIDless comparison function
@@ -23,6 +25,13 @@ public:
 
 #define DDB_REQUEST_TIMEOUT		30000 // ms
 
+// Definition of possible task types
+enum ITEM_TYPES {
+	NON_COLLECTABLE = 0,
+	LIGHT_ITEM = 1,
+	HEAVY_ITEM = 2
+};
+
 enum DATATYPES {
 	DDB_INVALID				= 0,
 	DDB_AGENT				= 0x0001 << 0,
@@ -35,6 +44,8 @@ enum DATATYPES {
 	DDB_SENSOR_CAMERA		= 0x0001 << 7,
 	DDB_SENSOR_SIM_CAMERA	= 0x0001 << 8,
 	DDB_HOST_GROUP			= 0x0001 << 9,
+	DDB_TASK				= 0x0001 << 10,
+	DDB_TASKDATA			= 0x0001 << 11
 };
 #define DDB_SENSORS	( DDB_SENSOR_SONAR | DDB_SENSOR_CAMERA | DDB_SENSOR_SIM_CAMERA )
 
@@ -246,6 +257,9 @@ struct DDBLandmark {
 	bool collected; // simulate collection
 
 	float trueX, trueY; // true position if it is known (only for debugging)
+
+	ITEM_TYPES landmarkType;
+
 };
 
 typedef std::map<UUID, DDBLandmark *, UUIDless> mapDDBLandmark;
@@ -483,6 +497,55 @@ enum SimCamera_DATA {
 	SimCamera_DATA_LANDMARK, // data format: unsigned char code, float distance, float angle
 	SimCamera_DATA_FLOORFINDER, // data format: float halfFOV, 10x float hitDistance (-1 means miss)
 };
+
+// -- DDB_TASKS ---------------------------------------
+
+// Definition of each task
+struct DDBTask {
+	UUID landmarkUUID;		//The UUID of the landmark to be collected
+	UUID agentUUID;			//The UUID of the assigned -team learning- agent
+	UUID avatar;			// Assigned avatar
+	bool completed;			// Task status
+	ITEM_TYPES type;        // Non-collectible (terrain or avatar landmark), light item, or heavy item
+};
+
+typedef std::map<UUID, DDBTask *, UUIDless> mapTask;
+typedef std::map<UUID, std::pair<DDBTask *, _timeb>, UUIDless> mapDDBTask;
+//typedef std::map<UUID, DDBTask *, UUIDless> mapDDBTask;
+
+// Individual task allocation data, to be shared with other avatars
+
+struct DDBTaskData {
+	UUID taskId;								   // UUID for the assigned task
+	UUID agentId;								   // UUID for the agent (avatarId is the key)
+	std::map<UUID, float, UUIDless> tau;           // Average trial time for each task
+	std::map<UUID, float, UUIDless> motivation;    // Motivation values for each task
+	std::map<UUID, float, UUIDless> impatience;    // Impatience values for each task
+	std::map<UUID, int, UUIDless> attempts;        // Number of attempts at each task
+	unsigned int psi;                    // Time on task
+	float tauStdDev;                     // Standard deviation of tau values
+	_timeb updateTime;                   // Time of most recent update to DDB
+};
+
+typedef std::pair<char *, size_t> storagePair;
+
+typedef std::map<UUID, storagePair, UUIDless> mapDDBTaskData;
+
+
+
+
+//Individual Q-Learning data (only stored at the end of a run, to be used in the next run)
+ 
+struct QLStorage {
+	std::vector<float> qTable;
+	std::vector<unsigned int> expTable;
+	long long totalActions;
+	long long usefulActions;
+};
+
+typedef std::map<char, QLStorage> mapDDBQLearningData;
+
+
 
 
 #endif

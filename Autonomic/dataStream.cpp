@@ -6,6 +6,7 @@
 #include "string.h"
 
 #include "dataStream.h"
+#include "DDB.h"
 
 DataStream::DataStream() {
 
@@ -225,6 +226,101 @@ void DataStream::packUUID( UUID *uuid ) {
 	this->dataLength += sizeof(UUID);
 }
 
+void DataStream::packTaskData(DDBTaskData *taskData) {
+	int length;		//Total size of the taskData in bytes
+	int tauLength = taskData->tau.size()*(sizeof(UUID) + sizeof(float));
+	int motLength = taskData->motivation.size()*(sizeof(UUID) + sizeof(float));
+	int impLength = taskData->impatience.size()*(sizeof(UUID) + sizeof(float));
+	int attLength = taskData->attempts.size()*(sizeof(UUID) + sizeof(int));
+
+	length = sizeof(UUID) + sizeof(UUID) + tauLength + motLength + impLength + attLength + sizeof(taskData->psi) + sizeof(taskData->tauStdDev) + sizeof(taskData->updateTime);
+
+	if (this->dataLength + length > this->bufSize) {
+		if (this->increaseBuffer(this->dataLength + length))
+			return;
+	}
+
+
+	//First pack the taskId
+	memcpy(this->head, (char *)&taskData->taskId, sizeof(UUID));
+	this->head += sizeof(UUID);
+	this->dataLength += sizeof(UUID);
+
+	//Then pack the agentId
+
+	memcpy(this->head, (char *)&taskData->agentId, sizeof(UUID));
+	this->head += sizeof(UUID);
+	this->dataLength += sizeof(UUID);
+
+	size_t mapSize = taskData->tau.size();
+
+	//Store the size of the maps (should be equal size for all maps) for later unpacking 
+	//Then, go through the maps, packing values
+
+	memcpy(this->head, (char *)&mapSize, sizeof(size_t));	//should be the same as the length of the other maps
+	this->head += sizeof(size_t);
+	this->dataLength += sizeof(size_t);
+
+	std::map<UUID, float, UUIDless>::iterator floatIter;
+	std::map<UUID, int, UUIDless>::iterator intIter;
+	if (mapSize > 0){	//Throws exception otherwise
+		for (floatIter = taskData->tau.begin(); floatIter != taskData->tau.end(); floatIter++) {
+			memcpy(this->head, (char *)&floatIter->first, sizeof(UUID));
+			this->head += sizeof(UUID);
+			this->dataLength += sizeof(UUID);
+
+			memcpy(this->head, (char *)&floatIter->second, sizeof(float));
+			this->head += sizeof(float);
+			this->dataLength += sizeof(float);
+		}
+
+		for (floatIter = taskData->motivation.begin(); floatIter != taskData->motivation.end(); floatIter++) {
+			memcpy(this->head, (char *)&floatIter->first, sizeof(UUID));
+			this->head += sizeof(UUID);
+			this->dataLength += sizeof(UUID);
+
+			memcpy(this->head, (char *)&floatIter->second, sizeof(float));
+			this->head += sizeof(float);
+			this->dataLength += sizeof(float);
+		}
+		for (floatIter = taskData->impatience.begin(); floatIter != taskData->impatience.end(); floatIter++) {
+			memcpy(this->head, (char *)&floatIter->first, sizeof(UUID));
+			this->head += sizeof(UUID);
+			this->dataLength += sizeof(UUID);
+
+			memcpy(this->head, (char *)&floatIter->second, sizeof(float));
+			this->head += sizeof(float);
+			this->dataLength += sizeof(float);
+		}
+		for (intIter = taskData->attempts.begin(); intIter != taskData->attempts.end(); intIter++) {
+			memcpy(this->head, (char *)&intIter->first, sizeof(UUID));
+			this->head += sizeof(UUID);
+			this->dataLength += sizeof(UUID);
+
+			memcpy(this->head, (char *)&intIter->second, sizeof(int));
+			this->head += sizeof(int);
+			this->dataLength += sizeof(int);
+		}
+	}
+	//Pack psi
+	memcpy(this->head, (char *)&taskData->psi, sizeof(unsigned int));
+	this->head += sizeof(unsigned int);
+	this->dataLength += sizeof(unsigned int);
+
+	//Pack tauStdDev
+	memcpy(this->head, (char *)&taskData->tauStdDev, sizeof(float));
+	this->head += sizeof(float);
+	this->dataLength += sizeof(float);
+
+	//Pack updateTime
+	memcpy(this->head, (char *)&taskData->updateTime, sizeof(_timeb));
+	this->head += sizeof(_timeb);
+	this->dataLength += sizeof(_timeb);
+
+}
+
+
+
 
 void DataStream::setData( char *ptr, int length ) {
 
@@ -372,6 +468,75 @@ void DataStream::unpackUUID( UUID *uuid ) {
 	memcpy( (char *)uuid, this->head, sizeof(UUID) );
 	this->head += sizeof(UUID);
 }
+void DataStream::unpackTaskData(DDBTaskData *taskData) {
+
+	//Unpack taskId
+	memcpy((char *)&taskData->taskId, this->head, sizeof(UUID));
+	this->head += sizeof(UUID);
+
+	//Unpack agentId
+	memcpy((char *)&taskData->agentId, this->head, sizeof(UUID));
+	this->head += sizeof(UUID);
+
+	//Get the size of the maps
+	size_t mapSize;
+	memcpy((char *)&mapSize, this->head, sizeof(size_t));
+	this->head += sizeof(size_t);
+
+	UUID key;
+	float floatValue;
+	int intValue;
+	if (mapSize > 0) {
+		//Unpack and populate tau
+		for (int i = 0; i < mapSize; i++) {
+			memcpy((char *)&key, this->head, sizeof(UUID));
+			this->head += sizeof(UUID);
+			memcpy((char *)&floatValue, this->head, sizeof(float));
+			this->head += sizeof(float);
+			taskData->tau[key] = floatValue;
+		}
+		//Unpack and populate motivation
+		for (int i = 0; i < mapSize; i++) {
+			memcpy((char *)&key, this->head, sizeof(UUID));
+			this->head += sizeof(UUID);
+			memcpy((char *)&floatValue, this->head, sizeof(float));
+			this->head += sizeof(float);
+			taskData->motivation[key] = floatValue;
+		}
+
+		//Unpack and populate impatience
+		for (int i = 0; i < mapSize; i++) {
+			memcpy((char *)&key, this->head, sizeof(UUID));
+			this->head += sizeof(UUID);
+			memcpy((char *)&floatValue, this->head, sizeof(float));
+			this->head += sizeof(float);
+			taskData->impatience[key] = floatValue;
+		}
+
+		//Unpack and populate attempts
+		for (int i = 0; i < mapSize; i++) {
+			memcpy((char *)&key, this->head, sizeof(UUID));
+			this->head += sizeof(UUID);
+			memcpy((char *)&intValue, this->head, sizeof(int));
+			this->head += sizeof(int);
+			taskData->attempts[key] = intValue;
+		}
+	}
+
+	//Unpack psi
+	memcpy((char *)&taskData->psi, this->head, sizeof(int));
+	this->head += sizeof(int);
+
+	//Unpack tauStdDev
+	memcpy((char *)&taskData->tauStdDev, this->head, sizeof(float));
+	this->head += sizeof(float);
+
+	//Unpack updateTime
+	memcpy((char *)&taskData->updateTime, this->head, sizeof(_timeb));
+	this->head += sizeof(_timeb);
+}
+
+
 
 int DataStream::increaseBuffer( int minSize ) {
 	int newSize = this->bufSize;

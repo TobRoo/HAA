@@ -133,6 +133,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>;C:\Boost\boost_1_61_0</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>WS2_32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -149,13 +150,14 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>;C:\Boost\boost_1_61_0</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>WS2_32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -175,6 +177,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>;C:\Boost\boost_1_61_0</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>WS2_32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -183,6 +186,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
+      <Profile>true</Profile>
     </Link>
     <PostBuildEvent>
       <Command>copy $(OutDir)$(ProjectName).exe $(SolutionDir)\bin\$(ProjectName).exe</Command>
@@ -215,6 +219,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>;C:\Boost\boost_1_61_0;E:\Code\boost_1_61_0</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>WS2_32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -222,6 +227,7 @@
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <Profile>true</Profile>
     </Link>
     <PostBuildEvent>
       <Command>copy $(OutDir)$(ProjectName).exe $(SolutionDir)\bin\$(ProjectName).exe</Command>

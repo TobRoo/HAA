@@ -146,6 +146,15 @@ int SupervisorSLAM::step() {
 	return AgentBase::step();
 }
 
+int SupervisorSLAM::parseMF_HandleMapOptions(bool mapReveal, bool mapRandom) {
+	Log.log(0, "SupervisorSLAM::parseMF_HandleMapOptions running");
+	this->mapReveal = mapReveal;
+	this->mapRandom = mapRandom;
+	Log.log(0, "SupervisorSLAM::parseMF_HandleMapOptions: mapReveal is %d, mapRandom is %d", this->mapReveal, this->mapRandom);
+	return 0;
+}
+
+
 int SupervisorSLAM::parseMF_HandleOptions( int SLAMmode ) {
 	STATE(SupervisorSLAM)->SLAMmode = SLAMmode;
 
@@ -178,47 +187,49 @@ int SupervisorSLAM::getProcessingPhases( int sensor ) {
 }
 
 int SupervisorSLAM::requestAgentSpawn( READING_TYPE *type, char priority ) {
+		
+//	if (!this->mapReveal) {	//Only need sensors if map is not revealed...
 
-	this->agentsSpawning[*type]++; // we're spawning this type of agent
+		this->agentsSpawning[*type]++; // we're spawning this type of agent
 
-	UUID sAgentuuid;
-	UUID thread;
-	switch ( type->sensor ) {
-	case DDB_PARTICLEFILTER:
-		UuidFromString( (RPC_WSTR)_T(AgentSensorCooccupancy_UUID), &sAgentuuid );
-		break;
-	case DDB_SENSOR_SONAR:
-		UuidFromString( (RPC_WSTR)_T(AgentSensorSonar_UUID), &sAgentuuid );
-		break;
-	case DDB_SENSOR_CAMERA:
-		if ( type->phase == 0 )		UuidFromString( (RPC_WSTR)_T(AgentSensorLandmark_UUID), &sAgentuuid );
-		else						UuidFromString( (RPC_WSTR)_T(AgentSensorFloorFinder_UUID), &sAgentuuid );
-		break;
-	case DDB_SENSOR_SIM_CAMERA:
-		if ( type->phase == 0 )		UuidFromString( (RPC_WSTR)_T(AgentSensorLandmark_UUID), &sAgentuuid );
-		else						UuidFromString( (RPC_WSTR)_T(AgentSensorFloorFinder_UUID), &sAgentuuid );
-		break;
-	default:
-		Log.log( 0, "SupervisorSLAM::requestAgentSpawn: unknown sensor type!" );
-		return NULL;
-	}
-	thread = this->conversationInitiate( SupervisorSLAM_CBR_convRequestAgentSpawn, REQUESTAGENTSPAWN_TIMEOUT, type, sizeof(READING_TYPE) );
-	if ( thread == nilUUID ) {
-		return NULL;
-	}
+		UUID sAgentuuid;
+		UUID thread;
+		switch (type->sensor) {
+		case DDB_PARTICLEFILTER:
+			UuidFromString((RPC_WSTR)_T(AgentSensorCooccupancy_UUID), &sAgentuuid);
+			break;
+		case DDB_SENSOR_SONAR:
+			UuidFromString((RPC_WSTR)_T(AgentSensorSonar_UUID), &sAgentuuid);
+			break;
+		case DDB_SENSOR_CAMERA:
+			if (type->phase == 0)		UuidFromString((RPC_WSTR)_T(AgentSensorLandmark_UUID), &sAgentuuid);
+			else						UuidFromString((RPC_WSTR)_T(AgentSensorFloorFinder_UUID), &sAgentuuid);
+			break;
+		case DDB_SENSOR_SIM_CAMERA:
+			if (type->phase == 0)		UuidFromString((RPC_WSTR)_T(AgentSensorLandmark_UUID), &sAgentuuid);
+			else						UuidFromString((RPC_WSTR)_T(AgentSensorFloorFinder_UUID), &sAgentuuid);
+			break;
+		default:
+			Log.log(0, "SupervisorSLAM::requestAgentSpawn: unknown sensor type!");
+			return NULL;
+		}
+		thread = this->conversationInitiate(SupervisorSLAM_CBR_convRequestAgentSpawn, REQUESTAGENTSPAWN_TIMEOUT, type, sizeof(READING_TYPE));
+		if (thread == nilUUID) {
+			return NULL;
+		}
 
-	Log.log( LOG_LEVEL_VERBOSE, "SupervisorSLAM::requestAgentSpawn: requesting agent %s %d-%d (thread %s)", Log.formatUUID(LOG_LEVEL_VERBOSE,&sAgentuuid), type->sensor, type->phase, Log.formatUUID(LOG_LEVEL_VERBOSE,&thread) );
+		Log.log(LOG_LEVEL_VERBOSE, "SupervisorSLAM::requestAgentSpawn: requesting agent %s %d-%d (thread %s)", Log.formatUUID(LOG_LEVEL_VERBOSE, &sAgentuuid), type->sensor, type->phase, Log.formatUUID(LOG_LEVEL_VERBOSE, &thread));
 
-	this->ds.reset();
-	this->ds.packUUID( this->getUUID() );
-	this->ds.packUUID( &sAgentuuid );
-	this->ds.packChar( -1 ); // no instance parameters
-	this->ds.packFloat32( 0.0f ); // affinity
-	this->ds.packChar( priority );
-	this->ds.packUUID( &thread );
-	this->sendMessage( this->hostCon, MSG_RAGENT_SPAWN, this->ds.stream(), this->ds.length() );
-	this->ds.unlock();
-
+		this->ds.reset();
+		this->ds.packUUID(this->getUUID());
+		this->ds.packUUID(&sAgentuuid);
+		this->ds.packChar(-1); // no instance parameters
+		this->ds.packFloat32(0.0f); // affinity
+		this->ds.packChar(priority);
+		this->ds.packUUID(&thread);
+		this->sendMessage(this->hostCon, MSG_RAGENT_SPAWN, this->ds.stream(), this->ds.length());
+		this->ds.unlock();
+//	}
 	return 0;
 }
 

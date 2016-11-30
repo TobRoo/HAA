@@ -15,6 +15,7 @@
 #include "..\\AgentPathPlanner\\AgentPathPlannerVersion.h"
 
 #include "..\\AgentIndividualLearning\\AgentIndividualLearningVersion.h"
+#include "..\\AgentTeamLearning\\AgentTeamLearningVersion.h"
 
 using namespace AvatarBase_Defs;
 
@@ -76,6 +77,10 @@ AvatarBase::AvatarBase( spAddressPort ap, UUID *ticket, int logLevel, char *logD
 	STATE(AvatarBase)->agentIndividualLearningSpawned = 0;
 	STATE(AvatarBase)->agentIndividualLearningStatus = DDBAGENT_STATUS_ERROR;
 
+	UuidCreateNil(&STATE(AvatarBase)->agentTeamLearning);
+	STATE(AvatarBase)->agentTeamLearningSpawned = 0;
+	STATE(AvatarBase)->agentTeamLearningStatus = DDBAGENT_STATUS_ERROR;
+
 	STATE(AvatarBase)->targetControllerIndex = 0;
 
 	STATE(AvatarBase)->maxLinear = 1.0; // subclasses can update if they want
@@ -95,6 +100,7 @@ AvatarBase::AvatarBase( spAddressPort ap, UUID *ticket, int logLevel, char *logD
 	this->callback[AvatarBase_CBR_convRequestExecutiveAvatarId] = NEW_MEMBER_CB(AvatarBase,convRequestExecutiveAvatarId);
 	this->callback[AvatarBase_CBR_convRequestAgentPathPlanner] = NEW_MEMBER_CB(AvatarBase,convRequestAgentPathPlanner);
 	this->callback[AvatarBase_CBR_convRequestAgentIndividualLearning] = NEW_MEMBER_CB(AvatarBase, convRequestAgentIndividualLearning);
+	this->callback[AvatarBase_CBR_convRequestAgentTeamLearning] = NEW_MEMBER_CB(AvatarBase, convRequestAgentTeamLearning);
 	this->callback[AvatarBase_CBR_convPathPlannerSetTarget] = NEW_MEMBER_CB(AvatarBase,convPathPlannerSetTarget);
 	this->callback[AvatarBase_CBR_convPFInfo] = NEW_MEMBER_CB(AvatarBase,convPFInfo);
 	this->callback[AvatarBase_CBR_convAgentInfo] = NEW_MEMBER_CB(AvatarBase,convAgentInfo);
@@ -156,7 +162,7 @@ int AvatarBase::configure() {
 }
 
 int AvatarBase::parseMF_HandleAvatar( AgentType *agentType, char *fileName, float x, float y, float r, float startTime, float duration, char retireMode ) {
-	
+	Log.log(0, "AvatarBase::parseMF_HandleAvatar: start");
 	if ( agentType->uuid == STATE(AgentBase)->agentType.uuid 
 	  && agentType->instance == STATE(AgentBase)->agentType.instance ) {
 		this->setPos( x, y, r );
@@ -180,6 +186,7 @@ int AvatarBase::parseMF_HandleAvatar( AgentType *agentType, char *fileName, floa
 
 		STATE(AvatarBase)->retireMode = retireMode;
 	}
+	Log.log(0, "AvatarBase::parseMF_HandleAvatar: completed");
 
 	return 0;
 }
@@ -233,13 +240,23 @@ int AvatarBase::step() {
 	return AgentBase::step();
 }
 
+int AvatarBase::parseMF_HandleMapOptions(bool mapReveal, bool mapRandom) {
+	Log.log(0, "AvatarBase::parseMF_HandleMapOptions running");
+	this->mapReveal = mapReveal;
+	this->mapRandom = mapRandom;
+	Log.log(0, "AvatarBase::parseMF_HandleMapOptions: mapReveal is %d, mapRandom is %d", this->mapReveal, this->mapRandom);
+	return 0;
+}
+
+
+
 int AvatarBase::parseMF_HandleOptions( int SLAMmode ) {
 	STATE(AvatarBase)->SLAMmode = SLAMmode;
 
 	return AgentBase::parseMF_HandleOptions( SLAMmode );
 }
 
-int AvatarBase::parseMF_HandleLearning(bool individualLearning) {
+int AvatarBase::parseMF_HandleLearning(bool individualLearning, bool teamLearning) {
 
 	// Spawn the appropriate motion planner
 	if (individualLearning) {
@@ -251,8 +268,14 @@ int AvatarBase::parseMF_HandleLearning(bool individualLearning) {
 		this->spawnAgentPathPlanner();
 	}
 
+	// Spawn team learning agent
+	if (teamLearning) {
+		this->spawnAgentTeamLearning();
+	}
+
 	return 0;
 }
+
 
 int AvatarBase::setAvatarState( bool ready ) {
 
@@ -379,6 +402,7 @@ int AvatarBase::registerLandmark( UUID *id, unsigned char code, UUID *avatar, fl
 	lds.packFloat32( x ); 
 	lds.packFloat32( y ); 
 	lds.packChar( 0 );
+	lds.packInt32(0);	//ITEM_TYPES = NON_COLLECTABLE since it is an avatar
 	this->sendMessage( this->hostCon, MSG_DDB_ADDLANDMARK, lds.stream(), lds.length() );
 	lds.unlock();
 
@@ -1006,6 +1030,32 @@ int AvatarBase::setTargetPos( float x, float y, float r, char useRotation, UUID 
 //-----------------------------------------------------------------------------
 // Actions
 
+int AvatarBase::spawnAgentTeamLearning() {
+	UUID thread;
+
+	if (!STATE(AvatarBase)->agentTeamLearningSpawned) {
+		UUID aAgentTeamLearninguuid;
+		UuidFromString((RPC_WSTR)_T(AgentTeamLearning_UUID), &aAgentTeamLearninguuid);
+		thread = this->conversationInitiate(AvatarBase_CBR_convRequestAgentTeamLearning, REQUESTAGENTSPAWN_TIMEOUT, &aAgentTeamLearninguuid, sizeof(UUID));
+		if (thread == nilUUID) {
+			return 1;
+		}
+		this->ds.reset();
+		this->ds.packUUID(this->getUUID());
+		this->ds.packUUID(&aAgentTeamLearninguuid);
+		this->ds.packChar(-1); // no instance parameters
+		this->ds.packFloat32(0); // affinity
+		this->ds.packChar(DDBAGENT_PRIORITY_CRITICAL);
+		this->ds.packUUID(&thread);
+		this->sendMessage(this->hostCon, MSG_RAGENT_SPAWN, this->ds.stream(), this->ds.length());
+		this->ds.unlock();
+
+		STATE(AvatarBase)->agentTeamLearningSpawned = -1; // in progress
+	}
+	return 0;
+}
+
+
 int AvatarBase::spawnAgentIndividualLearning() {
 	UUID thread;
 
@@ -1186,6 +1236,7 @@ int AvatarBase::queueAction( UUID *director, UUID *thread, int action, void *dat
 		if ( !UuidCompare( director, &STATE(AgentBase)->uuid, &Status ) ) { // we are the director
 			// TODO
 		} else {
+			Log.log(0,"ABORTED!");
 			this->ds.reset();
 			this->ds.packUUID( thread );
 			this->ds.packChar( AAR_ABORTED );
@@ -1449,47 +1500,49 @@ int AvatarBase::getProcessingPhases( int sensor ) {
 }
 
 int AvatarBase::requestAgentSpawn( READING_TYPE *type, char priority ) {
+//	if (!this->mapReveal) {	//Only need sensors if the map is not revealed...
 
-	this->agentsSpawning[*type]++; // we're spawning this type of agent
+		this->agentsSpawning[*type]++; // we're spawning this type of agent
 
-	UUID sAgentuuid;
-	UUID thread;
-	switch ( type->sensor ) {
-	case DDB_PARTICLEFILTER:
-		UuidFromString( (RPC_WSTR)_T(AgentSensorCooccupancy_UUID), &sAgentuuid );
-		break;
-	case DDB_SENSOR_SONAR:
-		UuidFromString( (RPC_WSTR)_T(AgentSensorSonar_UUID), &sAgentuuid );
-		break;
-	case DDB_SENSOR_CAMERA:
-		if ( type->phase == 0 )		UuidFromString( (RPC_WSTR)_T(AgentSensorLandmark_UUID), &sAgentuuid );
-		else						UuidFromString( (RPC_WSTR)_T(AgentSensorFloorFinder_UUID), &sAgentuuid );
-		break;
-	case DDB_SENSOR_SIM_CAMERA:
-		if ( type->phase == 0 )		UuidFromString( (RPC_WSTR)_T(AgentSensorLandmark_UUID), &sAgentuuid );
-		else						UuidFromString( (RPC_WSTR)_T(AgentSensorFloorFinder_UUID), &sAgentuuid );
-		break;
-	default:
-		Log.log( 0, "AvatarBase::requestAgentSpawn: unknown sensor type!" );
-		return NULL;
-	}
-	thread = this->conversationInitiate( AvatarBase_CBR_convRequestAgentSpawn, REQUESTAGENTSPAWN_TIMEOUT, type, sizeof(READING_TYPE) );
-	if ( thread == nilUUID ) {
-		return NULL;
-	}
+		UUID sAgentuuid;
+		UUID thread;
+		switch (type->sensor) {
+		case DDB_PARTICLEFILTER:
+			UuidFromString((RPC_WSTR)_T(AgentSensorCooccupancy_UUID), &sAgentuuid);
+			break;
+		case DDB_SENSOR_SONAR:
+			UuidFromString((RPC_WSTR)_T(AgentSensorSonar_UUID), &sAgentuuid);
+			break;
+		case DDB_SENSOR_CAMERA:
+			if (type->phase == 0)		UuidFromString((RPC_WSTR)_T(AgentSensorLandmark_UUID), &sAgentuuid);
+			else						UuidFromString((RPC_WSTR)_T(AgentSensorFloorFinder_UUID), &sAgentuuid);
+			break;
+		case DDB_SENSOR_SIM_CAMERA:
+			if (type->phase == 0)		UuidFromString((RPC_WSTR)_T(AgentSensorLandmark_UUID), &sAgentuuid);
+			else						UuidFromString((RPC_WSTR)_T(AgentSensorFloorFinder_UUID), &sAgentuuid);
+			break;
+		default:
+			Log.log(0, "AvatarBase::requestAgentSpawn: unknown sensor type!");
+			return NULL;
+		}
+		thread = this->conversationInitiate(AvatarBase_CBR_convRequestAgentSpawn, REQUESTAGENTSPAWN_TIMEOUT, type, sizeof(READING_TYPE));
+		if (thread == nilUUID) {
+			return NULL;
+		}
 
-	Log.log( LOG_LEVEL_VERBOSE, "AvatarBase::requestAgentSpawn: requesting agent %s %d-%d", Log.formatUUID(LOG_LEVEL_VERBOSE,&sAgentuuid), type->sensor, type->phase );
+		Log.log(LOG_LEVEL_VERBOSE, "AvatarBase::requestAgentSpawn: requesting agent %s %d-%d", Log.formatUUID(LOG_LEVEL_VERBOSE, &sAgentuuid), type->sensor, type->phase);
 
-	this->ds.reset();
-	this->ds.packUUID( this->getUUID() );
-	this->ds.packUUID( &sAgentuuid );
-	this->ds.packChar( -1 ); // no instance parameters
-	this->ds.packFloat32( 0.0f ); // affinity
-	this->ds.packChar( priority );
-	this->ds.packUUID( &thread );
-	this->sendMessage( this->hostCon, MSG_RAGENT_SPAWN, this->ds.stream(), this->ds.length() );
-	this->ds.unlock();
 
+		this->ds.reset();
+		this->ds.packUUID(this->getUUID());
+		this->ds.packUUID(&sAgentuuid);
+		this->ds.packChar(-1); // no instance parameters
+		this->ds.packFloat32(0.0f); // affinity
+		this->ds.packChar(priority);
+		this->ds.packUUID(&thread);
+		this->sendMessage(this->hostCon, MSG_RAGENT_SPAWN, this->ds.stream(), this->ds.length());
+		this->ds.unlock();
+//	}
 	return 0;
 }
 
@@ -1990,7 +2043,59 @@ bool AvatarBase::convRequestAgentIndividualLearning(void *vpConv) {
 		this->sendMessage(this->hostCon, MSG_AGENT_START, lds.stream(), lds.length(), &STATE(AvatarBase)->agentIndividualLearning);
 		lds.unlock();
 
-		this->backup(); // backup agentPathPlanner
+		this->backup(); // backup agentIndividualLearning
+
+	}
+	else {
+		lds.unlock();
+
+		// TODO try again?
+	}
+
+	return 0;
+}
+
+bool AvatarBase::convRequestAgentTeamLearning(void *vpConv) {
+	DataStream lds;
+	spConversation conv = (spConversation)vpConv;
+
+	if (conv->response == NULL) { // spawn timed out
+		Log.log(0, "AvatarBase::convRequestAgentTeamLearning: request spawn timed out");
+		return 0; // end conversation
+	}
+
+	lds.setData(conv->response, conv->responseLen);
+	lds.unpackData(sizeof(UUID)); // discard thread
+
+	if (lds.unpackBool()) { // succeeded
+		lds.unpackUUID(&STATE(AvatarBase)->agentTeamLearning);
+		lds.unlock();
+		STATE(AvatarBase)->agentTeamLearningSpawned = 1; // ready
+
+		Log.log(0, "AvatarBase::convRequestAgentTeamLearning: Team learning agent %s", Log.formatUUID(0, &STATE(AvatarBase)->agentTeamLearning));
+
+		// register as agent watcher
+		lds.reset();
+		lds.packUUID(&STATE(AgentBase)->uuid);
+		lds.packUUID(&STATE(AvatarBase)->agentTeamLearning);
+		this->sendMessage(this->hostCon, MSG_DDB_WATCH_ITEM, lds.stream(), lds.length());
+		lds.unlock();
+		// NOTE: we request the status once DDBE_WATCH_ITEM notification is received
+
+		// set parent
+		this->sendMessage(this->hostCon, MSG_AGENT_SETPARENT, (char *)this->getUUID(), sizeof(UUID), &STATE(AvatarBase)->agentTeamLearning);
+
+		lds.reset();
+		lds.packUUID(&STATE(AgentBase)->uuid);
+		this->sendMessageEx(this->hostCon, MSGEX(AgentTeamLearning_MSGS, MSG_CONFIGURE), lds.stream(), lds.length(), &STATE(AvatarBase)->agentTeamLearning);
+		lds.unlock();
+
+		lds.reset();
+		lds.packString(STATE(AgentBase)->missionFile);
+		this->sendMessage(this->hostCon, MSG_AGENT_START, lds.stream(), lds.length(), &STATE(AvatarBase)->agentTeamLearning);
+		lds.unlock();
+
+		this->backup(); // backup agentTeamLearning
 
 	}
 	else {

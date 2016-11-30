@@ -1357,7 +1357,7 @@ int DDBStore::ParseLandmark( DataStream *ds, UUID *parsedId ) {
 		// match data format to Enumerate<Type> function
 		landmark = *(DDBLandmark *)ds->unpackData( sizeof(DDBLandmark) );
 		
-		this->AddLandmark( &id, landmark.code, &landmark.owner, landmark.height, landmark.elevation, landmark.x, landmark.y, landmark.estimatedPos );
+		this->AddLandmark( &id, landmark.code, &landmark.owner, landmark.height, landmark.elevation, landmark.x, landmark.y, landmark.estimatedPos, landmark.landmarkType );
 	
 		this->DDBLandmarks[id]->posInitialized = landmark.posInitialized;
 		this->DDBLandmarks[id]->P = landmark.P;
@@ -1373,7 +1373,7 @@ int DDBStore::ParseLandmark( DataStream *ds, UUID *parsedId ) {
 	return 0;
 }
 
-int DDBStore::AddLandmark( UUID *id, unsigned char code, UUID *owner, float height, float elevation, float x, float y, bool estimatedPos ) {
+int DDBStore::AddLandmark( UUID *id, unsigned char code, UUID *owner, float height, float elevation, float x, float y, bool estimatedPos, ITEM_TYPES landmarkType ) {
 	
 	// check to see if it already exists
 	if ( this->DDBLandmarks.find( *id ) != this->DDBLandmarks.end() ) 
@@ -1400,6 +1400,8 @@ int DDBStore::AddLandmark( UUID *id, unsigned char code, UUID *owner, float heig
 	
 	landmark->trueX = x;
 	landmark->trueY = y;
+
+	landmark->landmarkType = landmarkType;
 
 	// insert into DDBLandmarks
 	this->DDBLandmarks[*id] = landmark;
@@ -1534,6 +1536,52 @@ UUID DDBStore::GetLandmarkId( unsigned char code ) {
 		return iter->first;
 	}
 }
+
+bool DDBStore::GetTaskId(UUID *id, UUID *foundId) {
+	mapDDBTask::iterator iter = this->DDBTasks.begin();
+
+	while (iter != this->DDBTasks.end()) {
+		if (iter->first == *id)
+			break;
+		iter++;
+	}
+
+	if (iter == this->DDBTasks.end()) {
+		*foundId = nilUUID;
+		return 1;
+	}
+	else {
+		*foundId = iter->first;
+		return 0;
+	}
+}
+
+UUID DDBStore::GetTaskDataId(UUID *id) {
+	mapDDBTaskData::iterator iter = this->DDBTaskDatas.begin();
+
+	while (iter != this->DDBTaskDatas.end()) {
+		if (iter->first == *id)
+			return iter->first;
+		iter++;
+	}
+	return nilUUID;
+
+
+	//while (iter != this->DDBTaskDatas.end()) {
+	//	if (iter->first == *id)
+	//		break;
+	//	iter++;
+	//}
+
+//	if (iter == this->DDBTaskDatas.end()) {
+//		return nilUUID;
+//	}
+//	else {
+//		return iter->first;
+//	}
+}
+
+
 
 //-----------------------------------------------------------------------------
 // DDBProbabilisticOccupancyGrid
@@ -2062,6 +2110,8 @@ int DDBStore::POGLoadRegion( UUID *id, float x, float y, float w, float h, char 
 }
 
 int DDBStore::POGDumpRegion( UUID *id, float x, float y, float w, float h, char *filename ) {
+	RPC_WSTR uuidStr;
+	UuidToString(&*id, &uuidStr);
 	FILE *fp;
 	int u, v; // tile coordinates
 	int i, j; // cell coordinates
@@ -2083,9 +2133,11 @@ int DDBStore::POGDumpRegion( UUID *id, float x, float y, float w, float h, char 
 	mapDDBPOG::iterator iterPOG = this->DDBPOGs.find(*id);
 	mapDDBPOGTile::iterator iterTile;
 
-	if ( iterPOG == this->DDBPOGs.end() )
+	if (iterPOG == this->DDBPOGs.end()) {
+		Log->log(0, "DDBStore::POGDUMP iterPOG == this->DDBPOGs.end()");
+		
 		return 1;
-
+	}
 	DDBProbabilisticOccupancyGrid *pog = iterPOG->second;
 
 	// verify that the cooridates are valid
@@ -2093,10 +2145,12 @@ int DDBStore::POGDumpRegion( UUID *id, float x, float y, float w, float h, char 
 	  || fabs((float)round(y/pog->resolution) - (float)(y/pog->resolution) ) > 0.1f*pog->resolution
 	  || fabs((float)round(w/pog->resolution) - (float)(w/pog->resolution) ) > 0.1f*pog->resolution
 	  || fabs((float)round(h/pog->resolution) - (float)(h/pog->resolution) ) > 0.1f*pog->resolution ) {
+		Log->log(0, "DDBStore::POGDUMP all coordinates must be integer multiples of resolution");
 		return 1; // all coordinates must be integer multiples of resolution
 	}
 
 	if ( fopen_s( &fp, filename, "w" ) ) {
+		Log->log(0, "DDBStore::POGDUMP file op problem");
 		return 1; 
 	}
 
@@ -4589,4 +4643,325 @@ int DDBStore::DataDump( Logger *Data, bool fulldump, char *logDirectory ) {
 	}
 
 	return 0;
+}
+
+
+
+//-------------------------------------------------------------------------
+//DDBTasks	Task storage for team and individual learning agents
+int DDBStore::AddTask(UUID *id, UUID *landmark, UUID *agent, UUID *avatar, bool completed, ITEM_TYPES type) {
+
+	// check to see if it already exists
+	if (this->DDBTasks.find(*id) != this->DDBTasks.end())
+		return 1; // already exists
+
+				  // create DDBTask
+	DDBTask *task = (DDBTask *)malloc(sizeof(DDBTask));
+	if (!task)
+		return 1;
+
+	// initialize
+
+	task->landmarkUUID = *landmark;
+	task->agentUUID = *agent;
+	task->avatar = *avatar;
+	task->type = type;
+	task->completed = completed;
+
+
+	//_timeb insertionTime;
+
+	// insert into DDBTasks
+	this->DDBTasks[*id].first = task;
+	
+	_ftime64_s(&this->DDBTasks[*id].second);	//Log time of insertion
+	//this->DDBTasks[*id] = task;
+
+
+	return 0;
+}
+
+int DDBStore::RemoveTask(UUID *id) {
+	mapDDBTask::iterator iter = this->DDBTasks.find(*id);
+
+	if (iter == this->DDBTasks.end())
+		return 1;
+
+	DDBTask *task = iter->second.first;
+	//DDBTask *task = iter->second;
+
+	this->DDBTasks.erase(*id);
+
+	// free stuff
+	free(&task);
+
+	return 0;
+}
+
+int DDBStore::TaskSetInfo(UUID *id, UUID *agent, UUID *avatar,  bool completed) {
+	mapDDBTask::iterator iter = this->DDBTasks.find(*id);
+
+	if (*id != nilUUID) {	//Nil upload from negotiateTasks()
+		if (iter == this->DDBTasks.end()) {
+			return 1; // not found
+		}
+
+
+	DDBTask *task = iter->second.first;
+	//DDBTask *task = iter->second;
+	_timeb lastAvatarChange = iter->second.second;
+
+	//if (task->completed != completed) {	//Completion status has changed, treat as normal
+		task->agentUUID = *agent;
+		task->avatar = *avatar;
+		task->completed = completed;
+		_ftime64_s(&iter->second.second);	//Set the update time as now
+	//}
+	//else {	//Only avatar and/or agent changed - make sure that task ownership is not rapidly changing by enforcing a wait period 
+	//		//This enables any OAC messages to "catch up"
+	//	_timeb timeNow;
+	//	_ftime64_s(&timeNow);
+	//	if (timeNow.millitm - lastAvatarChange.millitm < TASK_AVATAR_CHANGE_THRESHOLD) {
+	//		return 2;
+	//	}
+	//	else {	//Proceed as usual, enough time has passed since the last avatar change
+
+	//		task->agentUUID = *agent;
+	//		task->avatar = *avatar;
+	//		task->completed = completed;
+	//	}	
+	//}
+	}
+
+	return 0;
+}
+
+int DDBStore::GetTask(UUID *id, DataStream *ds, UUID *thread, bool enumTasks) {
+	mapDDBTask::iterator iter = this->DDBTasks.find(*id);
+
+	ds->reset();
+	ds->packUUID(thread);
+
+
+	if (enumTasks == true) {
+		ds->packChar(DDBR_OK);
+		ds->packBool(enumTasks);
+		ds->packInt32((int)this->DDBTasks.size());
+		for (iter = this->DDBTasks.begin(); iter != this->DDBTasks.end(); iter++) {
+			ds->packUUID((UUID *)&iter->first);
+			ds->packData(iter->second.first, sizeof(DDBTask));
+			//ds->packUUID((UUID *)&iter->first);
+			//ds->packData(iter->second, sizeof(DDBTask));
+		}
+		return 0;
+	}
+
+
+	if (iter == this->DDBTasks.end()) {
+		ds->packChar(DDBR_NOTFOUND);
+		return 1; // not found
+	}
+
+	//DDBTask *task = iter->second;
+	DDBTask *task = iter->second.first;
+
+
+	// send task
+	ds->packChar(DDBR_OK);
+	ds->packBool(enumTasks);
+	ds->packUUID(id);
+	ds->packData(task, sizeof(DDBTask));
+
+	return 0;
+
+}
+
+//-------------------------------------------------------------------------
+//DDBTaskData	Task performance metrics storage for team learning agents
+int DDBStore::AddTaskData(UUID *id, DDBTaskData *data) {
+
+	// check to see if it already exists
+	if (this->DDBTaskDatas.find(*id) != this->DDBTaskDatas.end())
+		return 1; // already exists
+
+	DataStream lds;
+
+	lds.reset();
+	lds.packTaskData(data);		//Try this "hackaround" for now, marshals taskData for storage
+	lds.unlock();
+
+	char *storage = (char *)malloc(lds.length());
+	memcpy(storage, lds.stream(), lds.length());
+	
+	//*storage = *lds.stream();
+
+
+	//*sds = lds;
+
+	//// create DDBTaskData
+	//DDBTaskData *taskData = (DDBTaskData *)malloc(sizeof(*data));
+	//if (!taskData)
+	//	return 1;
+	//// initialize
+
+	//memcpy(taskData, data, sizeof(data));
+
+	storagePair sP;
+	sP.first = storage;
+	sP.second = lds.length();
+	// insert into DDBTasks
+	this->DDBTaskDatas[*id] = sP;
+
+	return 0;
+}
+
+int DDBStore::RemoveTaskData(UUID *id) {
+	mapDDBTaskData::iterator iter = this->DDBTaskDatas.find(*id);
+
+	if (iter == this->DDBTaskDatas.end())
+		return 1;
+
+	storagePair storage = iter->second;
+
+	this->DDBTaskDatas.erase(*id);
+
+	// free stuff
+	free(&storage);
+
+	return 0;
+}
+
+int DDBStore::TaskDataSetInfo(UUID *id, DDBTaskData *data) {
+	mapDDBTaskData::iterator iter = this->DDBTaskDatas.find(*id);
+
+	if (iter == this->DDBTaskDatas.end()) {
+		return 1; // not found
+	}
+
+	DataStream lds;
+
+	lds.reset();
+	lds.packTaskData(data);		//Try this "hackaround" for now, marshals taskData for storage
+	lds.unlock();
+
+	char *storage = (char *)malloc(lds.length());
+	memcpy(storage, lds.stream(), lds.length());
+
+
+	//*sds = lds;
+	storagePair sP;
+	sP.first = storage;
+	sP.second = lds.length();
+	// insert into DDBTasks
+	this->DDBTaskDatas[*id] = sP;
+
+
+	//*iter->second = *data;
+	/*DDBTaskData *taskData = iter->second;
+
+	taskData = data;*/
+
+	return 0;
+}
+
+int DDBStore::GetTaskData(UUID *id, DataStream *ds, UUID *thread, bool enumTaskData) {
+	mapDDBTaskData::iterator iter = this->DDBTaskDatas.find(*id);
+
+	DDBTaskData taskData;
+	DataStream lds;
+
+
+	ds->reset();
+	ds->packUUID(thread);
+
+	if (enumTaskData == true) {
+		ds->packChar(DDBR_OK);
+		ds->packBool(enumTaskData);
+		ds->packInt32((int)this->DDBTaskDatas.size());
+
+		if (DDBTaskDatas.empty() == false) {
+			for (iter = this->DDBTaskDatas.begin(); iter != this->DDBTaskDatas.end(); iter++) {
+				ds->packUUID((UUID *)&iter->first);
+				lds.setData(iter->second.first, iter->second.second);
+				lds.unpackTaskData(&taskData);
+				lds.unlock();
+				ds->packTaskData(&taskData);
+			}
+		}
+		return 0;
+	}
+
+	if (iter == this->DDBTaskDatas.end()) {
+		ds->packChar(DDBR_NOTFOUND);
+		return 1; // not found
+	}
+	lds.setData(iter->second.first, iter->second.second);
+	lds.unpackTaskData(&taskData);
+	lds.unlock();
+
+	// send task data
+	ds->packChar(DDBR_OK);
+	ds->packBool(enumTaskData);
+	ds->packUUID(id);
+	ds->packTaskData(&taskData);
+
+
+	//ds->reset();
+	//ds->packUUID(thread);
+
+	//if (enumTaskData == true) {
+	//	ds->packChar(DDBR_OK);
+	//	ds->packBool(enumTaskData);
+	//	ds->packInt32((int)this->DDBTaskDatas.size());
+
+	//	if (DDBTaskDatas.empty() == false) {
+	//		for (iter = this->DDBTaskDatas.begin(); iter != this->DDBTaskDatas.end(); iter++) {
+	//			ds->packUUID((UUID *)&iter->first);
+	//			ds->packTaskData(iter->second);
+	//		}
+	//	}
+	//	return 0;
+	//}
+
+	//if (iter == this->DDBTaskDatas.end()) {
+	//	ds->packChar(DDBR_NOTFOUND);
+	//	return 1; // not found
+	//}
+
+	//DDBTaskData *taskData = iter->second;
+
+	//// send task data
+	//ds->packChar(DDBR_OK);
+	//ds->packBool(enumTaskData);
+	//ds->packUUID(id);
+	//ds->packTaskData(taskData);
+
+	return 0;
+}
+
+//Individual Q-learning value storage, for storing data between simulation runs
+
+bool DDBStore::AddQLearningData(char instance, long long totalActions, long long usefulActions, int tableSize, std::vector<float>* qTable, std::vector<unsigned int>* expTable)
+{
+
+	// check to see if it already exists
+	if (this->DDBQLearningDatas.find(instance) != this->DDBQLearningDatas.end()) {
+		return true; // already exists
+	}
+
+	QLStorage newQLStorage;
+	newQLStorage.totalActions = totalActions;
+	newQLStorage.usefulActions = usefulActions;
+	newQLStorage.qTable = *qTable;
+	newQLStorage.expTable = *expTable;
+
+	// insert into DDBQLearningDatas
+	this->DDBQLearningDatas[instance] = newQLStorage;
+
+	return false;
+}
+
+mapDDBQLearningData DDBStore::GetQLearningData()
+{
+	return this->DDBQLearningDatas;
 }

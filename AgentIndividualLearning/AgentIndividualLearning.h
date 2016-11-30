@@ -115,13 +115,17 @@ protected:
 	std::map<UUID, DDBRegion, UUIDless> collectionRegions;
 	AVATAR_INFO avatar;
 	UUID avatarId;
+	UUID avatarAgentId;
 	std::map<UUID, AVATAR_INFO, UUIDless> otherAvatars;
 	DDBLandmark landmark;
 	UUID landmarkId;
-	
+	bool hasCargo;
+	bool hasDelivered;
+
 	QLearning q_learning_;				   	    // QLearning object
 	std::vector<unsigned int> stateVector;		// Current state vector
 	std::vector<unsigned int> prevStateVector;	// Previous state vector
+
 
 	// Learning parameters
 	unsigned int learning_iterations_;          // Counter for how many times learning is performed
@@ -163,6 +167,18 @@ protected:
 	// Random number generator
 	RandomGenerator randomGenerator;
 	
+
+	//mapTask  taskList;
+	UUID taskId;
+	DDBTask task;
+	std::map<unsigned char, DDBLandmark> targetList;
+	std::map<unsigned char, DDBLandmark> obstacleList;
+
+	//Metrics 
+
+	unsigned long totalActions;
+	unsigned long usefulActions;
+
 //-----------------------------------------------------------------------------
 // Functions	
 
@@ -187,6 +203,12 @@ private:
 	int learn();
 	float determineReward();
 	bool validAction(ActionPair &action);
+
+	//Learning data storage for multiple simulation runs - so far, only Q-Learning implemented
+
+	int uploadLearningData();		//General function, selects method depending on policy - so far, only Q-Learning implemented
+	int uploadQLearningData();		//Uploads Q-Learning data to the DDB
+	int parseLearningData();		//Loads data from previous runs when constructing the agent
 	
 	virtual int ddbNotification(char *data, int len);
 
@@ -204,7 +226,11 @@ public:
 		AgentIndividualLearning_CBR_convGetAvatarList,
 		AgentIndividualLearning_CBR_convGetAvatarInfo,
 		AgentIndividualLearning_CBR_convLandmarkInfo,
-		AgentIndividualLearning_CBR_convMissionRegion
+		AgentIndividualLearning_CBR_convOwnLandmarkInfo,
+		AgentIndividualLearning_CBR_convMissionRegion,
+		AgentIndividualLearning_CBR_convGetTaskList,
+		AgentIndividualLearning_CBR_convGetTaskInfo,
+		AgentIndividualLearning_CBR_convCollectLandmark,
 	};
 
 	// Define callback functions (make sure they match CallbackRef above and are added to this->callback during agent creation)
@@ -213,7 +239,13 @@ public:
 	bool convGetAvatarList(void *vpConv);
 	bool convGetAvatarInfo(void *vpConv);
 	bool convLandmarkInfo(void *vpConv);
+	bool convOwnLandmarkInfo(void * vpConv);
 	bool convMissionRegion(void *vpConv);
+
+	bool convGetTaskInfo(void * vpConv);
+	bool convGetTaskList(void * vpConv);
+
+	bool convCollectLandmark(void * vpConv);
 
 protected:
 	virtual int	  freeze( UUID *ticket );

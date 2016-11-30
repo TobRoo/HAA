@@ -58,7 +58,7 @@ enum MSGS {
 	OAC_DDB_ADDREGION, // add region to DDB [UUID sender, UUID uuid, float x, float y, float w, float h]
 	OAC_DDB_REMREGION, // remove region from DDB [UUID sender, UUID uuid]
 
-	OAC_DDB_ADDLANDMARK, // add landmark to DDB [UUID sender, UUID uuid, unsigned char code, UUID owner, float height, float elevation, float x, float y, char estimatedPos]
+	OAC_DDB_ADDLANDMARK, // add landmark to DDB [UUID sender, UUID uuid, unsigned char code, UUID owner, float height, float elevation, float x, float y, char estimatedPos, int landmarkType]
 	OAC_DDB_REMLANDMARK, // remove landark from DDB [UUID sender, UUID uuid]
 	OAC_DDB_LANDMARKSETINFO, // set landmark info [UUID sender, UUID uuid, int infoFlags, data...]
 	
@@ -80,6 +80,16 @@ enum MSGS {
 	OAC_DDB_ADDSENSOR, // add sensor to DDB [UUID sender, UUID uuid, int type, UUID avatar, UUID pf, ... pose]
 	OAC_DDB_REMSENSOR, // remove sensor from DDB [UUID sender, UUID uuid]
 	OAC_DDB_INSERTSENSORREADING, // insert sensor reading to DDB [UUID sender, UUID uuid, _timeb tb, int readingSize, reading, int dataSize <, ... data>]
+
+	OAC_DDB_ADDTASK, // add task to DDB [UUID sender, UUID uuid, UUID landmarkUUID, UUID avatar, bool completed, int type]
+	OAC_DDB_REMTASK, // remove task from DDB [UUID sender, UUID uuid]
+	OAC_DDB_TASKSETINFO, // set task info [UUID sender, UUID uuid, int infoFlags, data...]
+
+	OAC_DDB_ADDTASKDATA, // add taskdata to DDB [UUID sender, UUID uuid, DDBTaskData data]
+	OAC_DDB_REMTASKDATA, // remove taskdata from DDB [UUID sender, UUID uuid]
+	OAC_DDB_TASKDATASETINFO, // set taskdata info [UUID sender, UUID uuid, DDBTaskData data]
+	OAC_DDB_ADDQLEARNINGDATA, //Upload learning data for next run [UUID typeId, <float>qTable, <unsigned int>expTable]
+
 
 	MSG_RFREEPORT,  // request a free port [UUID thread]
 					// RESPONSE: free port [UUID thread, char success <, int port>]
@@ -148,7 +158,7 @@ enum MSGS {
 	MSG_DDB_RREGION,   // request region [UUID uuid, UUID thread]
 					   // RESPONSE: send region [UUID thread, char response <, float x, float y, float w, float h>] 
 
-	MSG_DDB_ADDLANDMARK, // add landmark to DDB [UUID uuid, unsigned char code, UUID owner, float height, float elevation, float x, float y, char estimatedPos]
+	MSG_DDB_ADDLANDMARK, // add landmark to DDB [UUID uuid, unsigned char code, UUID owner, float height, float elevation, float x, float y, char estimatedPos, int landmarkType]
 	MSG_DDB_REMLANDMARK, // remove landmark from DDB [UUID uuid]
 	MSG_DDB_LANDMARKSETINFO, // update landmark position estimate [unsigned char code, int infoFlags, data...]
 	MSG_DDB_RLANDMARK,   // request landmark [UUID uuid, UUID thread]
@@ -192,6 +202,18 @@ enum MSGS {
 						 // RESPONSE: send sensor info (infoFlags definition for data format) [UUID thread, char response <, int infoFlags, ... data>]
 	MSG_DDB_RSENSORDATA, // request sensor data [UUID uuid, _timeb timeb, UUID thread]
 						 // RESPONSE: send sensor data [UUID thread, char response <, int readingSize, ... reading, int dataSize, ... data>]
+
+	MSG_DDB_ADDTASK,		// add task to DDB [UUID uuid, UUID landmarkUUID, UUID agent, UUID avatar, bool completed, int type]
+	MSG_DDB_REMTASK,		// remove task from DDB [UUID uuid]
+	MSG_DDB_TASKGETINFO,	// request task info [UUID uuid, UUID thread, bool enumTasks]
+							// RESPONSE: send task info [UUID uuid, UUID landmarkUUID, UUID agent, UUID avatar, bool completed, int type] (if enum is true, send all tasks)
+	MSG_DDB_TASKSETINFO,	// set task info [UUID uuid, int infoFlags, ...data]
+	
+	MSG_DDB_ADDTASKDATA,	 // add taskdata to DDB [UUID uuid, DDBTaskData data]
+	MSG_DDB_REMTASKDATA,	 // remove taskdata from DDB [ UUID uuid]
+	MSG_DDB_TASKDATAGETINFO, // request taskdata info [UUID uuid, UUID thread, bool enumTaskData] (if enum is true, send all task data)
+	MSG_DDB_TASKDATASETINFO, // set taskdata info [UUID uuid, DDBTaskData data]
+	MSG_DDB_QLEARNINGDATA,	 // upload individual learning data for next simulation run [UUID ownerId, UUID agentType.uuid, int table_size, float [table_size]qtable, float [table_size]exptable]
 
     MSG_DDB_RHOSTGROUPSIZE, // request host group size [UUID thread]
 							// RESPONSE: send group size [UUID thread, char response, int size]
@@ -268,7 +290,7 @@ static const unsigned int MSG_SIZE[] = { // array of message size by message id,
 	sizeof(UUID)*2 + 4*4,	// OAC_DDB_ADDREGION
 	sizeof(UUID)*2,			// OAC_DDB_REMREGION
 
-	sizeof(UUID)*2 + 1 + sizeof(UUID) + 4*4 + 1, // OAC_DDB_ADDLANDMARK
+	sizeof(UUID)*2 + 1 + sizeof(UUID) + 4*4 + 1 + sizeof(ITEM_TYPES), // OAC_DDB_ADDLANDMARK
 	sizeof(UUID)*2,			// OAC_DDB_REMLANDMARK
 	-2,						// OAC_DDB_LANDMARKSETINFO
 
@@ -290,6 +312,15 @@ static const unsigned int MSG_SIZE[] = { // array of message size by message id,
 	-2,						// OAC_DDB_ADDSENSOR
 	sizeof(UUID)*2,			// OAC_DDB_REMSENSOR
 	-2,						// OAC_DDB_INSERTSENSORREADING
+
+	sizeof(UUID)*5 + 1 + 4, // OAC_DDB_ADDTASK [UUID sender, UUID uuid, UUID landmarkUUID, UUID agent, UUID avatar, bool completed, int type]
+	sizeof(UUID)*2,			// OAC_DDB_REMTASK, remove task from DDB [UUID sender, UUID uuid]
+	-2,						// OAC_DDB_TASKSETINFO, set task info [UUID sender, UUID uuid, int infoFlags, data...]
+	
+	-2, //sizeof(UUID) * 2 + sizeof(DDBTaskData),	//OAC_DDB_ADDTASKDATA [UUID sender, UUID uuid, DDBTaskData data]
+	sizeof(UUID) * 2,		//OAC_DDB_REMTASKDATA [UUID sender, UUID uuid]
+	-2, //sizeof(UUID) * 2 + sizeof(DDBTaskData),  //OAC_DDB_TASKDATASETINFO [UUID sender, UUID uuid, DDBTaskData data]
+	-2,	//					OAC_DDB_ADDQLEARNINGDATA
 
 	sizeof(UUID),		// MSG_RFREEPORT
 	4,					// MSG_RELEASEPORT
@@ -353,7 +384,7 @@ static const unsigned int MSG_SIZE[] = { // array of message size by message id,
 	sizeof(UUID),		// MSG_DDB_REMREGION
 	sizeof(UUID)*2,		// MSG_DDB_RREGION
 
-	sizeof(UUID) + 1 + sizeof(UUID) + 4*4 + 1, // MSG_DDB_ADDLANDMARK
+	sizeof(UUID) + 1 + sizeof(UUID) + 4*4 + 1 + sizeof(ITEM_TYPES), // MSG_DDB_ADDLANDMARK
 	sizeof(UUID),		// MSG_DDB_REMLANDMARK
 	-2,					// MSG_DDB_LANDMARKSETINFO
 	sizeof(UUID)*2,		// MSG_DDB_RLANDMARK
@@ -388,6 +419,17 @@ static const unsigned int MSG_SIZE[] = { // array of message size by message id,
 	-2,					// MSG_DDB_INSERTSENSORREADING
 	sizeof(UUID) + 4 + sizeof(UUID), // MSG_DDB_RSENSORINFO
 	sizeof(UUID) + sizeof(_timeb) + sizeof(UUID), // MSG_DDB_RSENSORDATA
+
+	sizeof(UUID) + sizeof(UUID) + sizeof(UUID) + sizeof(UUID) + 1 + 4, 	//MSG_DDB_ADDTASK
+	sizeof(UUID), 											//MSG_DDB_REMTASK
+	sizeof(UUID) + sizeof(UUID) + sizeof(bool), 			//MSG_DDB_TASKGETINFO
+	-2,														//MSG_DDB_TASKSETINFO
+
+	-2,//sizeof(UUID) + sizeof(DDBTaskData),					//MSG_DDB_ADDTASKDATA
+	sizeof(UUID),										//MSG_DDB_REMTASKDATA
+	sizeof(UUID) + sizeof(UUID) + sizeof(bool),			//MSG_DDB_TASKDATAGETINFO
+	-2,//sizeof(UUID) + sizeof(DDBTaskData),					//MSG_DDB_TASKDATASETINFO
+	-2,					// MSG_DDB_QLEARNINGDATA
 
 	sizeof(UUID),		// MSG_DDB_RHOSTGROUPSIZE
 

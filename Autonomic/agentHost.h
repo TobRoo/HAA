@@ -5,6 +5,8 @@ using namespace std;
 #include "..\\autonomic\\DDB.h"
 #include "..\\autonomic\\DDBStore.h"
 
+#include <vector>
+
 #define PLAYBACKMODE_DEFAULT PLAYBACKMODE_RECORD
 
 #define OAC_GLOBAL					"6263b830-1de8-41a6-bc3d-1d22dfd750c3" // OAC queue for global state
@@ -644,7 +646,7 @@ private:
 	int ddbGetRegion( UUID *id, spConnection con, UUID *thread );
 
 	int ddbEnumerateLandmarks( spConnection con, UUID *forward );
-	int ddbAddLandmark( UUID *id, unsigned char code, UUID *owner, float height, float elevation, float x, float y, char estimatedPos );
+	int ddbAddLandmark( UUID *id, unsigned char code, UUID *owner, float height, float elevation, float x, float y, char estimatedPos, ITEM_TYPES landmarkType );
 	int ddbRemoveLandmark( UUID *id );
 	int ddbLandmarkSetInfo( char *data, unsigned int len );
 	int ddbGetLandmark( UUID *id, spConnection con, UUID *thread );
@@ -690,11 +692,25 @@ private:
 	int ddbSensorGetInfo( UUID *id, int infoFlags, spConnection con, UUID *thread );
 	int ddbSensorGetData( UUID *id, _timeb *tb, spConnection con, UUID *thread );
 
+	int ddbAddTask(UUID * id, UUID * landmarkUUID, UUID * agent, UUID * avatar, bool completed, ITEM_TYPES TYPE);
+	int ddbRemoveTask(UUID * id);
+	int ddbTaskSetInfo(UUID * id, UUID * agent, UUID * avatar, bool completed);
+	int ddbGetTask(UUID * id, spConnection con, UUID * thread, bool enumTasks);
+
+	int ddbAddTaskData(UUID *avatarId, DDBTaskData *taskData);
+	int ddbRemoveTaskData(UUID * avatarid);
+	int ddbTaskDataSetInfo(UUID *avatarId, DDBTaskData *taskData);
+	int ddbGetTaskData(UUID * id, spConnection con, UUID * thread, bool enumTaskData);
+	int ddbAddQLearningData(char typeId, long long totalActions, long long usefulActions, int tableSize, std::vector<float>* qTable, std::vector<unsigned int>* expTable);
+
+
+
 	// Data gathering
-	bool gatherData; // are we gathering data?
 	Logger Data; // data logger
 	int DataDump( bool fulldump, bool getPose = true, char *label = NULL );
 	int DataDump_AvatarPose( DataStream *ds );
+	int LearningDataDump();
+	int WriteLearningData(DataStream * taskDataDS, DataStream * taskDS, mapDDBQLearningData *QLData);
 
 	map<UUID,STATISTICS_MSGS,UUIDless> statisticsMsgs; // messages received from agent
 	map<UUID,STATISTICS_ATOMIC_MSG,UUIDless> statisticsAtomicMsg; // atomic message stats
@@ -708,6 +724,10 @@ private:
 	int releasePort( int port );
 
 public:
+
+	// Data gathering
+	bool gatherData; // are we gathering data?
+
 	// TESTING
 	int testAgentBidding();
 

@@ -104,7 +104,7 @@ int AgentSensorSonar::configure() {
 		strftime( timeBuf, 64, "%y.%m.%d [%H.%M.%S]", &stm );
 		sprintf_s( logName, "%s\\AgentSensorSonar %s.txt", logDirectory, timeBuf );
 
-		//Log.setLogMode( LOG_MODE_COUT );
+		Log.setLogMode( LOG_MODE_COUT );
 		Log.setLogMode( LOG_MODE_FILE, logName );
 		Log.setLogLevel( LOG_LEVEL_VERBOSE );
 		Log.log( 0, "AgentSensorSonar %.2d.%.2d.%.5d.%.2d", AgentSensorSonar_MAJOR, AgentSensorSonar_MINOR, AgentSensorSonar_BUILDNO, AgentSensorSonar_EXTEND );

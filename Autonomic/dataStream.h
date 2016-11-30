@@ -1,6 +1,6 @@
 
 #include <rpc.h>
-
+#include "DDB.h"
 //==============================================================
 // -- Acceptable Usage --
 // To write: reset()
@@ -47,6 +47,7 @@ public:
 	void packData( void *ptr, int length );
 	void packBool( bool val );
 	void packUUID( UUID *uuid );
+	void packTaskData(DDBTaskData * taskData);
 
 	void setData( char *ptr, int length ); // sets the stream to incoming data, causes stream to lock
 	
@@ -65,6 +66,7 @@ public:
 	void *			 unpackData( int length );
 	bool             unpackBool();
 	void			 unpackUUID( UUID *uuid );
+	void unpackTaskData(DDBTaskData * taskData);
 
 	void lock(); // locks the stream
 	void unlock() { this->locked = false; }; // unlocks stream

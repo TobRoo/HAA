@@ -135,6 +135,13 @@ public:
 		char agentIndividualLearningSpawned;
 		int  agentIndividualLearningStatus; // agent status
 
+		// per-avatar team learning agent
+
+		UUID agentTeamLearning;
+		char agentTeamLearningSpawned;
+		int  agentTeamLearningStatus; // agent status
+
+
 		// actions
 		float maxLinear;   // maximum distance per move
 		float maxRotation; // maximum distance per rotation
@@ -186,6 +193,10 @@ protected:
 	};
 	
 
+	bool mapRandom;
+	bool mapReveal;
+
+
 //-----------------------------------------------------------------------------
 // Functions	
 
@@ -200,8 +211,9 @@ public:
 	virtual int stop();			// stop agent
 	virtual int step();			// run one step
 
+	virtual int parseMF_HandleMapOptions(bool mapReveal, bool mapRandom);
 	virtual int parseMF_HandleOptions( int SLAMmode );
-	virtual int parseMF_HandleLearning(bool individualLearning);
+	virtual int parseMF_HandleLearning(bool individualLearning, bool teamLearning);
 
 protected:
 
@@ -239,6 +251,9 @@ protected:
 	int	  setTargetPos( float x, float y, float r, char useRotation, UUID *initiator, int controllerIndex, UUID *thread );
 
 	// actions
+
+	int spawnAgentTeamLearning();
+
 	int getActionsFromAgentPathPlanner();
 	int spawnAgentIndividualLearning();
 	int spawnAgentPathPlanner();
@@ -274,6 +289,7 @@ public:
 		AvatarBase_CBR_convRequestExecutiveAvatarId,
 		AvatarBase_CBR_convRequestAgentPathPlanner,
 		AvatarBase_CBR_convRequestAgentIndividualLearning,
+		AvatarBase_CBR_convRequestAgentTeamLearning,
 		AvatarBase_CBR_convPathPlannerSetTarget,
 		AvatarBase_CBR_convPFInfo,
 		AvatarBase_CBR_convAgentInfo,
@@ -288,6 +304,7 @@ public:
 	bool	convRequestExecutiveAvatarId( void *vpConv );
 	bool	convRequestAgentPathPlanner( void *vpConv );
 	bool	convRequestAgentIndividualLearning(void *vpConv);
+	bool	convRequestAgentTeamLearning(void *vpConv);
 	bool	convPathPlannerSetTarget( void *vpConv );
 	bool    convPFInfo( void *vpConv );
 	bool    convAgentInfo( void *vpConv );

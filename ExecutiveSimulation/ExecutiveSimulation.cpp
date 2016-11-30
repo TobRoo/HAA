@@ -84,7 +84,7 @@ int ExecutiveSimulation::configure() {
 }
 
 int ExecutiveSimulation::parseMF_HandleLandmarkFile( char *fileName ) { 
-
+	Log.log(LOG_LEVEL_NORMAL, "ExecutiveSimulation::parseMF_HandleLandmarkFile:DEBUG start");
 	this->parseLandmarkFile( fileName );
 
 	return 0; 
@@ -191,6 +191,7 @@ int ExecutiveSimulation::parseLandmarkFile( char *filename ) {
 	UUID uuid;
 	float x, y, height, elevation;
 	int estimatedPos;
+	ITEM_TYPES landmarkType;
 
 	UUID nilId;
 	UuidCreateNil( &nilId );
@@ -226,7 +227,11 @@ int ExecutiveSimulation::parseLandmarkFile( char *filename ) {
 			err = 1;
 			break;
 		}
-
+		if (1 != fscanf_s(landmarkF, "landmark_type=%d\n", &landmarkType)) {
+			Log.log(0, "ExecutiveMission::parseLandmarkFile: expected landmark_type=<int>, check format (landmark %s)", name);
+			err = 1;
+			break;
+		}
 		// create uuid
 		apb->apbUuidCreate( &uuid );
 

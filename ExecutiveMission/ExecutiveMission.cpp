@@ -18,6 +18,10 @@
 #include "..\\AvatarPioneer\\AvatarPioneerVersion.h"
 #include "..\\AvatarX80H\\AvatarX80HVersion.h"
 #include "..\\AvatarSimulation\\AvatarSimulationVersion.h"
+#include "..\\AgentTeamLearning\AgentTeamLearningVersion.h"
+
+//#include "..\\autonomic\\fImage.h"	//For mapReveal
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -100,7 +104,7 @@ int ExecutiveMission::configure() {
 
 int ExecutiveMission::parseMF_HandleMissionRegion( DDBRegion *region ) { 
 	DataStream lds;
-
+	Log.log(0, "ExecutiveMission::parseMF_HandleMissionRegion start");
 	// add mission region
 	apb->apbUuidCreate( &STATE(ExecutiveMission)->missionRegion );	
 
@@ -112,7 +116,7 @@ int ExecutiveMission::parseMF_HandleMissionRegion( DDBRegion *region ) {
 	lds.packFloat32( region->h );
 	this->sendMessage( this->hostCon, MSG_DDB_ADDREGION, lds.stream(), lds.length() );
 	lds.unlock();
-
+	Log.log(0, "ExecutiveMission::parseMF_HandleMissionRegion completed");
 	return 0; 
 }
 
@@ -170,11 +174,59 @@ int ExecutiveMission::parseMF_HandleTravelTarget( float x, float y, float r, boo
 }
 
 int ExecutiveMission::parseMF_HandleLandmarkFile( char *fileName ) { 
-
+	Log.log(LOG_LEVEL_NORMAL, "ExecutiveMission::parseMF_HandleLandmarkFile:DEBUG start");
 	this->parseLandmarkFile( fileName );
 
 	return 0; 
 }
+
+int ExecutiveMission::parseMF_HandleMapOptions(bool mapReveal, bool mapRandom) {
+	Log.log(0, "ExecutiveMission::parseMF_HandleMapOptions running");
+	this->mapReveal = mapReveal;
+	this->mapRandom = mapRandom;
+	Log.log(0, "ExecutiveMission::parseMF_HandleMapOptions: mapReveal is %d, mapRandom is %d", this->mapReveal, this->mapRandom);
+	return 0;
+}
+
+int ExecutiveMission::parseMF_HandleLearning(bool individualLearning, bool teamLearning)
+{
+	this->individualLearning = individualLearning;
+	this->teamLearning = teamLearning;
+	Log.log(0, "ExecutiveMission::parseMF_HandleLearning: individualLearning is %d, teamLearning is %d", this->individualLearning, this->teamLearning);
+	return 0;
+}
+
+int ExecutiveMission::parseMF_HandleTeamLearning(bool teamLearning)
+{
+	this->teamLearning = teamLearning;
+	return 0;
+}
+
+int ExecutiveMission::doMapReveal() {
+	Log.log(0, "ExecutiveMission::doMapReveal started");
+	DataStream lds;
+
+	char fileBuf[1024];
+
+		//Reload stored map  into DDB
+		lds.reset();
+		lds.packUUID(&STATE(ExecutiveMission)->pogUUID);
+		lds.packFloat32(0.0f);
+		lds.packFloat32(0.0f);
+		lds.packFloat32(10.0f);
+		lds.packFloat32(10.0f);
+	//	lds.packString("data\\\randomLayoutFile.ini.");
+		sprintf_s(fileBuf, "%s\\randomMap\\randomLayoutFile.ini.", logDirectory);
+		lds.packString(fileBuf);
+
+		this->sendMessage( this->hostCon, MSG__DDB_POGLOADREGION, lds.stream(), lds.length() );
+		lds.unlock();
+		Log.log(0, "ExecutiveMission::doMapReveal load complete");
+	return 0;
+}
+
+
+
 
 //-----------------------------------------------------------------------------
 // Start
@@ -188,7 +240,12 @@ int ExecutiveMission::start( char *missionFile ) {
 
 	STATE(AgentBase)->started = false;
 
-	STATE(ExecutiveMission)->missionPhase = TASK_EXPLORE;
+
+	if (!this->mapReveal)	//Only explore if map is not revealed, otherwise forage
+		STATE(ExecutiveMission)->missionPhase = TASK_EXPLORE;
+	else
+		STATE(ExecutiveMission)->missionPhase = TASK_FORAGE;
+
 
 	// watch regions;
 	lds.reset();
@@ -204,6 +261,7 @@ int ExecutiveMission::start( char *missionFile ) {
 	lds.packUUID( &STATE(ExecutiveMission)->pogUUID );
 	lds.packFloat32( 10.0f );
 	lds.packFloat32( 0.1f );
+	Log.log(0, "ExecutiveMission adding POG");
 	this->sendMessage( this->hostCon, MSG_DDB_ADDPOG, lds.stream(), lds.length() );
 	lds.unlock();
 
@@ -233,13 +291,22 @@ int ExecutiveMission::start( char *missionFile ) {
 	// TEMP test dump map
 	lds.reset();
 	lds.packUUID( &STATE(ExecutiveMission)->pogUUID );
-	lds.packFloat32( -0.1f );
-	lds.packFloat32( -0.1f );
-	lds.packFloat32( 4.0f );
-	lds.packFloat32( 5.4f );
+	//lds.packFloat32( -0.1f );
+	//lds.packFloat32( -0.1f );
+	//lds.packFloat32( 4.0f );
+	//lds.packFloat32( 5.4f );
+	lds.packFloat32(0.0f);
+	lds.packFloat32(0.0f);
+	lds.packFloat32(4.0f);
+	lds.packFloat32(5.4f);
 	lds.packString( "data\\maps\\dump.txt" );
 	this->sendMessage( this->hostCon, MSG__DDB_POGDUMPREGION, lds.stream(), lds.length() );
 	lds.unlock();
+
+
+
+
+
 
 	STATE(ExecutiveMission)->missionStatus = 0;
 	STATE(ExecutiveMission)->waitingForAgents = 0;
@@ -307,6 +374,11 @@ int ExecutiveMission::start( char *missionFile ) {
 
 	this->backup(); // waitingForAgents
 
+	if (this->mapReveal) {
+		doMapReveal();
+	}
+
+
 	return 0;
 }
 
@@ -362,9 +434,10 @@ int ExecutiveMission::parseLandmarkFile( char *filename ) {
 	UUID uuid;
 	float x, y, height, elevation;
 	int estimatedPos;
+	ITEM_TYPES landmarkType;
 
-	UUID nilId;
-	UuidCreateNil( &nilId );
+	//UUID nilId;
+	//UuidCreateNil( &nilId );
 
 	int err = 0;
 
@@ -397,6 +470,13 @@ int ExecutiveMission::parseLandmarkFile( char *filename ) {
 			err = 1;
 			break;
 		}
+		if (1 != fscanf_s(landmarkF, "landmark_type=%d\n", &landmarkType)) {
+			Log.log(0, "ExecutiveMission::parseLandmarkFile: expected landmark_type=<int>, check format (landmark %s)", name);
+			Log.log(0, "ExecutiveMission::parseLandmarkFile: setting default value = 0 (NON_COLLECTABLE)");
+			landmarkType = NON_COLLECTABLE;
+			//break;
+		}
+
 
 		// create uuid
 		apb->apbUuidCreate( &uuid );
@@ -405,14 +485,33 @@ int ExecutiveMission::parseLandmarkFile( char *filename ) {
 		this->ds.reset();
 		this->ds.packUUID( &uuid );
 		this->ds.packUChar( (unsigned char)id );
-		this->ds.packUUID( &nilId );
+		this->ds.packUUID( &nilUUID );
 		this->ds.packFloat32( height ); 
 		this->ds.packFloat32( elevation ); 
 		this->ds.packFloat32( x ); 
 		this->ds.packFloat32( y ); 
 		this->ds.packChar( estimatedPos );
+		this->ds.packInt32(landmarkType);
 		this->sendMessage( this->hostCon, MSG_DDB_ADDLANDMARK, this->ds.stream(), this->ds.length() );
 		this->ds.unlock();
+
+
+		if (id >= FORAGE_LANDMARK_ID_LOW && id <= FORAGE_LANDMARK_ID_HIGH) {
+			Log.log(0, "ExecutiveMission::parseLandmarkFile: adding task at %f %f for team learning agents", x, y);
+			DataStream lds;
+			UUID taskUUID;
+			apb->apbUuidCreate(&taskUUID);
+			lds.reset();
+			lds.packUUID(&taskUUID);
+			lds.packUUID(&uuid);
+			lds.packUUID(&nilUUID);		//No agent assigned at creation, assign nilUUID
+			lds.packUUID(&nilUUID);		//No avatar assigned at creation, assign nilUUID
+			lds.packBool(false);					//Task not completed at creation
+			lds.packInt32(landmarkType);
+			this->sendMessage(this->hostCon, MSG_DDB_ADDTASK, lds.stream(), lds.length());
+			lds.unlock();
+
+		}
 
 		Log.log( LOG_LEVEL_NORMAL, "ExecutiveMission::parseLandmarkFile: added landmark %d (%s): %f %f %f %f %d", id, name, x, y, height, elevation, estimatedPos );
 	}
@@ -850,27 +949,44 @@ int ExecutiveMission::taskBlindTravellerFinish() {
 	return 0;
 }
 
-int ExecutiveMission::taskForageStart( UUID *id, DDBLandmark *lm ) {
+int ExecutiveMission::taskForageStart(UUID *id, DDBLandmark *lm) {
 	DataStream lds;
 
-	Log.log( 0, "ExecutiveMission::taskForageStart: retrieve landmark at %f %f", lm->x, lm->y );
+	if (!this->teamLearning) {	//Only spawn forage supervisors if team learning is not enabled
+	Log.log(0, "ExecutiveMission::taskForageStart: retrieve landmark at %f %f", lm->x, lm->y);
 
 	// request SupervisorForage
 	UUID sForageuuid;
-	UuidFromString( (RPC_WSTR)_T(SupervisorForage_UUID), &sForageuuid );
-	UUID thread = this->conversationInitiate( ExecutiveMission_CBR_convRequestSupervisorForage, REQUESTAGENTSPAWN_TIMEOUT, id, sizeof(UUID) );
-	if ( thread == nilUUID ) {
+	UuidFromString((RPC_WSTR)_T(SupervisorForage_UUID), &sForageuuid);
+	UUID thread = this->conversationInitiate(ExecutiveMission_CBR_convRequestSupervisorForage, REQUESTAGENTSPAWN_TIMEOUT, id, sizeof(UUID));
+	if (thread == nilUUID) {
 		return 1;
 	}
 	lds.reset();
-	lds.packUUID( this->getUUID() );
-	lds.packUUID( &sForageuuid );
-	lds.packChar( -1 ); // no instance parameters
-	lds.packFloat32( 0 ); // affinity
-	lds.packChar( DDBAGENT_PRIORITY_CRITICAL );
-	lds.packUUID( &thread );
-	this->sendMessage( this->hostCon, MSG_RAGENT_SPAWN, lds.stream(), lds.length() );
+	lds.packUUID(this->getUUID());
+	lds.packUUID(&sForageuuid);
+	lds.packChar(-1); // no instance parameters
+	lds.packFloat32(0); // affinity
+	lds.packChar(DDBAGENT_PRIORITY_CRITICAL);
+	lds.packUUID(&thread);
+	this->sendMessage(this->hostCon, MSG_RAGENT_SPAWN, lds.stream(), lds.length());
 	lds.unlock();
+	}
+	else {			//Add task to DDB, to be discovered by team learning agents
+		//Log.log(0, "ExecutiveMission::taskForageStart: adding task at %f %f for team learning agents", lm->x, lm->y);
+		//UUID *taskUUID;
+		//UUID *nilUUIDPointer;
+		//*nilUUIDPointer = nilUUID;
+		//apb->apbUuidCreate(taskUUID);
+		//lds.reset();
+		//lds.packUUID(taskUUID);
+		//lds.packUUID(id);
+		//lds.packUUID(nilUUIDPointer);		//No avatar assigned at creation, assign nilUUID
+		//lds.packBool(0);					//Task not completed at creation
+		//lds.packInt32(lm->landmarkType);
+		//this->sendMessage(this->hostCon, MSG_DDB_ADDTASK, lds.stream(), lds.length());
+		//lds.unlock();
+	}
 
 	return 0;
 }

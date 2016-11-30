@@ -1,4 +1,6 @@
 
+#pragma once
+
 #define AUTONOMIC_MAJOR_VERSION		0
 #define AUTONOMIC_MINOR_VERSION		1
 #define AUTONOMIC_SUB_VERSION		0
@@ -428,6 +430,7 @@ enum SLAM_MODE {
 
 #include "autonomicVersion.h"
 
+
 class AgentBase {
 
 //-----------------------------------------------------------------------------
@@ -558,6 +561,7 @@ public:
 	virtual int   setInstance( char instance ); // instance specific parameters
 	int			  calcLifeExpectancy(); // set our crash time
 
+
 	virtual int   parseMF_HandleOptions( int SLAMmode ) { return 0; };			// override these functions to handle mission information that is relevant to each agent
 	virtual int   parseMF_HandleStability( float timeMin, float timeMax );
 	virtual int   parseMF_HandleAgent( AgentType *agentType ) { return 0; };			
@@ -569,7 +573,11 @@ public:
 	virtual int   parseMF_HandleLandmarkFile( char *fileName ) { return 0; };
 	virtual int   parseMF_HandlePathFile( char *fileName ) { return 0; };
 	virtual int   parseMF_HandleOfflineSLAM( int SLAMmode, int particleNum, float readingProcessingRate, int processingSlots, char *logPath ) { return 0; };
-	virtual int   parseMF_HandleLearning(bool individualLearning) { return 0; };
+	virtual int   parseMF_HandleLearning(bool individualLearning, bool teamLearning) { return 0; };
+	virtual int   parseMF_HandleTeamLearning(bool teamLearning) { return 0; };
+
+	virtual int	  parseMF_HandleMapOptions(bool mapReveal, bool mapRandom) { return 0; }
+	virtual int	  doMapReveal() { return 0; }
 
 	int			  parseMF_Agent( FILE *fp, AgentType *agentType );
 	int			  parseMissionFile( char *misFile );

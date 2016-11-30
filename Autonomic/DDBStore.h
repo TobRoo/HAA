@@ -1,6 +1,9 @@
 
 #include <rpc.h>
 
+#define TASK_AVATAR_CHANGE_THRESHOLD	1000	//10 ms for now, should not need to be lower?
+
+
 class Logger;
 
 class DDBStore {
@@ -21,6 +24,9 @@ public:
 	mapDDBParticleFilter	DDBParticleFilters; // map of particles filters by UUID
 	mapDDBAvatar	DDBAvatars;	// map of all avatars by UUID
 	mapDDBSensor	DDBSensors;	// map of all sensors by UUID
+	mapDDBTask		DDBTasks;	// map of all tasks by UUID
+	mapDDBTaskData	DDBTaskDatas;	//map of all task performance data by UUID of the owning agent (better plural form?)
+	mapDDBQLearningData DDBQLearningDatas;	//map of all Q-learning data stored at the end of a run, to be loaded in the next run
 
 	UUID nilUUID;
 
@@ -65,12 +71,14 @@ public:
 
 	int EnumerateLandmarks( DataStream *ds );
 	int ParseLandmark( DataStream *ds, UUID *parsedId );
-	int AddLandmark( UUID *id, unsigned char code, UUID *owner, float height, float elevation, float x, float y, bool estimatedPos );
+	int AddLandmark( UUID *id, unsigned char code, UUID *owner, float height, float elevation, float x, float y, bool estimatedPos, ITEM_TYPES landmarkType );
 	int RemoveLandmark( UUID *id );
 	int LandmarkSetInfo( UUID *id, int infoFlags, DataStream *ds );
 	int GetLandmark( UUID *id, DataStream *ds, UUID *thread );
 	int GetLandmark( unsigned char code, DataStream *ds, UUID *thread );
 	UUID GetLandmarkId( unsigned char code );
+
+
 
 	int EnumeratePOGs( DataStream *ds );
 	int ParsePOG( DataStream *ds, UUID *parsedId );
@@ -118,6 +126,22 @@ public:
 	int SensorGetInfo( UUID *id, int infoFlags, DataStream *ds, UUID *thread );
 	int SensorGetData( UUID *id, _timeb *tb, DataStream *ds, UUID *thread );
 	int GetSensorType( UUID *id );
+
+	int AddTask(UUID *id, UUID *landmark, UUID *agent, UUID *avatar, bool completed, ITEM_TYPES type );
+	int RemoveTask(UUID *id);
+	int TaskSetInfo(UUID *id, UUID *agent, UUID *avatar, bool completed);
+	int GetTask(UUID *id, DataStream *ds, UUID *thread, bool enumTasks);
+
+	int AddTaskData(UUID * id, DDBTaskData * data);
+	int RemoveTaskData(UUID * id);
+	int TaskDataSetInfo(UUID * id, DDBTaskData * data);
+	int GetTaskData(UUID * id, DataStream * ds, UUID * thread, bool enumTaskData);
+
+	bool GetTaskId(UUID * id, UUID * foundId);
+	UUID GetTaskDataId(UUID * id);
+
+	bool AddQLearningData(char instance, long long totalActions, long long usefulActions, int tableSize, std::vector<float> *qTable, std::vector<unsigned int> *expTable);
+	mapDDBQLearningData GetQLearningData();
 
 	int DataDump( Logger *Data, bool fulldump, char *logDirectory ); // dump data and statistics
 

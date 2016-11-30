@@ -7,6 +7,9 @@
 
 #include "io.h"
 
+#include <fstream>
+#include <iostream>
+
 // TEMP
 #include "time.h"
 
@@ -264,7 +267,7 @@ int AgentHost::configure( char *configPath ) {
 
 		Log.setLogMode( LOG_MODE_COUT );
 		Log.setLogMode( LOG_MODE_FILE, logName );
-		Log.setLogLevel( LOG_LEVEL_ALL );
+		Log.setLogLevel( LOG_LEVEL_ALL ); 
 		Log.log( 0, "AgentHost %.2d.%.2d.%.2d", AUTONOMIC_MAJOR_VERSION, AUTONOMIC_MINOR_VERSION, AUTONOMIC_SUB_VERSION );
 	}
 
@@ -1232,6 +1235,7 @@ int AgentHost::parseMF_HandleAvatar( AgentType *agentType, char *fileName, float
 	} else { // delay start
 		this->addTimeout( (int)(startTime*60*1000), AgentHost_CBR_cbDelayedAgentSpawn, agentType, sizeof(AgentType) );
 	}
+	Log.log(0, "AgentHost::parseMF_HandleAvatar: completed");
 
 	return 0;
 }
@@ -9505,7 +9509,7 @@ int AgentHost::ddbEnumerateLandmarks( spConnection con, UUID *forward ) {
 	return 0;
 }
 
-int AgentHost::ddbAddLandmark( UUID *id, unsigned char code, UUID *owner, float height, float elevation, float x, float y, char estimatedPos ) {
+int AgentHost::ddbAddLandmark( UUID *id, unsigned char code, UUID *owner, float height, float elevation, float x, float y, char estimatedPos, ITEM_TYPES landmarkType ) {
 
 	// distribute
 	this->ds.reset();
@@ -9518,6 +9522,7 @@ int AgentHost::ddbAddLandmark( UUID *id, unsigned char code, UUID *owner, float 
 	this->ds.packFloat32( x );
 	this->ds.packFloat32( y );
 	this->ds.packChar( estimatedPos );
+	this->ds.packInt32(landmarkType);
 	this->globalStateTransaction( OAC_DDB_ADDLANDMARK, this->ds.stream(), this->ds.length() );
 	this->ds.unlock();
 
@@ -9622,7 +9627,7 @@ int AgentHost::ddbEnumeratePOGs( spConnection con, UUID *forward ) {
 }
 
 int AgentHost::ddbAddPOG( UUID *id, float tileSize, float resolution ) {
-
+	//Log.log(0, "AgentHost::ddbAddpog Adding POG with UUID %s", id);
 	// verify that tileSize and resolution are valid
 	if ( (float)floor(tileSize/resolution) != (float)(tileSize/resolution) )
 		return 1; // tileSize must be an integer multiple of resolution
@@ -10496,6 +10501,172 @@ int AgentHost::ddbSensorGetData( UUID *id, _timeb *tb, spConnection con, UUID *t
 	return 0;
 }
 
+int AgentHost::ddbAddTask(UUID *id, UUID *landmarkUUID, UUID *agent, UUID *avatar, bool completed, ITEM_TYPES TYPE) {
+
+
+	
+Log.log(0, "AgentHost::ddbAddTask: task contents: landmark UUID: %s, avatar UUID: %s, completed: %s, ITEM_TYPES: %d", Log.formatUUID(LOG_LEVEL_NORMAL, landmarkUUID), Log.formatUUID(LOG_LEVEL_NORMAL, avatar), completed ? "true" : "false", TYPE);
+
+
+
+
+	// distribute
+	this->ds.reset();
+	this->ds.packUUID(this->getUUID());
+	this->ds.packUUID(id);
+	this->ds.packUUID(landmarkUUID);
+	this->ds.packUUID(agent);
+	this->ds.packUUID(avatar);
+	this->ds.packBool(completed);
+	this->ds.packInt32(TYPE);
+	this->globalStateTransaction(OAC_DDB_ADDTASK, this->ds.stream(), this->ds.length());
+	this->ds.unlock();
+
+	return 0;
+}
+
+int AgentHost::ddbRemoveTask(UUID *id) {
+
+	// distribute
+	this->ds.reset();
+	this->ds.packUUID(this->getUUID());
+	this->ds.packUUID(id);
+	this->globalStateTransaction(OAC_DDB_REMTASK, this->ds.stream(), this->ds.length());
+	this->ds.unlock();
+
+	return 0;
+}
+
+int AgentHost::ddbTaskSetInfo(UUID *id, UUID *agent, UUID *avatar, bool completed) {
+
+	DataStream lds;
+	bool isIdNotFound;
+	UUID foundId;
+
+	isIdNotFound = dStore->GetTaskId(id, &foundId);
+//	Log.log(0, "AgentHost::ddbTaskSetInfo: Is the task found? ");
+	if (*id != nilUUID) {
+		if (isIdNotFound == true)
+			return 1; // not found
+	}
+//	Log.log(0, "AgentHost::ddbTaskSetInfo: Yes it is! And the agent is: %s", Log.formatUUID(0,agent));
+	// distribute
+	lds.reset();
+	lds.packUUID(this->getUUID());
+	lds.packUUID(id);
+	lds.packUUID(agent);
+	lds.packUUID(avatar);
+	lds.packBool(completed);
+	this->globalStateTransaction(OAC_DDB_TASKSETINFO, lds.stream(), lds.length());
+	lds.unlock();
+
+	return 0;
+}
+
+int AgentHost::ddbGetTask(UUID *id, spConnection con, UUID *thread, bool enumTasks) {
+
+	this->dStore->GetTask(id, &this->ds, thread, enumTasks);
+
+	DataStream lds;
+	lds.setData(this->ds.stream(), this->ds.length());
+	lds.unpackChar();
+	lds.unpackBool();
+	lds.unpackData(sizeof(UUID));
+	DDBTask *inspectTask;
+	inspectTask = (DDBTask *)lds.unpackData(sizeof(DDBTask));
+//	Log.log(0, "AgentHost::ddbTaskGetInfo: Task id %s has agent id: %s", Log.formatUUID(0,id), Log.formatUUID(0, &inspectTask->agentUUID));
+
+
+	this->sendAgentMessage(&con->uuid, MSG_RESPONSE, this->ds.stream(), this->ds.length());
+
+	this->ds.unlock();
+
+	return 0;
+}
+
+int AgentHost::ddbAddTaskData(UUID *avatarId, DDBTaskData *taskData) {
+	// distribute
+
+
+	this->ds.reset();
+	this->ds.packUUID(this->getUUID());
+	this->ds.packUUID(avatarId);
+	this->ds.packTaskData(taskData);
+	this->globalStateTransaction(OAC_DDB_ADDTASKDATA, this->ds.stream(), this->ds.length());
+	this->ds.unlock();
+
+	return 0;
+}
+
+int AgentHost::ddbRemoveTaskData(UUID *avatarid) {
+
+	// distribute
+	this->ds.reset();
+	this->ds.packUUID(this->getUUID());
+	this->ds.packUUID(avatarid);
+	this->globalStateTransaction(OAC_DDB_REMTASKDATA, this->ds.stream(), this->ds.length());
+	this->ds.unlock();
+
+	return 0;
+}
+
+int AgentHost::ddbTaskDataSetInfo(UUID *avatarId, DDBTaskData *taskData) {
+
+	DataStream lds;
+	UUID foundId;
+
+	foundId = dStore->GetTaskDataId(avatarId);
+
+	if (foundId == nilUUID) {
+		Log.log(0, "AgentHost::ddbTaskDataSetInfo: id not found.");
+		return 1; // not found
+	}
+				  // distribute
+	lds.reset();
+	lds.packUUID(this->getUUID());
+	lds.packUUID(avatarId);
+	lds.packTaskData(taskData);
+	this->globalStateTransaction(OAC_DDB_TASKDATASETINFO, lds.stream(), lds.length());
+	lds.unlock();
+	return 0;
+}
+
+int AgentHost::ddbGetTaskData(UUID *id, spConnection con, UUID *thread, bool enumTaskData) {
+
+	this->dStore->GetTaskData(id, &this->ds, thread, enumTaskData);
+
+	this->sendAgentMessage(&con->uuid, MSG_RESPONSE, this->ds.stream(), this->ds.length());
+
+	this->ds.unlock();
+
+	return 0;
+}
+
+int AgentHost::ddbAddQLearningData(char typeId, long long totalActions, long long usefulActions, int tableSize, std::vector<float>* qTable, std::vector<unsigned int>* expTable)
+{
+	this->ds.reset();
+	this->ds.packUUID(this->getUUID());
+	this->ds.packChar(typeId);
+	this->ds.packInt64(totalActions);
+	this->ds.packInt64(usefulActions);
+
+	this->ds.packInt32(tableSize);		//Size of value tables to store
+
+	for (auto qIter : *qTable) {
+		this->ds.packFloat32(qIter);						//Pack all values in q-table
+	}
+	for (auto expIter : *expTable) {
+		this->ds.packInt32(expIter);						//Pack all values in exp-table
+	}
+
+	this->globalStateTransaction(OAC_DDB_ADDQLEARNINGDATA, this->ds.stream(), this->ds.length());
+	this->ds.unlock();
+	return 0;
+}
+
+
+
+
 int AgentHost::DataDump( bool fulldump, bool getPose, char *label ) {
 
 	if ( !this->gatherData )
@@ -10511,6 +10682,8 @@ int AgentHost::DataDump( bool fulldump, bool getPose, char *label ) {
 	
 	// dump DDB statistics, landmarks, maps, and particle filters
 	dStore->DataDump( &Data, fulldump, logDirectory );
+
+	this->LearningDataDump();	//ONLY FOR TESTING; REMOVE WHEN DONE
 
 	if ( getPose ) {
 		// ask ExecutiveSimulation for true avatar poses
@@ -10597,6 +10770,145 @@ int AgentHost::DataDump_AvatarPose( DataStream *ds ) {
 
 	return 0;
 }
+
+int AgentHost::LearningDataDump()
+{
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: 1");
+	if (!this->gatherData)		//Only dump learning data from one host
+		return 0;
+
+	DataStream taskDataDS;
+	DataStream taskDS;
+
+	this->dStore->GetTaskData(&nilUUID, &taskDataDS, &nilUUID, true);
+	this->dStore->GetTask(&nilUUID, &taskDS, &nilUUID, true);
+	taskDataDS.unlock();
+	taskDS.unlock();
+
+	taskDataDS.unpackData(sizeof(UUID)); // discard thread
+	char taskDataOk = taskDataDS.unpackChar();	//DDBR_OK
+	taskDataDS.unpackBool();	//EnumTaskData
+	int numTaskDatas = taskDataDS.unpackInt32();
+
+	taskDS.unpackData(sizeof(UUID)); // discard thread
+	char taskOk = taskDS.unpackChar();	//DDBR_OK
+	taskDS.unpackBool();	//EnumTasks
+	int numTasks = taskDS.unpackInt32();
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: numTasks is %d, numTaskDatas is %d", numTasks, numTaskDatas);
+
+
+
+
+
+	mapDDBQLearningData QLData = this->dStore->GetQLearningData();
+
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump:about to write learning data...");
+
+	//WriteLearningData(&taskDataDS, &taskDS, &QLData);
+
+
+
+	return 0;
+}
+
+int AgentHost::WriteLearningData(DataStream *taskDataDS, DataStream *taskDS, mapDDBQLearningData *QLData) {
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 1");
+
+
+
+	taskDataDS->unpackData(sizeof(UUID)); // discard thread
+	char taskDataOk = taskDataDS->unpackChar();	//DDBR_OK
+	taskDataDS->unpackBool();	//EnumTaskData
+	int numTaskDatas = taskDataDS->unpackInt32();
+
+	taskDS->unpackData(sizeof(UUID)); // discard thread
+	char taskOk = taskDS->unpackChar();	//DDBR_OK
+	taskDS->unpackBool();	//EnumTasks
+	int numTasks = taskDS->unpackInt32();
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: numTasks is %d, numTaskDatas is %d", numTasks, numTaskDatas);
+	if (taskDataOk != DDBR_OK || taskOk != DDBR_OK) {
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: DDBR_OK is false, aborting dump: taskDataOk is %c, taskOk is %c", taskDataOk, taskOk);
+		return 1;
+	}
+
+
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 2");
+
+	if (QLData->size() == 0 && numTaskDatas == 0)
+		return 0;	//No data to write
+
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 3");
+	mapTask allTasks;	//A map of all tasks, used for extracting landmark type info
+	UUID taskUUID;
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 4");
+	for (int i = 0; i < numTasks; i++) {
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 4.1");
+		DDBTask *task = (DDBTask *)malloc(sizeof(DDBTask));
+		taskDS->unpackUUID(&taskUUID);
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 4.2");
+		*task = *(DDBTask*)taskDS->unpackData(sizeof(DDBTask));
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 4.3");
+		allTasks[taskUUID] = task;
+	}
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 5");
+
+	UUID avatarId;
+	DDBTaskData taskData;
+	char instance;	//Used for identifying avatars (specified in mission file)
+
+
+	//Store learning data in .tmp file in bin dir for next run, and in .txt file in logDir\runNumberN for archiving
+
+	WCHAR learningArchiveFile[512];
+	wsprintf(learningArchiveFile, _T("%s\\learningData.csv"), logDirectory);
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 6");
+	std::ofstream    tempLearningData("learningData.tmp");
+	std::ofstream    archiveLearningData(learningArchiveFile);
+
+
+	RPC_WSTR stringUUID;
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 7");
+	for (int i = 0; i < numTaskDatas; i++) {
+		 taskDataDS->unpackUUID(&avatarId);
+		 taskDataDS->unpackTaskData(&taskData);
+		 mapDDBAvatar::iterator iterAvatar = this->dStore->DDBAvatars.find(avatarId);
+		 //UuidToString(&iterAvatar->second->agentTypeId, &stringUUID);
+		 instance = iterAvatar->second->agentTypeInstance;
+		 tempLearningData << "[TLData]\n";
+		 tempLearningData << "id=" << instance << "\n";
+		 for (auto& tauIter : taskData.tau) {
+			 tempLearningData << "landmark_type=" << allTasks[tauIter.first]->type << "\n";
+			 tempLearningData << "tau=" << tauIter.second << "\n";
+		 }
+		 //taskData.taskId
+	}
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData:8");
+	//Store all individual Q-learning data
+
+
+
+	for (auto& QLIter : *QLData) {
+		tempLearningData << "[QLData]\n";
+		instance = QLIter.first;
+		tempLearningData << "id=" << instance <<"\n";
+		tempLearningData << "qTable=" << "\n";
+		for (auto& qtIter : QLIter.second.qTable) {
+			tempLearningData << qtIter << ";";
+		}
+		tempLearningData << "\nexpTable=" << "\n";
+		for (auto& exptIter : QLIter.second.expTable) {
+			tempLearningData << exptIter << ";";
+		}
+	}
+
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 9");
+
+	return 0;
+}
+
+
+
+
 
 int AgentHost::DumpStatistics() {
 
@@ -10814,6 +11126,13 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 	DataStream lds;
 	UUID uuid;
 
+
+	std::map<UUID, float, UUIDless>::const_iterator tauIter;
+	std::map<UUID, float, UUIDless>::const_iterator motIter;
+	std::map<UUID, float, UUIDless>::const_iterator impIter;
+	std::map<UUID, int, UUIDless>::const_iterator attIter;			//REMOVEALLTHESE AFTER DEBUGGING!!!
+
+
 /*	if ( con && !UuidIsNil( &con->uuid, &Status ) ) { // increment networkActivity if this is a host connection
 		mapAgentHostState::iterator iterHS;
 		iterHS = this->hostKnown.find( con->uuid );
@@ -10988,6 +11307,7 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 			lds.unlock();
 
 			Data.log( 0, "MISSION_START %s", misFile );
+
 		}
 		break;
 	case MSG_MISSION_DONE:
@@ -10997,6 +11317,7 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		Log.log( 0, "AgentHost::conProcessMessage: OAC_MISSION_DONE, mission done!" );
 		this->prepareStop();
 		this->DataDump( true );
+		//this->LearningDataDump();
 		Data.log( 0, "MISSION_DONE" );
 		this->missionDone = true;
 		break;
@@ -11409,6 +11730,7 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 			UUID owner;
 			float height, elevation, x, y;
 			char estimatedPos;
+			ITEM_TYPES landmarkType;
 			lds.setData( data, len );
 			lds.unpackUUID( &uuid );
 			code = lds.unpackUChar();
@@ -11418,8 +11740,9 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 			x = lds.unpackFloat32();
 			y = lds.unpackFloat32();
 			estimatedPos = lds.unpackChar();
+			landmarkType = (ITEM_TYPES)lds.unpackInt32();
 			lds.unlock();
-			this->ddbAddLandmark( &uuid, code, &owner, height, elevation, x, y, estimatedPos );
+			this->ddbAddLandmark( &uuid, code, &owner, height, elevation, x, y, estimatedPos, landmarkType );
 		}
 		break;
 	case MSG_DDB_REMLANDMARK:
@@ -11507,6 +11830,7 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		break;
 	case MSG__DDB_POGLOADREGION:
 		{
+			Log.log(0, "agentHost::POGLOAD for mapReveal");
 			float x, y, w, h;
 			char *filename;
 			lds.setData( data, len );
@@ -11516,7 +11840,11 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 			w = lds.unpackFloat32();
 			h = lds.unpackFloat32();
 			filename = lds.unpackString();
-			this->ddbPOGLoadRegion( &uuid, x, y, w, h, filename );
+			Log.log(0, "agentHost::POGLOAD filename is %s", filename);
+			int hasFailed;
+			hasFailed = this->ddbPOGLoadRegion( &uuid, x, y, w, h, filename );
+			if (hasFailed)
+				Log.log(0, "agentHost::POGLOAD for mapReveal returned with a 1");
 			lds.unlock();
 		}
 		break;
@@ -11531,7 +11859,7 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 			w = lds.unpackFloat32();
 			h = lds.unpackFloat32();
 			filename = lds.unpackString();
-			this->dStore->POGDumpRegion( &uuid, x, y, w, h, filename );
+			this->dStore->POGDumpRegion( &uuid, x, y, w, h, filename );		
 			lds.unlock();
 		}
 		break;
@@ -11736,26 +12064,213 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 			lds.unlock();
 		}
 		break;
+	case MSG_DDB_ADDTASK:
+		{
+			UUID landmarkUUID;
+			UUID agentUUID;
+			UUID avatarUUID;
+			bool completed;
+			ITEM_TYPES TYPE;
+
+			lds.setData(data, len);
+			lds.unpackUUID(&uuid);
+
+			lds.unpackUUID(&landmarkUUID);
+			lds.unpackUUID(&agentUUID);
+			lds.unpackUUID(&avatarUUID);
+			completed = lds.unpackBool();
+			TYPE = (ITEM_TYPES)lds.unpackInt32();
+			
+			lds.unlock();
+			this->ddbAddTask(&uuid, &landmarkUUID, &agentUUID, &avatarUUID, completed, TYPE);
+		}
+		break;
+	case MSG_DDB_REMTASK:
+	{
+		memcpy(&uuid, data, sizeof(UUID));
+		this->ddbRemoveTask(&uuid);
+	}
+		break;
+	case MSG_DDB_TASKSETINFO:
+	{
+		UUID agentUUID;
+		UUID avatarUUID;
+		bool completed;
+		//Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_TASKSETINFO ");
+		lds.setData(data, len);
+		lds.unpackUUID(&uuid);
+		lds.unpackUUID(&agentUUID);
+		lds.unpackUUID(&avatarUUID);
+		completed = lds.unpackBool();
+		lds.unlock();
+		this->ddbTaskSetInfo(&uuid, &agentUUID, &avatarUUID, completed);
+	}
+		break;
+	case MSG_DDB_TASKGETINFO:
+	{
+		UUID thread;
+		bool enumTasks;
+		//Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_TASKGETINFO ");
+		lds.setData(data, len);
+		lds.unpackUUID(&uuid);
+		lds.unpackUUID(&thread);
+		enumTasks = lds.unpackBool();
+		lds.unlock();
+		this->ddbGetTask(&uuid, con, &thread, enumTasks);
+	}
+		break;
+	case MSG_DDB_ADDTASKDATA:
+	{
+	//	Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_ADDTASKDATA ");
+		DDBTaskData	taskData;
+
+		lds.setData(data, len);
+		lds.unpackUUID(&uuid);		//Avatar id (owner of the taskdata set)
+		lds.unpackTaskData(&taskData);
+		lds.unlock();
+
+	/*	Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_ADDTASKDATA avatarId: %s", Log.formatUUID(0, &uuid));
+		Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_ADDTASKDATA taskId: %s", Log.formatUUID(0, &taskData.taskId));
+
+		for (tauIter = taskData.tau.begin(); tauIter != taskData.tau.end(); tauIter++) {
+			Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_ADDTASKDATA tauIter: %f", tauIter->second);
+		}
+
+		for (motIter = taskData.motivation.begin(); motIter != taskData.motivation.end(); motIter++) {
+			Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_ADDTASKDATA motIter: %f", motIter->second);
+		}
+
+		for (impIter = taskData.impatience.begin(); impIter != taskData.impatience.end(); impIter++) {
+			Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_ADDTASKDATA impIter: %f", impIter->second);
+		}
+
+		for (attIter = taskData.attempts.begin(); attIter != taskData.attempts.end(); attIter++) {
+			Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_ADDTASKDATA attIter: %d", attIter->second);
+		}
+		Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_ADDTASKDATA psi: %d", taskData.psi);
+		Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_ADDTASKDATA tauStdDev: %f", taskData.tauStdDev);
+*/
+		this->ddbAddTaskData(&uuid, &taskData);
+
+	}
+		break;
+	case MSG_DDB_REMTASKDATA:
+	{
+		memcpy(&uuid, data, sizeof(UUID));
+		this->ddbRemoveTaskData(&uuid);
+	}
+		break;
+	case MSG_DDB_TASKDATASETINFO:
+	{
+	//	Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_TASKDATASETINFO");
+		DDBTaskData	taskData;
+		UUID avatarUUID;
+
+		lds.setData(data, len);
+		lds.unpackUUID(&avatarUUID); //Avatar id (owner of the taskdata set)
+	//	Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_TASKDATASETINFO avatarId: %s", Log.formatUUID(0, &avatarUUID));
+		lds.unpackTaskData(&taskData);
+		lds.unlock();
+		
+
+	/*	Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_TASKDATASETINFO taskId: %s", Log.formatUUID(0, &taskData.taskId));
+
+		for (tauIter = taskData.tau.begin(); tauIter != taskData.tau.end(); tauIter++) {
+			Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_TASKDATASETINFO tauIter: %f", tauIter->second);
+		}
+
+		for (motIter = taskData.motivation.begin(); motIter != taskData.motivation.end(); motIter++) {
+			Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_TASKDATASETINFO motIter: %f", motIter->second);
+		}
+
+		for (impIter = taskData.impatience.begin(); impIter != taskData.impatience.end(); impIter++) {
+			Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_TASKDATASETINFO impIter: %f", impIter->second);
+		}
+		for (attIter = taskData.attempts.begin(); attIter != taskData.attempts.end(); attIter++) {
+			Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_TASKDATASETINFO attIter: %d", attIter->second);
+		}
+		Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_TASKDATASETINFO psi: %d", taskData.psi);
+		Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_TASKDATASETINFO tauStdDev: %f", taskData.tauStdDev);
+
+
+*/
+		this->ddbTaskDataSetInfo(&avatarUUID, &taskData);
+	}
+		break;
+	case MSG_DDB_TASKDATAGETINFO:
+	{
+	//	Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_TASKDATAGETINFO ");
+		UUID thread;
+		bool enumTaskData;
+		lds.setData(data, len);
+		lds.unpackUUID(&uuid);
+		lds.unpackUUID(&thread);
+		enumTaskData = lds.unpackBool();
+		lds.unlock();
+	//	Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_TASKDATAGETINFO: enumTaskData is %s", enumTaskData ? "true":"false");
+
+		this->ddbGetTaskData(&uuid, con, &thread, enumTaskData);
+	}
+	break;
+	case MSG_DDB_QLEARNINGDATA:
+	{
+		Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_QLEARNINGDATA ");
+
+		UUID ownerId;
+		unsigned char instance;	//Type of avatar, stored in the mission file
+		long long totalActions;
+		long long usefulActions;
+		int tableSize;
+
+		std::vector<float> qTable;             // Vector of all Q-values
+		std::vector<unsigned int> expTable;    // Vector of all experience values
+
+		lds.setData(data, len);
+		lds.unpackUUID(&ownerId);		//Avatar id (owner of the data set)
+		instance = lds.unpackChar();
+		totalActions = lds.unpackInt64();
+		usefulActions = lds.unpackInt64();
+		tableSize = lds.unpackInt32();
+
+		qTable.resize(tableSize, 0);
+		expTable.resize(tableSize, 0);
+
+		for (auto qIter : qTable) {
+			qIter = lds.unpackFloat32();						//Pack all values in q-table
+		}
+		for (auto expIter : expTable) {
+			expIter = lds.unpackInt32();						//Pack all values in exp-table
+		}
+		lds.unlock();
+		this->ddbAddQLearningData(instance, totalActions, usefulActions, tableSize, &qTable, &expTable);
+	}
+	break;
 	case MSG_DDB_RHOSTGROUPSIZE:
-		lds.setData( data, len );
-		lds.unpackUUID( &uuid ); // thread
+	{
+		lds.setData(data, len);
+		lds.unpackUUID(&uuid); // thread
 		lds.unlock();
 		lds.reset();
-		lds.packUUID( &uuid ); // thread
-		lds.packChar( DDBR_OK );
-		lds.packInt32( (int)this->gmMemberList.size() );
-		this->sendAgentMessage( &con->uuid, MSG_RESPONSE, lds.stream(), lds.length() );
+		lds.packUUID(&uuid); // thread
+		lds.packChar(DDBR_OK);
+		lds.packInt32((int)this->gmMemberList.size());
+		this->sendAgentMessage(&con->uuid, MSG_RESPONSE, lds.stream(), lds.length());
 		lds.unlock();
+	}
 		break;
 	case MSG_CBBA_DECIDED:
-		lds.setData( data, len );
-		this->cbbaDecided( &lds );
+	{
+		lds.setData(data, len);
+		this->cbbaDecided(&lds);
 		lds.unlock();
+	}
 		break;
 	case MSG__DATADUMP_AVATARPOSES:
-		lds.setData( data, len );
-		this->DataDump_AvatarPose( &lds );
+	{
+		lds.setData(data, len);
+		this->DataDump_AvatarPose(&lds);
 		lds.unlock();
+	}
 		break;
 	case MSG__DATADUMP_MANUAL:
 		{
@@ -12459,6 +12974,7 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 			float height, elevation, x, y;	
 			char estimatedPos;
 			UUID sender;
+			ITEM_TYPES landmarkType;
 			lds.setData( data, len );
 			lds.unpackUUID( &sender );
 			lds.unpackUUID( &uuid );
@@ -12469,7 +12985,8 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 			x = lds.unpackFloat32();
 			y = lds.unpackFloat32();
 			estimatedPos = lds.unpackChar();
-			this->dStore->AddLandmark( &uuid, code, &owner, height, elevation, x, y, (estimatedPos ? true : false) );
+			landmarkType = (ITEM_TYPES) lds.unpackInt32();
+			this->dStore->AddLandmark( &uuid, code, &owner, height, elevation, x, y, (estimatedPos ? true : false), landmarkType );
 			lds.unlock();
 			this->_ddbNotifyWatchers( this->getUUID(), DDB_LANDMARK, DDBE_ADD, &uuid );
 			this->globalStateChangeForward( message, data, len ); // forward to mirrors and sponsees
@@ -12842,13 +13359,188 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 			this->globalStateChangeForward( message, data, len ); // forward to mirrors and sponsees
 		}
 		break;
+	case OAC_DDB_ADDTASK:
+	{
+		UUID sender;
+		UUID landmarkUUID;
+		UUID agentUUID;
+		UUID avatarUUID;
+		bool completed;
+		ITEM_TYPES TYPE;
+		
+		lds.setData(data, len);
+		lds.unpackUUID(&sender);
+		lds.unpackUUID(&uuid);
+		lds.unpackUUID(&landmarkUUID);
+		lds.unpackUUID(&agentUUID);
+		lds.unpackUUID(&avatarUUID);
+		completed = lds.unpackBool();
+		TYPE = (ITEM_TYPES)lds.unpackInt32();
+
+		this->dStore->AddTask(&uuid, &landmarkUUID, &agentUUID, &avatarUUID, completed, TYPE);
+		lds.unlock();
+		this->_ddbNotifyWatchers(this->getUUID(), DDB_TASK, DDBE_ADD, &uuid);
+		this->globalStateChangeForward(message, data, len); // forward to mirrors and sponsees
+	}
+		break;
+	case OAC_DDB_REMTASK:
+	{
+		UUID sender;
+		lds.setData(data, len);
+		lds.unpackUUID(&sender);
+		lds.unpackUUID(&uuid);
+		lds.unlock();
+		this->dStore->RemoveTask(&uuid);
+		this->_ddbNotifyWatchers(this->getUUID(), DDB_TASK, DDBE_REM, &uuid);
+		this->_ddbClearWatchers(&uuid);
+		this->globalStateChangeForward(message, data, len); // forward to mirrors and sponsees
+	}
+	break;
+	case OAC_DDB_TASKSETINFO:
+	{
+		//Log.log(0, "AgentHost::conProcessMessage: OAC_DDB_TASKSETINFO ");
+		UUID sender;
+		UUID agentUUID;
+		UUID avatar;
+		bool completed;
+		int isTaskSet;
+
+		lds.setData(data, len);
+		lds.unpackUUID(&sender);
+		lds.unpackUUID(&uuid);
+		lds.unpackUUID(&agentUUID);
+		lds.unpackUUID(&avatar);
+		completed = lds.unpackBool();
+		isTaskSet = this->dStore->TaskSetInfo(&uuid, &agentUUID, &avatar, completed);	//isTaskSet is 1 if id not found or within update threshold
+	//	Log.log(0, "AgentHost::conProcessMessage: OAC_DDB_TASKSETINFO: isTaskSet is %s ", isTaskSet ? "true":"false");
+		lds.unlock();
+		if (isTaskSet == 0 || isTaskSet == 2) {
+			this->_ddbNotifyWatchers(this->getUUID(), DDB_TASK, DDBE_UPDATE, &uuid);
+		}
+		if(isTaskSet == 2)
+			Log.log(0, "AgentHost::conProcessMessage: OAC_DDB_TASKSETINFO within AVATAR CHANGE THRESHOLD");
+		this->globalStateChangeForward(message, data, len); // forward to mirrors and sponsees	
+	}
+	break;
+	case OAC_DDB_ADDTASKDATA:
+	{
+		UUID sender;
+		UUID avatarUUID;
+		DDBTaskData taskData;
+
+
+		lds.setData(data, len);
+		lds.unpackUUID(&sender);
+		lds.unpackUUID(&avatarUUID);
+		lds.unpackTaskData(&taskData);
+
+		//Log.log(0, "AgentHost::conProcessMessage: OAC_DDB_ADDTASKDATA avatarId: %s", Log.formatUUID(0, &avatarUUID));
+		//Log.log(0, "AgentHost::conProcessMessage: OAC_DDB_ADDTASKDATA taskId: %s", Log.formatUUID(0, &taskData.taskId));
+
+		for (tauIter = taskData.tau.begin(); tauIter != taskData.tau.end(); tauIter++) {
+//			Log.log(0, "AgentHost::conProcessMessage: OAC_DDB_ADDTASKDATA tauIter: %f", tauIter->second);
+		}
+
+		for (motIter = taskData.motivation.begin(); motIter != taskData.motivation.end(); motIter++) {
+//			Log.log(0, "AgentHost::conProcessMessage: OAC_DDB_ADDTASKDATA motIter: %f", motIter->second);
+		}
+
+		for (impIter = taskData.impatience.begin(); impIter != taskData.impatience.end(); impIter++) {
+//			Log.log(0, "AgentHost::conProcessMessage: OAC_DDB_ADDTASKDATA impIter: %f", impIter->second);
+		}
+
+		for (attIter = taskData.attempts.begin(); attIter != taskData.attempts.end(); attIter++) {
+//			Log.log(0, "AgentHost::conProcessMessage: OAC_DDB_ADDTASKDATA attIter: %d", attIter->second);
+		}
+//		Log.log(0, "AgentHost::conProcessMessage: OAC_DDB_ADDTASKDATA psi: %d", taskData.psi);
+//		Log.log(0, "AgentHost::conProcessMessage: OAC_DDB_ADDTASKDATA tauStdDev: %f", taskData.tauStdDev);
+
+
+		lds.unlock();
+		this->dStore->AddTaskData(&avatarUUID, &taskData);
+
+		this->_ddbNotifyWatchers(this->getUUID(), DDB_TASKDATA, DDBE_ADD, &avatarUUID);
+		this->globalStateChangeForward(message, data, len); // forward to mirrors and sponsees
+	}
+		break;
+	case OAC_DDB_REMTASKDATA:			//TODO: Investigate - ddbClearWatchers would clear avatarUUID from ALL lists? Might have to go with separate keys for taskdata
+	{
+		UUID sender;
+		UUID avatarUUID;
+		lds.setData(data, len);
+		lds.unpackUUID(&sender);
+		lds.unpackUUID(&avatarUUID);
+		lds.unlock();
+		this->dStore->RemoveTaskData(&avatarUUID);
+		this->_ddbNotifyWatchers(this->getUUID(), DDB_TASKDATA, DDBE_REM, &avatarUUID);
+		this->_ddbClearWatchers(&avatarUUID);
+		this->globalStateChangeForward(message, data, len); // forward to mirrors and sponsees
+	}
+		break;
+	case OAC_DDB_TASKDATASETINFO:
+	{
+		
+		UUID sender;
+		UUID avatarUUID;
+		DDBTaskData taskData;
+		bool idNotFound;
+
+		lds.setData(data, len);
+		lds.unpackUUID(&sender);
+		lds.unpackUUID(&avatarUUID);
+		lds.unpackTaskData(&taskData);
+		idNotFound = this->dStore->TaskDataSetInfo(&avatarUUID, &taskData);
+		lds.unlock();
+		if (!idNotFound) {
+			this->_ddbNotifyWatchers(this->getUUID(), DDB_TASKDATA, DDBE_UPDATE, &avatarUUID);
+		}
+		this->globalStateChangeForward(message, data, len); // forward to mirrors and sponsees	
+	}
+		break;
+	case OAC_DDB_ADDQLEARNINGDATA:
+	{
+
+		Log.log(0, "AgentHost::conProcessMessage: OAC_DDB_ADDQLEARNINGDATA");
+
+		UUID sender;
+		char instance;
+		long long totalActions;
+		long long usefulActions;
+
+		int tableSize;
+		std::vector<float> qTable;
+		std::vector<unsigned int> expTable;
+
+
+		lds.setData(data, len);
+		lds.unpackUUID(&sender);
+		instance = lds.unpackChar();
+		totalActions = lds.unpackInt64();
+		usefulActions = lds.unpackInt64();
+		tableSize = lds.unpackInt32();
+
+		qTable.resize(tableSize, 0);
+		expTable.resize(tableSize, 0);
+
+		for (auto qIter : qTable) {
+			qIter = lds.unpackFloat32();						//Unpack all values in q-table
+		}
+		for (auto expIter : expTable) {
+			expIter = lds.unpackInt32();						//Unpack all values in exp-table
+		}
+
+
+		this->dStore->AddQLearningData(instance, totalActions, usefulActions, tableSize, &qTable, &expTable);
+
+		lds.unlock();
+	}
+		break;
 	default:
 		return 1; // unhandled message
 	}
 
 	return 0;
 }
-
 
 //-----------------------------------------------------------------------------
 // TESTING

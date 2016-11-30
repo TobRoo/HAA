@@ -271,6 +271,7 @@ int ExecutiveOfflineSLAM::start( char *missionFile ) {
 	lds.packUUID( &this->pogUUID );
 	lds.packFloat32( 10.0f );
 	lds.packFloat32( 0.1f );
+	Log.log(0, "OfflineSLAM adding POG");
 	this->sendMessage( this->hostCon, MSG_DDB_ADDPOG, lds.stream(), lds.length() );
 	lds.unlock();
 

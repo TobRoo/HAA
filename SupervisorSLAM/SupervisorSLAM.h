@@ -73,6 +73,9 @@ protected:
 protected:
 	int		backupReadingsCount; // count down until next time we backup
 
+	bool mapReveal;
+	bool mapRandom;
+
 //-----------------------------------------------------------------------------
 // Functions	
 
@@ -85,6 +88,7 @@ public:
 	virtual int stop();			// stop agent
 	virtual int step();			// run one step
 
+	virtual int parseMF_HandleMapOptions(bool mapReveal, bool mapRandom);
 	virtual int parseMF_HandleOptions( int SLAMmode );
 
 private:

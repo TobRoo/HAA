@@ -78,3 +78,7 @@ ipch/
 
 .vs/
 *.mexw64
+/AgentTeamLearning/~AutoRecover.AgentTeamLearning.vcxproj
+*.log
+*.db
+*.psess
