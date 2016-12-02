@@ -44,13 +44,13 @@ public:
     // Separate parameter for max task time, enable it to be adjusted
     unsigned int delta;
 
-	//Pointer to parent agent
+    //Pointer to parent agent
 
-	AgentTeamLearning *parentAgent;
+    AgentTeamLearning *parentAgent;
 
 
-	//NilUUID for comparison
-	UUID nilUUID;
+    //NilUUID for comparison
+    UUID nilUUID;
 
     // This avatar's Id and tracking metrics
     UUID id;
@@ -66,7 +66,7 @@ public:
 
     // Constructor
     LAlliance(UUID *idIn);
-	LAlliance(AgentTeamLearning *parentAgent);
+    LAlliance(AgentTeamLearning *parentAgent);
 
     /* addTask
      *

@@ -232,8 +232,10 @@ void DataStream::packTaskData(DDBTaskData *taskData) {
 	int motLength = taskData->motivation.size()*(sizeof(UUID) + sizeof(float));
 	int impLength = taskData->impatience.size()*(sizeof(UUID) + sizeof(float));
 	int attLength = taskData->attempts.size()*(sizeof(UUID) + sizeof(int));
+	int meanLength = taskData->mean.size()*(sizeof(UUID) + sizeof(float));
+	int stddevLength = taskData->stddev.size()*(sizeof(UUID) + sizeof(float));
 
-	length = sizeof(UUID) + sizeof(UUID) + tauLength + motLength + impLength + attLength + sizeof(taskData->psi) + sizeof(taskData->tauStdDev) + sizeof(taskData->updateTime);
+	length = sizeof(UUID) + sizeof(UUID) + tauLength + motLength + impLength + attLength + meanLength + stddevLength + sizeof(taskData->psi) + sizeof(taskData->updateTime);
 
 	if (this->dataLength + length > this->bufSize) {
 		if (this->increaseBuffer(this->dataLength + length))
@@ -301,16 +303,30 @@ void DataStream::packTaskData(DDBTaskData *taskData) {
 			this->head += sizeof(int);
 			this->dataLength += sizeof(int);
 		}
+		for (floatIter = taskData->mean.begin(); floatIter != taskData->mean.end(); floatIter++) {
+			memcpy(this->head, (char *)&floatIter->first, sizeof(UUID));
+			this->head += sizeof(UUID);
+			this->dataLength += sizeof(UUID);
+
+			memcpy(this->head, (char *)&floatIter->second, sizeof(float));
+			this->head += sizeof(float);
+			this->dataLength += sizeof(float);
+		}
+		for (floatIter = taskData->stddev.begin(); floatIter != taskData->stddev.end(); floatIter++) {
+			memcpy(this->head, (char *)&floatIter->first, sizeof(UUID));
+			this->head += sizeof(UUID);
+			this->dataLength += sizeof(UUID);
+
+			memcpy(this->head, (char *)&floatIter->second, sizeof(float));
+			this->head += sizeof(float);
+			this->dataLength += sizeof(float);
+		}
+		
 	}
 	//Pack psi
 	memcpy(this->head, (char *)&taskData->psi, sizeof(unsigned int));
 	this->head += sizeof(unsigned int);
 	this->dataLength += sizeof(unsigned int);
-
-	//Pack tauStdDev
-	memcpy(this->head, (char *)&taskData->tauStdDev, sizeof(float));
-	this->head += sizeof(float);
-	this->dataLength += sizeof(float);
 
 	//Pack updateTime
 	memcpy(this->head, (char *)&taskData->updateTime, sizeof(_timeb));
@@ -521,15 +537,29 @@ void DataStream::unpackTaskData(DDBTaskData *taskData) {
 			this->head += sizeof(int);
 			taskData->attempts[key] = intValue;
 		}
+
+		//Unpack and populate mean
+		for (int i = 0; i < mapSize; i++) {
+			memcpy((char *)&key, this->head, sizeof(UUID));
+			this->head += sizeof(UUID);
+			memcpy((char *)&floatValue, this->head, sizeof(float));
+			this->head += sizeof(float);
+			taskData->mean[key] = floatValue;
+		}
+
+		//Unpack and populate stddev
+		for (int i = 0; i < mapSize; i++) {
+			memcpy((char *)&key, this->head, sizeof(UUID));
+			this->head += sizeof(UUID);
+			memcpy((char *)&floatValue, this->head, sizeof(float));
+			this->head += sizeof(float);
+			taskData->stddev[key] = floatValue;
+		}
 	}
 
 	//Unpack psi
 	memcpy((char *)&taskData->psi, this->head, sizeof(int));
 	this->head += sizeof(int);
-
-	//Unpack tauStdDev
-	memcpy((char *)&taskData->tauStdDev, this->head, sizeof(float));
-	this->head += sizeof(float);
 
 	//Unpack updateTime
 	memcpy((char *)&taskData->updateTime, this->head, sizeof(_timeb));

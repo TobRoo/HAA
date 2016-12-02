@@ -522,8 +522,9 @@ struct DDBTaskData {
 	std::map<UUID, float, UUIDless> motivation;    // Motivation values for each task
 	std::map<UUID, float, UUIDless> impatience;    // Impatience values for each task
 	std::map<UUID, int, UUIDless> attempts;        // Number of attempts at each task
+	std::map<UUID, float, UUIDless> mean;          // Mean task time
+	std::map<UUID, float, UUIDless> stddev;        // Standard deviation of task time
 	unsigned int psi;                    // Time on task
-	float tauStdDev;                     // Standard deviation of tau values
 	_timeb updateTime;                   // Time of most recent update to DDB
 };
 

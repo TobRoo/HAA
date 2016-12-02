@@ -18,18 +18,20 @@
  *
  * State variables and action values must be non-zero integers.
  *
- * Example: There are 5 state variables, with possible values between
- * 0 and 15, and there are 8 possible actions
+ * Example: There are 5 state variables, with minimum values of
+ * [0, 0, 0, 0, 0] and maximum values of [15, 1, 15, 15, 15]
  *
- * The state vector will look like: [X, X, X, X, X]
- * 3 Bits are needed to express the actions
- * 4 Bits are needed to express the state variables
+ * A table is formed such that:
+ *   Rows 1:80 are for vectors [0 0 0 0 0] to [15 0 0 0 0]
+ *   Rows 81:160 are for vectors [0 1 0 0 0] to [15 1 0 0 0]
+ *   Rows 161:2561 are for vectors [0 0 0 0 0] to [15 1 15 0 0]
+ *   etc.
  *
- * Rows of the data vector will be formed as follows:
- * Rows 1 to 2^(3+4) will be for state vectors [0 0 0 0 0] to [15 0 0 0 0]
- * Rows (2^(3+4)+1) to 2(3+4+4) will be for state vectors [0 1 0 0 0] to [15 1 0 0 0]
- * Rows (2^(3+4+4)+1) to 2(3+4+4+4) will be for state vectors [0 2 0 0 0] to [15 2 0 0 0]
- * etc.
+ * An encoder vector is used, so that when the state vector is
+ * multiplied by this vector, it accounts for the offset needed for each
+ * element. For this example the encoder vector is
+ * [1, 80, 160, 2560, 40960]. Thus the second element of the state
+ * vector gets offset by 80, the third by 160, the forth by 2560, etc..
  */
 
 #include "stdafx.h"
@@ -44,26 +46,31 @@ QLearning::QLearning() {
 
     // TODO: The data below should be loaded in from a config file
     gamma_ = 0.3f;
-	this->alpha_max_ = 0.9f;
-	this->alpha_denom_ = 30;
-	this->alpha_power_ = 1;
-	this->num_state_vrbls_ = 5;
-	this->state_bits_ = 4;
-	this->num_actions_ = 4;
+    this->alpha_max_ = 0.9f;
+    this->alpha_denom_ = 300;
+    this->alpha_power_ = 2;
+    this->num_state_vrbls_ = 7;
+    this->state_resolution_ = {3, 3, 5, 3, 5, 3, 5};
+    this->num_actions_ = 4;
 
-    // Min bits required for actions
-	this->action_bits_ = (unsigned int) ceil(log2(num_actions_));
+    // Form encoder vector to multiply inputted state vectors by
+    this->encoder_vector_.push_back(this->num_actions_);
+    unsigned int state_resolution_prod = this->state_resolution_[0]*this->num_actions_;
+    for(int i = 1; i < this->num_state_vrbls_ ; i++) {
+        this->encoder_vector_.push_back(state_resolution_prod);
+        state_resolution_prod = state_resolution_prod*this->state_resolution_[i];
+    }
 
     // Determine table size
-	this->table_size_ = (unsigned int) pow(2, (num_state_vrbls_ * state_bits_ + action_bits_));
+    this->table_size_ = state_resolution_prod;
 
     // Initialize vectors
-	this->q_table_.resize(table_size_, 0);
-	this->exp_table_.resize(table_size_, 0);
+    this->q_table_.resize(this->table_size_, 0);
+    this->exp_table_.resize(this->table_size_, 0);
 
     // Initialize current vals
-	this->q_vals_.resize(num_actions_, 0);
-	this->exp_vals_.resize(num_actions_, 0);
+    this->q_vals_.resize(this->num_actions_, 0);
+    this->exp_vals_.resize(this->num_actions_, 0);
 
 }// end constructor
 
@@ -112,13 +119,13 @@ void QLearning::learn(std::vector<unsigned int> &state_now, std::vector<unsigned
 void QLearning::getElements(std::vector<unsigned int> &state_vector) {
 
     // Find rows corresponding to state vector
-	int uselessAction = 1;
+    int uselessAction = 1;
     int row = getKey(state_vector, uselessAction);
 
     // Retrieve quality and experience
     for (unsigned int i = 0; i < num_actions_; i++){
-		this->q_vals_[i] = this->q_table_[row + i];
-		this->exp_vals_[i] = this->exp_table_[row + i];
+        this->q_vals_[i] = this->q_table_[row + i];
+        this->exp_vals_[i] = this->exp_table_[row + i];
     }// end for
 
 }// end getQValue
@@ -141,8 +148,8 @@ void QLearning::storeElements(std::vector<unsigned int> &state_vector, float &qu
     // Increment experience
     unsigned int experience = this->exp_table_[key] + 1;
     // Insert new data
-	this->q_table_[key] = quality;
-	this->exp_table_[key] = experience;
+    this->q_table_[key] = quality;
+    this->exp_table_[key] = experience;
 
 }// end storeElements
 
@@ -158,7 +165,6 @@ void QLearning::reset() {
 }// end reset
 
 
-
 /* getElements
  *
  * Get the table index for a certain key vector
@@ -169,16 +175,11 @@ void QLearning::reset() {
  */
 
 int QLearning::getKey(std::vector<unsigned int> &state_vector, int &action_id) {
-
-    // Increment key value for each entry in state_vector (see above for example)
-    int key = action_id - 1;     // key starts at zero
-    int shift;
-
-    for (int i = 0; i < state_vector.size(); i++) {
-        shift = state_vector[i] * (int) pow(2, (i * this->state_bits_ + this->action_bits_));
-        key += shift;
-    }// end for
-
+    // Multiply state vector by the encoder vector and add the action number to convert to a
+    // unique key value (key starts at zero)
+    int key = (action_id - 1);
+    for (int i = 0; i < this->num_state_vrbls_; i++) {
+        key += state_vector[i]*this->encoder_vector_[i];
+    }
     return key;
-
 }// end getElements

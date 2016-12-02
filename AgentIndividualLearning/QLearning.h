@@ -18,25 +18,27 @@
  *
  * State variables and action values must be non-zero integers.
  *
- * Example: There are 5 state variables, with possible values between
- * 0 and 15, and there are 8 possible actions
+ * Example: There are 5 state variables, with minimum values of
+ * [0, 0, 0, 0, 0] and maximum values of [15, 1, 15, 15, 15]
  *
- * The state vector will look like: [X, X, X, X, X]
- * 3 Bits are needed to express the actions
- * 4 Bits are needed to express the state variables
+ * A table is formed such that:
+ *   Rows 1:80 are for vectors [0 0 0 0 0] to [15 0 0 0 0]
+ *   Rows 81:160 are for vectors [0 1 0 0 0] to [15 1 0 0 0]
+ *   Rows 161:2561 are for vectors [0 0 0 0 0] to [15 1 15 0 0]
+ *   etc.
  *
- * Rows of the data vector will be formed as follows:
- * Rows 1 to 2^(3+4) will be for state vectors [0 0 0 0 0] to [15 0 0 0 0]
- * Rows (2^(3+4)+1) to 2(3+4+4) will be for state vectors [0 1 0 0 0] to [15 1 0 0 0]
- * Rows (2^(3+4+4)+1) to 2(3+4+4+4) will be for state vectors [0 2 0 0 0] to [15 2 0 0 0]
- * etc.
+ * An encoder vector is used, so that when the state vector is
+ * multiplied by this vector, it accounts for the offset needed for each
+ * element. For this example the encoder vector is
+ * [1, 80, 160, 2560, 40960]. Thus the second element of the state
+ * vector gets offset by 80, the third by 160, the forth by 2560, etc..
  */
 
 #ifndef QLEARNING_H
 #define QLEARNING_H
 
 #include <vector>
-//#include <math.h>
+#include <math.h>
 #include <algorithm>
 
 class QLearning {
@@ -51,10 +53,10 @@ public:
 
     // Quality/Experience table
     unsigned int num_state_vrbls_;           // Number of variables in state vector
-    unsigned int state_bits_ ;               // Bits required to express state values
+    std::vector<unsigned int> state_resolution_ ;               // Bits required to express state values
     unsigned int num_actions_;               // Number of possible actions
-    unsigned  int action_bits_;              // Bits required to express action number
-    unsigned  int table_size_;               // Length of Q-table
+    std::vector<unsigned int> encoder_vector_;
+    unsigned int table_size_;               // Length of Q-table
     std::vector<float> q_table_;             // Vector of all Q-values
     std::vector<unsigned int> exp_table_;    // Vector of all experience values
     std::vector<float> q_vals_;              // Vector of current Q-values
