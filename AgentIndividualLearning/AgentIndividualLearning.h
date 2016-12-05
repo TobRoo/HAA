@@ -96,6 +96,9 @@ public:
         UUID regionId;
         DDBRegion missionRegion;
 
+		int agentAdviceExchangeSpawned;
+		UUID agentAdviceExchange;
+
         bool setupComplete;
 
     };
@@ -194,6 +197,8 @@ private:
     float determineReward();
     bool validAction(ActionPair &action);
 
+	int spawnAgentAdviceExchange();
+
     //Learning data storage for multiple simulation runs - so far, only Q-Learning implemented
 
     int uploadLearningData();		//General function, selects method depending on policy - so far, only Q-Learning implemented
@@ -221,6 +226,7 @@ public:
         AgentIndividualLearning_CBR_convGetTaskList,
         AgentIndividualLearning_CBR_convGetTaskInfo,
         AgentIndividualLearning_CBR_convCollectLandmark,
+		AgentIndividualLearning_CBR_convRequestAgentAdviceExchange,
     };
 
     // Define callback functions (make sure they match CallbackRef above and are added to this->callback during agent creation)
@@ -236,6 +242,7 @@ public:
     bool convGetTaskList(void * vpConv);
 
     bool convCollectLandmark(void * vpConv);
+	bool convRequestAgentAdviceExchange(void *vpConv);
 
 protected:
     virtual int	  freeze( UUID *ticket );

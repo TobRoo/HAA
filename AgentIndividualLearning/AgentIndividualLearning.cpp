@@ -29,8 +29,11 @@
 #include "..\\AvatarBase\\AvatarBaseVersion.h"
 #include "..\\AvatarSimulation\\AvatarSimulationVersion.h"
 
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
+#include "..\\AgentAdviceExchange\\AgentAdviceExchangeVersion.h"
+#include <fstream>      // std::ifstream
+
+//#include <boost/filesystem/operations.hpp>
+//#include <boost/filesystem/path.hpp>
 
 #define COLLECTION_THRESHOLD 0.15f // m
 #define DELIVERY_THRESHOLD 0.15f // m
@@ -86,9 +89,6 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
     //Load in learning data from previous runs (if such data exist)
     this->parseLearningData();
 
-    //Request advice exchange agent
-    // TODO
-
     // Policy parameters
     this->softmax_temp_ = 0.10;
 
@@ -132,7 +132,7 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
     this->callback[AgentIndividualLearning_CBR_convGetTaskList] = NEW_MEMBER_CB(AgentIndividualLearning, convGetTaskList);
     this->callback[AgentIndividualLearning_CBR_convGetTaskInfo] = NEW_MEMBER_CB(AgentIndividualLearning, convGetTaskInfo);
     this->callback[AgentIndividualLearning_CBR_convCollectLandmark] = NEW_MEMBER_CB(AgentIndividualLearning, convCollectLandmark);
-
+	this->callback[AgentIndividualLearning_CBR_convRequestAgentAdviceExchange] = NEW_MEMBER_CB(AgentIndividualLearning, convRequestAgentAdviceExchange);
 
 }// end constructor
 
@@ -251,6 +251,9 @@ int AgentIndividualLearning::start(char *missionFile) {
     }// end if
 
     STATE(AgentBase)->started = false;
+
+	//Request advice exchange agent
+	this->spawnAgentAdviceExchange();
 
     // register as avatar watcher
     Log.log(0, "AgentIndividualLearning::start: registering as avatar watcher");
@@ -981,6 +984,32 @@ bool AgentIndividualLearning::validAction(ActionPair &action) {
     return true;
 }
 
+int AgentIndividualLearning::spawnAgentAdviceExchange()
+{
+	UUID thread;
+
+	if (!STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned) {
+		UUID aAgentAdviceExchangeuuid;
+		UuidFromString((RPC_WSTR)_T(AgentAdviceExchange_UUID), &aAgentAdviceExchangeuuid);
+		thread = this->conversationInitiate(AgentIndividualLearning_CBR_convRequestAgentAdviceExchange, REQUESTAGENTSPAWN_TIMEOUT, &aAgentAdviceExchangeuuid, sizeof(UUID));
+		if (thread == nilUUID) {
+			return 1;
+		}
+		this->ds.reset();
+		this->ds.packUUID(this->getUUID());
+		this->ds.packUUID(&aAgentAdviceExchangeuuid);
+		this->ds.packChar(-1); // no instance parameters
+		this->ds.packFloat32(0); // affinity
+		this->ds.packChar(DDBAGENT_PRIORITY_CRITICAL);
+		this->ds.packUUID(&thread);
+		this->sendMessage(this->hostCon, MSG_RAGENT_SPAWN, this->ds.stream(), this->ds.length());
+		this->ds.unlock();
+
+		STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned = -1; // in progress
+	}
+	return 0;
+}
+
 int AgentIndividualLearning::uploadLearningData()
 {
     //TODO Add additional learning algorithms
@@ -1015,8 +1044,9 @@ int AgentIndividualLearning::uploadQLearningData()
 
 int AgentIndividualLearning::parseLearningData()
 {
-    if(!boost::filesystem::exists("learningData.tmp"));
-    return 0;	//No previous data, first run
+	std::ifstream inData("learningData.tmp");
+	if (!inData.good())
+		return 0;	//No previous data, first run
 
 
 
@@ -1794,6 +1824,59 @@ bool AgentIndividualLearning::convCollectLandmark(void * vpConv)
     }
 
 }
+
+bool AgentIndividualLearning::convRequestAgentAdviceExchange(void *vpConv) {
+	DataStream lds;
+	spConversation conv = (spConversation)vpConv;
+
+	if (conv->response == NULL) { // spawn timed out
+		Log.log(0, "AgentIndividualLearning::convRequestAgentAdviceExchange: request spawn timed out");
+		return 0; // end conversation
+	}
+
+	lds.setData(conv->response, conv->responseLen);
+	lds.unpackData(sizeof(UUID)); // discard thread
+
+	if (lds.unpackBool()) { // succeeded
+		lds.unpackUUID(&STATE(AgentIndividualLearning)->agentAdviceExchange);
+		lds.unlock();
+		STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned = 1; // ready
+
+		Log.log(0, "AgentIndividualLearning::convRequestAgentAdviceExchange: Advice exchange agent %s", Log.formatUUID(0, &STATE(AgentIndividualLearning)->agentAdviceExchange));
+
+		// register as agent watcher
+		lds.reset();
+		lds.packUUID(&STATE(AgentBase)->uuid);
+		lds.packUUID(&STATE(AgentIndividualLearning)->agentAdviceExchange);
+		this->sendMessage(this->hostCon, MSG_DDB_WATCH_ITEM, lds.stream(), lds.length());
+		lds.unlock();
+		// NOTE: we request the status once DDBE_WATCH_ITEM notification is received
+
+		// set parent
+		this->sendMessage(this->hostCon, MSG_AGENT_SETPARENT, (char *)this->getUUID(), sizeof(UUID), &STATE(AgentIndividualLearning)->agentAdviceExchange);
+
+		lds.reset();
+		lds.packUUID(&STATE(AgentBase)->uuid);
+		this->sendMessageEx(this->hostCon, MSGEX(AgentAdviceExchange_MSGS, MSG_CONFIGURE), lds.stream(), lds.length(), &STATE(AgentIndividualLearning)->agentAdviceExchange);
+		lds.unlock();
+
+		lds.reset();
+		lds.packString(STATE(AgentBase)->missionFile);
+		this->sendMessage(this->hostCon, MSG_AGENT_START, lds.stream(), lds.length(), &STATE(AgentIndividualLearning)->agentAdviceExchange);
+		lds.unlock();
+
+		this->backup(); // backup agentIndividualLearning
+
+	}
+	else {
+		lds.unlock();
+
+		// TODO try again?
+	}
+
+	return 0;
+}
+
 
 //-----------------------------------------------------------------------------
 // State functions
