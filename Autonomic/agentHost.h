@@ -649,7 +649,7 @@ private:
 	int ddbAddLandmark( UUID *id, unsigned char code, UUID *owner, float height, float elevation, float x, float y, char estimatedPos, ITEM_TYPES landmarkType );
 	int ddbRemoveLandmark( UUID *id );
 	int ddbLandmarkSetInfo( char *data, unsigned int len );
-	int ddbGetLandmark( UUID *id, spConnection con, UUID *thread );
+	int ddbGetLandmark( UUID *id, spConnection con, UUID *thread, bool enumLandmarks );
 	int ddbGetLandmark( unsigned char code, spConnection con, UUID *thread );
 
 	int ddbEnumeratePOGs( spConnection con, UUID *forward );

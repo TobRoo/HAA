@@ -380,7 +380,7 @@ GODDBLandmark::GODDBLandmark( UUID *id, AgentMirrorGUI *mirror, int *pathLib ) :
 
 	this->pathLib = pathLib;
 
-	dStore->GetLandmark( id, &lds, &nilUUID );
+	dStore->GetLandmark( id, &lds, &nilUUID, false );
 
 	lds.rewind();
 
@@ -509,7 +509,7 @@ int GODDBLandmark::setVisibility( bool vis ) {
 int GODDBLandmark::updatePosEstimation() {
 	DataStream lds;
 
-	dStore->GetLandmark( &this->id, &lds, &nilUUID );
+	dStore->GetLandmark( &this->id, &lds, &nilUUID, false );
 
 	lds.rewind();
 	lds.unpackData(sizeof(UUID)); // discard thread
@@ -529,7 +529,7 @@ int GODDBLandmark::updatePosEstimation() {
 int GODDBLandmark::collected() {
 	DataStream lds;
 
-	dStore->GetLandmark( &this->id, &lds, &nilUUID );
+	dStore->GetLandmark( &this->id, &lds, &nilUUID, false );
 
 	lds.rewind();
 	lds.unpackData(sizeof(UUID)); // discard thread

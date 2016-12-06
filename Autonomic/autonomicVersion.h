@@ -161,7 +161,7 @@ enum MSGS {
 	MSG_DDB_ADDLANDMARK, // add landmark to DDB [UUID uuid, unsigned char code, UUID owner, float height, float elevation, float x, float y, char estimatedPos, int landmarkType]
 	MSG_DDB_REMLANDMARK, // remove landmark from DDB [UUID uuid]
 	MSG_DDB_LANDMARKSETINFO, // update landmark position estimate [unsigned char code, int infoFlags, data...]
-	MSG_DDB_RLANDMARK,   // request landmark [UUID uuid, UUID thread]
+	MSG_DDB_RLANDMARK,   // request landmark [UUID uuid, UUID thread, bool enumLandmark]
 					     // RESPONSE: send landmark [UUID thread, char response <, DDBLandmark landmark>] 
 	MSG_DDB_RLANDMARKBYID, // request landmark by barcode [unsigned char code, UUID thread]
 					     // RESPONSE: send region [UUID thread, char response <, DDBLandmark landmark>] 
@@ -387,7 +387,7 @@ static const unsigned int MSG_SIZE[] = { // array of message size by message id,
 	sizeof(UUID) + 1 + sizeof(UUID) + 4*4 + 1 + sizeof(ITEM_TYPES), // MSG_DDB_ADDLANDMARK
 	sizeof(UUID),		// MSG_DDB_REMLANDMARK
 	-2,					// MSG_DDB_LANDMARKSETINFO
-	sizeof(UUID)*2,		// MSG_DDB_RLANDMARK
+	sizeof(UUID)*2 + sizeof(bool),		// MSG_DDB_RLANDMARK
 	1 + sizeof(UUID),	// MSG_DDB_RLANDMARKBYID
 
 	sizeof(UUID) + 4 + 4, //MSG_DDB_ADDPOG
