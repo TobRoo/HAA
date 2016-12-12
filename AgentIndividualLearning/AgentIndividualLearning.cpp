@@ -89,6 +89,9 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
     //Load in learning data from previous runs (if such data exist)
     this->parseLearningData();
 
+	//Advice exchange parameters
+	STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned = false;
+
     // Policy parameters
     this->softmax_temp_ = 0.10;
 
@@ -133,7 +136,7 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
     this->callback[AgentIndividualLearning_CBR_convGetTaskInfo] = NEW_MEMBER_CB(AgentIndividualLearning, convGetTaskInfo);
     this->callback[AgentIndividualLearning_CBR_convCollectLandmark] = NEW_MEMBER_CB(AgentIndividualLearning, convCollectLandmark);
 	this->callback[AgentIndividualLearning_CBR_convRequestAgentAdviceExchange] = NEW_MEMBER_CB(AgentIndividualLearning, convRequestAgentAdviceExchange);
-
+	this->callback[AgentIndividualLearning_CBR_convRequestAdvice] = NEW_MEMBER_CB(AgentIndividualLearning, convRequestAdvice);
 }// end constructor
 
 //-----------------------------------------------------------------------------
@@ -387,6 +390,9 @@ int AgentIndividualLearning::getAction() {
     this->learn();
     // Get quality and experience from state vector
     this->q_learning_.getElements(this->stateVector);
+	// Get advice from advice exchange agent
+	//this->askForAdvice(q_learning_.q_vals_, this->stateVector);
+	//TODO:: When should the advice be used? If immediately, need to wait for response here.
     // Select action based quality
     int action = this->policy(q_learning_.q_vals_, q_learning_.exp_vals_);
     // Form action
@@ -720,6 +726,30 @@ int AgentIndividualLearning::getStateVector() {
     return 0;
 }
 
+int AgentIndividualLearning::askForAdvice(std::vector<float>& quality, std::vector<unsigned int>& state_vector)
+{
+	DataStream lds;
+
+	UUID thread = this->conversationInitiate(AgentIndividualLearning::AgentIndividualLearning_CBR_convRequestAdvice, DDB_REQUEST_TIMEOUT, &STATE(AgentIndividualLearning)->agentAdviceExchange, sizeof(UUID));
+	if (thread == nilUUID) {
+		return 1;
+	}
+	lds.reset();
+	lds.packUUID(this->getUUID());			// Sender id
+	lds.packUUID(&thread);
+	lds.packInt32(quality.size());
+	for (auto& qIter : quality) {
+		lds.packFloat32(qIter);
+	}
+	lds.packInt32(state_vector.size());
+	for (auto& svIter : state_vector) {
+		lds.packFloat32(svIter);
+	}
+	this->sendMessageEx(this->hostCon, MSGEX(AgentIndividualLearning_MSGS, MSG_REQUEST_ADVICE), lds.stream(), lds.length(), &STATE(AgentIndividualLearning)->agentAdviceExchange, this->getUUID());
+
+	return 0;
+}
+
 /* policy
 *
 * Contains the policy for action selection. Can be multiple of
@@ -987,8 +1017,9 @@ bool AgentIndividualLearning::validAction(ActionPair &action) {
 int AgentIndividualLearning::spawnAgentAdviceExchange()
 {
 	UUID thread;
-
+	Log.log(0, "AgentIndividualLearning::spawnAgentAdviceExchange: requesting advice exchange agent...");
 	if (!STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned) {
+		Log.log(0, "AgentIndividualLearning::spawnAgentAdviceExchange: agent not yet spawned, requesting...");
 		UUID aAgentAdviceExchangeuuid;
 		UuidFromString((RPC_WSTR)_T(AgentAdviceExchange_UUID), &aAgentAdviceExchangeuuid);
 		thread = this->conversationInitiate(AgentIndividualLearning_CBR_convRequestAgentAdviceExchange, REQUESTAGENTSPAWN_TIMEOUT, &aAgentAdviceExchangeuuid, sizeof(UUID));
@@ -1875,6 +1906,14 @@ bool AgentIndividualLearning::convRequestAgentAdviceExchange(void *vpConv) {
 	}
 
 	return 0;
+}
+
+bool AgentIndividualLearning::convRequestAdvice(void * vpConv)
+{
+
+	//TODO!
+
+	return false;
 }
 
 

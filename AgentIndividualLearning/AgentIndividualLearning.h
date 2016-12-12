@@ -191,6 +191,7 @@ private:
     int updateStateData();
     int getAction();
     int getStateVector();
+	int askForAdvice(std::vector<float> &quality, std::vector<unsigned int> &state_vector);
     int policy(std::vector<float> &quality, std::vector<unsigned int> &experience);
     int sendAction(ActionPair action);
     int learn();
@@ -227,6 +228,7 @@ public:
         AgentIndividualLearning_CBR_convGetTaskInfo,
         AgentIndividualLearning_CBR_convCollectLandmark,
 		AgentIndividualLearning_CBR_convRequestAgentAdviceExchange,
+		AgentIndividualLearning_CBR_convRequestAdvice,
     };
 
     // Define callback functions (make sure they match CallbackRef above and are added to this->callback during agent creation)
@@ -243,6 +245,8 @@ public:
 
     bool convCollectLandmark(void * vpConv);
 	bool convRequestAgentAdviceExchange(void *vpConv);
+	bool convRequestAdvice(void *vpConv);
+
 
 protected:
     virtual int	  freeze( UUID *ticket );

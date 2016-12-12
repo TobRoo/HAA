@@ -454,7 +454,21 @@ int DDBStore::AgentGetInfo( UUID *id, int infoFlags, DataStream *ds, UUID *threa
 	ds->reset();
 	ds->packUUID( thread );
 
-	if ( iterA == this->DDBAgents.end() ) { // unknown agent
+
+	if (infoFlags & DDBAGENTINFO_RLIST) {
+		ds->packChar(DDBR_OK);
+		ds->packInt32(infoFlags);
+		ds->packInt32(this->DDBAgents.size());
+		for (auto& iterA : this->DDBAgents) {
+			ds->packUUID((UUID *)&iterA.first);
+			ds->packString(iterA.second->agentTypeName);
+			ds->packUUID(&iterA.second->agentTypeId);
+			ds->packChar(iterA.second->agentInstance);
+			ds->packUUID(&iterA.second->parent);
+		}
+		return 0;
+	}
+	else if ( iterA == this->DDBAgents.end() ) { // unknown agent
 		ds->packChar( DDBR_NOTFOUND );
 	} else { 
 		ds->packChar( DDBR_OK );

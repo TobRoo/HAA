@@ -453,7 +453,7 @@ int LAlliance::motivationReset(UUID id) {
     if (testIt != myData.motivation.end())
         myData.motivation[id] = 0;
     else
-        parentAgent->logWrapper("HAHAHA");
+        parentAgent->logWrapper("LAlliance::motivationReset error.");
     return 0;
 }
 

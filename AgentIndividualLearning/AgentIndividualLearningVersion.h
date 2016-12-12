@@ -16,13 +16,14 @@ namespace AgentIndividualLearning_MSGS {
 	// !! NOTE !! Make sure the order matches betwen MSGS and MSG_SIZE
 
 	enum MSGS {
-		MSG_CONFIGURE = MSG_FIRST, // configure [UUID owner, UUID map, UUID mission region, UUID pf, float maxLinear, float maxRotation, float minLinear, flaot minRotation]
-
+		MSG_CONFIGURE = MSG_FIRST, // configure [UUID owner, UUID map, UUID mission region, UUID pf, float maxLinear, float maxRotation, float minLinear, float minRotation]
+		MSG_REQUEST_ADVICE,	//[
 		MSG_LAST			// last message id
 	};
 	
 	static const unsigned int MSG_SIZE[] = { // array of message size by MSGID - MSG_FIRST
 		-2,					// MSG_CONFIGURE
+		-3,
 	};
 
 }
