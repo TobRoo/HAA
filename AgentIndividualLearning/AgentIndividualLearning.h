@@ -221,6 +221,7 @@ public:
         AgentIndividualLearning_CBR_convRequestAvatarLoc,
         AgentIndividualLearning_CBR_convGetAvatarList,
         AgentIndividualLearning_CBR_convGetAvatarInfo,
+		AgentIndividualLearning_CBR_convGetLandmarkList,
         AgentIndividualLearning_CBR_convLandmarkInfo,
         AgentIndividualLearning_CBR_convOwnLandmarkInfo,
         AgentIndividualLearning_CBR_convMissionRegion,
@@ -236,6 +237,7 @@ public:
     bool convRequestAvatarLoc(void *vpConv);
     bool convGetAvatarList(void *vpConv);
     bool convGetAvatarInfo(void *vpConv);
+	bool convGetLandmarkList(void * vpConv);
     bool convLandmarkInfo(void *vpConv);
     bool convOwnLandmarkInfo(void * vpConv);
     bool convMissionRegion(void *vpConv);

@@ -1489,12 +1489,27 @@ int DDBStore::LandmarkSetInfo( UUID *id, int infoFlags, DataStream *ds ) {
 	return infoFlags;
 }
 
-int DDBStore::GetLandmark( UUID *id, DataStream *ds, UUID *thread ) {
+int DDBStore::GetLandmark( UUID *id, DataStream *ds, UUID *thread, bool enumLandmarks ) {
 	mapDDBLandmark::iterator iter = this->DDBLandmarks.find(*id);
 	
 	ds->reset();
 	ds->packUUID( thread );
 	
+	if (enumLandmarks == true) {
+		ds->packChar(DDBR_OK);
+		ds->packBool(enumLandmarks);
+		ds->packInt32((int)this->DDBLandmarks.size());
+		for (iter = this->DDBLandmarks.begin(); iter != this->DDBLandmarks.end(); iter++) {
+			ds->packUUID((UUID *)&iter->first);
+			ds->packData(iter->second, sizeof(DDBLandmark));
+		}
+		return 0;
+	}
+
+
+
+
+
 	if ( iter == this->DDBLandmarks.end() ) {
 		ds->packChar( DDBR_NOTFOUND );
 		return 1; // not found

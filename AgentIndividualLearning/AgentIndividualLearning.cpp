@@ -129,6 +129,7 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
     this->callback[AgentIndividualLearning_CBR_convRequestAvatarLoc] = NEW_MEMBER_CB(AgentIndividualLearning, convRequestAvatarLoc);
     this->callback[AgentIndividualLearning_CBR_convGetAvatarList] = NEW_MEMBER_CB(AgentIndividualLearning, convGetAvatarList);
     this->callback[AgentIndividualLearning_CBR_convGetAvatarInfo] = NEW_MEMBER_CB(AgentIndividualLearning, convGetAvatarInfo);
+	this->callback[AgentIndividualLearning_CBR_convGetLandmarkList] = NEW_MEMBER_CB(AgentIndividualLearning, convGetLandmarkList);
     this->callback[AgentIndividualLearning_CBR_convLandmarkInfo] = NEW_MEMBER_CB(AgentIndividualLearning, convLandmarkInfo);
     this->callback[AgentIndividualLearning_CBR_convOwnLandmarkInfo] = NEW_MEMBER_CB(AgentIndividualLearning, convOwnLandmarkInfo);
     this->callback[AgentIndividualLearning_CBR_convMissionRegion] = NEW_MEMBER_CB(AgentIndividualLearning, convMissionRegion);
@@ -1174,6 +1175,21 @@ int AgentIndividualLearning::ddbNotification(char *data, int len) {
 
 
         }
+		if (type == DDB_LANDMARK) {
+			// request list of landmarks
+			UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convGetLandmarkList, DDB_REQUEST_TIMEOUT);
+			if (thread == nilUUID) {
+				return 1;
+			}
+			sds.reset();
+			sds.packUUID(this->getUUID()); // dummy id, getting the full list of tasks anyway
+			sds.packUUID(&thread);
+			sds.packBool(true);			   //true == send list of tasks, otherwise only info about a specific task
+			this->sendMessage(this->hostCon, MSG_DDB_RLANDMARK, sds.stream(), sds.length());
+			sds.unlock();
+
+
+		}
     }
     if (type == DDB_AVATAR) {
         if (evt == DDBE_ADD) {
@@ -1246,6 +1262,7 @@ int AgentIndividualLearning::ddbNotification(char *data, int len) {
             sds.reset();
             sds.packUUID(&uuid);
             sds.packUUID(&thread);
+			sds.packBool(false);
             this->sendMessage(this->hostCon, MSG_DDB_RLANDMARK, sds.stream(), sds.length());
             sds.unlock();
             //	}
@@ -1260,6 +1277,7 @@ int AgentIndividualLearning::ddbNotification(char *data, int len) {
             sds.reset();
             sds.packUUID(&uuid);
             sds.packUUID(&thread);
+			sds.packBool(false);
             this->sendMessage(this->hostCon, MSG_DDB_RLANDMARK, sds.stream(), sds.length());
             sds.unlock();
             //	}
@@ -1511,6 +1529,58 @@ bool AgentIndividualLearning::convGetAvatarInfo(void *vpConv) {
     return 0;
 }
 
+bool AgentIndividualLearning::convGetLandmarkList(void * vpConv)
+{
+	Log.log(0, "AgentIndividualLearning::convGetLandmarkList");
+
+	DataStream lds;
+	spConversation conv = (spConversation)vpConv;
+
+	if (conv->response == NULL) { // timed out
+		Log.log(0, "AgentIndividualLearning::convGetLandmarkList: timed out");
+		return 0; // end conversation
+	}
+
+	lds.setData(conv->response, conv->responseLen);
+	lds.unpackData(sizeof(UUID)); // discard thread
+
+	char response = lds.unpackChar();
+	if (response == DDBR_OK) { // succeeded
+		int i, count;
+
+		if (lds.unpackBool() != true) {	//True if we requested a list of landmarks as opposed to just one
+			lds.unlock();
+			return 0; // what happened here?
+		}
+
+		count = lds.unpackInt32();
+		Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::convGetLandmarkList: recieved %d landmarks", count);
+
+		UUID landmarkId;
+		DDBLandmark landmark;
+
+		for (i = 0; i < count; i++) {
+			lds.unpackUUID(&landmarkId);
+			landmark = *(DDBLandmark *)lds.unpackData(sizeof(DDBLandmark)); // avatar type
+
+			if (landmark.landmarkType == NON_COLLECTABLE) {
+				// This is an obstacle
+				this->obstacleList[landmark.code] = landmark;
+			}
+			else {
+				//This is a target
+				this->targetList[landmark.code] = landmark;
+			}
+		}
+		lds.unlock();
+	}
+	else {
+		lds.unlock();
+	}
+
+	return 0;
+}
+
 bool AgentIndividualLearning::convRequestAvatarLoc(void *vpConv) {
     spConversation conv = (spConversation)vpConv;
     DataStream lds;
@@ -1742,6 +1812,7 @@ bool AgentIndividualLearning::convGetTaskInfo(void * vpConv)
                 sds.reset();
                 sds.packUUID(&landmarkId);
                 sds.packUUID(&thread);
+				sds.packBool(false);
                 this->sendMessage(this->hostCon, MSG_DDB_RLANDMARK, sds.stream(), sds.length());
                 sds.unlock();
 
@@ -1807,6 +1878,7 @@ bool AgentIndividualLearning::convGetTaskList(void * vpConv)
                 sds.reset();
                 sds.packUUID(&landmarkId);
                 sds.packUUID(&thread);
+				sds.packBool(false);
                 this->sendMessage(this->hostCon, MSG_DDB_RLANDMARK, sds.stream(), sds.length());
                 sds.unlock();
 
