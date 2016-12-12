@@ -71,7 +71,7 @@ public:
 
     void storeElements(std::vector<unsigned int> &state_vector, float &quality, int &action_id);
 
-    void getElements(std::vector<unsigned int> &state_vector);
+	std::vector<float> getElements(std::vector<unsigned int> &state_vector);
 
     void reset();
 

@@ -51,7 +51,7 @@ QLearning::QLearning() {
     this->alpha_power_ = 2;
     this->num_state_vrbls_ = 7;
     this->state_resolution_ = {3, 3, 5, 3, 5, 3, 5};
-    this->num_actions_ = 4;
+    this->num_actions_ = 5;
 
     // Form encoder vector to multiply inputted state vectors by
     this->encoder_vector_.push_back(this->num_actions_);
@@ -88,13 +88,13 @@ QLearning::QLearning() {
 
 void QLearning::learn(std::vector<unsigned int> &state_now, std::vector<unsigned int> &state_future, int &action_id, float &reward) {
     // Get current qualities and experience
-    getElements(state_now);
-    float quality_now = q_vals_[action_id - 1];
+    std::vector<float> q_values_now = getElements(state_now);
+    float quality_now = q_values_now[action_id - 1];
     unsigned int exp_now = exp_vals_[action_id - 1];
 
     // Get future quality
-    getElements(state_future);
-    std::vector<float>::iterator quality_future = std::max_element(q_vals_.begin(), q_vals_.end());
+	std::vector<float> q_values_future = getElements(state_future);
+    std::vector<float>::iterator quality_future = std::max_element(q_values_future.begin(), q_values_future.end());
 
     // Exponentially decrease learning rate with experience [Unknown]
     float alpha = this->alpha_max_/(float) exp(pow(exp_now, this->alpha_power_)/ this->alpha_denom_);
@@ -116,18 +116,19 @@ void QLearning::learn(std::vector<unsigned int> &state_now, std::vector<unsigned
  * state_vector = Vector of state variables
  */
 
-void QLearning::getElements(std::vector<unsigned int> &state_vector) {
+std::vector<float> QLearning::getElements(std::vector<unsigned int> &state_vector) {
 
     // Find rows corresponding to state vector
     int uselessAction = 1;
     int row = getKey(state_vector, uselessAction);
 
     // Retrieve quality and experience
+	std::vector<float> q_values;
     for (unsigned int i = 0; i < num_actions_; i++){
-        this->q_vals_[i] = this->q_table_[row + i];
-        this->exp_vals_[i] = this->exp_table_[row + i];
+		q_values.push_back(this->q_table_[row + i]);
     }// end for
 
+	return q_values;
 }// end getQValue
 
 

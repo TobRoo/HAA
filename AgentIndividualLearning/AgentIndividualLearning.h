@@ -93,13 +93,16 @@ public:
         UUID actionConv; // action conversation id
         _timeb actionCompleteTime; // time that the last action was completed
 
+		// Advice data
+		int agentAdviceExchangeSpawned;
+		UUID agentAdviceExchange;
+		UUID adviceRequestConv;
+
         UUID regionId;
         DDBRegion missionRegion;
 
-		int agentAdviceExchangeSpawned;
-		UUID agentAdviceExchange;
-
-        bool setupComplete;
+        bool missionRegionReceived;
+		bool adviceAgentSpawned;
 
     };
 
@@ -121,9 +124,9 @@ protected:
     bool hasDelivered;
 
     QLearning q_learning_;				   	    // QLearning object
+	std::vector<float> q_vals;                  // Vector of quality values (for the current state vector)
     std::vector<unsigned int> stateVector;		// Current state vector
     std::vector<unsigned int> prevStateVector;	// Previous state vector
-
 
     // Learning parameters
     unsigned int learning_iterations_;          // Counter for how many times learning is performed
@@ -157,9 +160,14 @@ protected:
         INTERACT
     };
 
+	// Advice parameters
+	enum AdviceResults {
+		ADVICE_SUCCESS = 0,
+		ADVICE_FAILURE
+	};
+
     // Random number generator
     RandomGenerator randomGenerator;
-
 
     //mapTask  taskList;
     UUID taskId;
@@ -189,9 +197,11 @@ private:
     int configureParameters( DataStream *ds );
     int finishConfigureParameters();
     int updateStateData();
-    int getAction();
+    int preActionUpdate();
+	int formAction();
     int getStateVector();
-    int policy(std::vector<float> &quality, std::vector<unsigned int> &experience);
+    int policy(std::vector<float> &quality);
+	int getAdvice(std::vector<float> &quality, std::vector<unsigned int> &state_vector);
     int sendAction(ActionPair action);
     int learn();
     float determineReward();
@@ -227,6 +237,7 @@ public:
         AgentIndividualLearning_CBR_convGetTaskInfo,
         AgentIndividualLearning_CBR_convCollectLandmark,
 		AgentIndividualLearning_CBR_convRequestAgentAdviceExchange,
+		AgentIndividualLearning_CBR_convGetAdvice,
     };
 
     // Define callback functions (make sure they match CallbackRef above and are added to this->callback during agent creation)
@@ -243,6 +254,7 @@ public:
 
     bool convCollectLandmark(void * vpConv);
 	bool convRequestAgentAdviceExchange(void *vpConv);
+	bool convGetAdvice(void *vpConv);
 
 protected:
     virtual int	  freeze( UUID *ticket );

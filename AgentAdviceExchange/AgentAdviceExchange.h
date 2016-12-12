@@ -18,6 +18,13 @@
 #include "..\\autonomic\\DDB.h"
 
 
+typedef struct adviceQueryData {
+	UUID conv;
+	std::vector<float> quality;
+	bool response;
+};
+
+
 class AgentAdviceExchange : public AgentBase {
 
 //-----------------------------------------------------------------------------
@@ -32,9 +39,7 @@ public:
 		bool parametersSet;
 		bool startDelayed; // start has been delayed because parameters are not set yet
 		int updateId;
-
 		bool setupComplete;
-
 	};
 
 //-----------------------------------------------------------------------------
@@ -48,6 +53,14 @@ protected:
 	UUID avatarAgentId;
 	//std::map<UUID, <perfData TO BE DEFINED>, UUIDless> otherAvatars;
 
+	// Advice data
+	std::vector<float> q_vals_in;
+	std::vector<unsigned int> state_vector_in;
+	unsigned int num_state_vrbls_;              // Number of variables in state vector 
+	unsigned int num_actions_;                  // Number of possible actions
+
+	UUID adviceRequestConv;
+	std::map<UUID, adviceQueryData, UUIDless> adviceQuery;
 
 	// Random number generator
 	RandomGenerator randomGenerator;
@@ -67,6 +80,9 @@ public:
 	virtual int stop();			// stop agent
 	virtual int step();			// run one step
 
+	int askAdvisers();
+	int formAdvice();
+
 private:
 
 	int configureParameters( DataStream *ds );
@@ -85,11 +101,13 @@ public:
 	enum CallbackRef {
 		AgentAdviceExchange_CBR_convGetAgentList = AgentBase_CBR_HIGH,
 		AgentAdviceExchange_CBR_convGetAgentInfo,
+		AgentAdviceExchange_CBR_convAdviceQuery,
 	};
 
 	// Define callback functions (make sure they match CallbackRef above and are added to this->callback during agent creation)
 	bool convGetAgentList(void *vpConv);
 	bool convGetAgentInfo(void *vpConv);
+	bool convAdviceQuery(void *vpConv);
 
 protected:
 	virtual int	  freeze( UUID *ticket );

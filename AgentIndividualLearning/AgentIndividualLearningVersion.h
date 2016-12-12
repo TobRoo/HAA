@@ -17,12 +17,15 @@ namespace AgentIndividualLearning_MSGS {
 
 	enum MSGS {
 		MSG_CONFIGURE = MSG_FIRST, // configure [UUID owner, UUID map, UUID mission region, UUID pf, float maxLinear, float maxRotation, float minLinear, flaot minRotation]
-
-		MSG_LAST			// last message id
+		MSG_GET_ADVICE,            // Requesting advice from AgentAdviceExchange [UUID owner, UUID convo, float q[0], float q[1], ..., unsigned int state[0], unsigned int state[1], ...]
+		MSG_GET_Q_VALUES,          // Requesting Q-values from Q-learning [UUID owner, UUID convo, float q[0], float q[1], ..., unsigned int state[0], unsigned int state[1], ...]
+		MSG_LAST			       // last message id
 	};
 	
 	static const unsigned int MSG_SIZE[] = { // array of message size by MSGID - MSG_FIRST
 		-2,					// MSG_CONFIGURE
+		-2,                 // MSG_GET_ADVICE
+		-2,                 // MSG_GET_Q_VALUES
 	};
 
 }
