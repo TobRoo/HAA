@@ -1040,6 +1040,7 @@ int ExecutiveMission::ddbNotification( char *data, int len ) {
 					sds.reset();
 					sds.packUUID( &uuid );
 					sds.packUUID( &thread );
+					sds.packBool(false);
 					this->sendMessage( this->hostCon, MSG_DDB_RLANDMARK, sds.stream(), sds.length() );
 					sds.unlock();
 				}

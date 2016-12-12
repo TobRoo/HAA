@@ -7,6 +7,8 @@
 #include "AgentAdviceExchange.h"
 #include "AgentAdviceExchangeVersion.h"
 
+#include "..\\AgentIndividualLearning\AgentIndividualLearningVersion.h"
+
 
 #include <fstream>      // std::ifstream
 
@@ -101,10 +103,24 @@ int AgentAdviceExchange::configure() {
 
 int AgentAdviceExchange::configureParameters(DataStream *ds) {
 	UUID uuid;
+
+	DataStream lds;
+
 	// Read in owner ID
 	ds->unpackUUID(&STATE(AgentAdviceExchange)->ownerId);
 
 	Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::configureParameters: ownerId %s", Log.formatUUID(LOG_LEVEL_NORMAL, &STATE(AgentAdviceExchange)->ownerId));
+
+	// register as agent watcher
+	Log.log(0, "AgentAdviceExchange::start: registering as agent watcher");
+	lds.reset();
+	lds.packUUID(&STATE(AgentBase)->uuid);
+	lds.packInt32(DDB_AGENT);
+	this->sendMessage(this->hostCon, MSG_DDB_WATCH_TYPE, lds.stream(), lds.length());
+	lds.unlock();
+	// NOTE: we request a list of agents once DDBE_WATCH_TYPE notification is received
+
+
 
 	this->backup();
 
@@ -130,7 +146,7 @@ int	AgentAdviceExchange::finishConfigureParameters() {
 // Start
 
 int AgentAdviceExchange::start(char *missionFile) {
-	DataStream lds;
+
 
 	// Delay start if parameters not set
 	if (!STATE(AgentAdviceExchange)->parametersSet) { // delay start
@@ -145,14 +161,7 @@ int AgentAdviceExchange::start(char *missionFile) {
 
 	STATE(AgentBase)->started = false;
 
-	// register as avatar watcher
-	Log.log(0, "AgentAdviceExchange::start: registering as agent watcher");
-	lds.reset();
-	lds.packUUID(&STATE(AgentBase)->uuid);
-	lds.packInt32(DDB_AGENT);
-	this->sendMessage(this->hostCon, MSG_DDB_WATCH_TYPE, lds.stream(), lds.length());
-	lds.unlock();
-	// NOTE: we request a list of agents once DDBE_WATCH_TYPE notification is received
+	
 
 	STATE(AgentBase)->started = true;
 	return 0;
@@ -221,7 +230,7 @@ int AgentAdviceExchange::askAdvisers() {
 			lds.packUInt32(*state_iter);
 		}
 
-		this->sendMessageEx(this->hostCon, MSGEX(AgentAdviceExchange_MSGS, MSG_GET_Q_VALUES), lds.stream(), lds.length(), &STATE(AgentAdviceExchange)->ownerId);
+		this->sendMessageEx(this->hostCon, MSGEX(AgentAdviceExchange_MSGS, MSG_REQUEST_Q_VALUES), lds.stream(), lds.length(), &STATE(AgentAdviceExchange)->ownerId);
 		lds.unlock();
 	}
 
@@ -270,55 +279,25 @@ int AgentAdviceExchange::ddbNotification(char *data, int len) {
 	offset = 4 + sizeof(UUID) * 2 + 1;
 	if (evt == DDBE_WATCH_TYPE) {
 		if (type == DDB_AGENT) {
-			// request list of avatars
+			// request list of agents
 			UUID thread = this->conversationInitiate(AgentAdviceExchange_CBR_convGetAgentList, DDB_REQUEST_TIMEOUT);
 			if (thread == nilUUID) {
 				return 1;
 			}
 			sds.reset();
-			sds.packUUID(this->getUUID()); // dummy id 
-			sds.packInt32(DDBAVATARINFO_ENUM);
+			sds.packUUID(&nilUUID); // dummy id 
+			sds.packInt32(DDBAGENTINFO_RLIST);
 			sds.packUUID(&thread);
-			this->sendMessage(this->hostCon, MSG_DDB_AVATARGETINFO, sds.stream(), sds.length());
+			this->sendMessage(this->hostCon, MSG_DDB_RAGENTINFO, sds.stream(), sds.length());
 			sds.unlock();
 		}
 	}
-	if (type == DDB_AVATAR) {
-		if (evt == DDBE_ADD) {
-			// add avatar
+	if (evt == DDBE_UPDATE) {
+		if (type == DDB_AGENT) {
+		}
+	}
 
-			// request avatar info
-			UUID thread = this->conversationInitiate(AgentAdviceExchange_CBR_convGetAgentInfo, DDB_REQUEST_TIMEOUT, &uuid, sizeof(UUID));
-			if (thread == nilUUID) {
-				return 1;
-			}
-			sds.reset();
-			sds.packUUID(&uuid);
-			sds.packInt32(DDBAVATARINFO_RAGENT| DDBAVATARINFO_RPF | DDBAVATARINFO_RRADII | DDBAVATARINFO_RTIMECARD);
-			sds.packUUID(&thread);
-			this->sendMessage(this->hostCon, MSG_DDB_AVATARGETINFO, sds.stream(), sds.length());
-			sds.unlock();
-		}
-		else if (evt == DDBE_UPDATE) {
-			int infoFlags = lds.unpackInt32();
-			if (infoFlags & DDBAVATARINFO_RETIRE) {
-				// request avatar info
-				UUID thread = this->conversationInitiate(AgentAdviceExchange_CBR_convGetAgentInfo, DDB_REQUEST_TIMEOUT, &uuid, sizeof(UUID));
-				if (thread == nilUUID) {
-					return 1;
-				}
-				sds.reset();
-				sds.packUUID(&uuid);
-				sds.packInt32(DDBAVATARINFO_RAGENT | DDBAVATARINFO_RPF | DDBAVATARINFO_RRADII | DDBAVATARINFO_RTIMECARD);
-				sds.packUUID(&thread);
-				this->sendMessage(this->hostCon, MSG_DDB_AVATARGETINFO, sds.stream(), sds.length());
-				sds.unlock();
-			}
-		}
-		else if (evt == DDBE_REM) {
-			// TODO
-		}
-	}
+
 	lds.unlock();
 
 	return 0;
@@ -342,7 +321,7 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 		break;
 	}
 	break;
-	case AgentAdviceExchange_MSGS::MSG_GET_ADVICE:
+	case AgentAdviceExchange_MSGS::MSG_REQUEST_ADVICE:
 	{
 		// Clear the old data
 		this->q_vals_in.clear();
@@ -380,40 +359,56 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 
 
 bool AgentAdviceExchange::convGetAgentList(void *vpConv) {
-	//DataStream lds, sds;
-	//spConversation conv = (spConversation)vpConv;
+	DataStream lds, sds;
+	spConversation conv = (spConversation)vpConv;
 
-	//if (conv->response == NULL) { // timed out
-	//	Log.log(0, "AgentAdviceExchange::convGetAvatarList: timed out");
-	//	return 0; // end conversation
-	//}
+	if (conv->response == NULL) { // timed out
+		Log.log(0, "AgentAdviceExchange::convGetAgentList: timed out");
+		return 0; // end conversation
+	}
 
-	//lds.setData(conv->response, conv->responseLen);
-	//lds.unpackData(sizeof(UUID)); // discard thread
+	lds.setData(conv->response, conv->responseLen);
+	lds.unpackData(sizeof(UUID)); // discard thread
 
-	//char response = lds.unpackChar();
-	//if (response == DDBR_OK) { // succeeded
-	//	int i, count;
+	char response = lds.unpackChar();
+	if (response == DDBR_OK) { // succeeded
+		int i, count;
 
-	//	if (lds.unpackInt32() != DDBAVATARINFO_ENUM) {
-	//		lds.unlock();
-	//		return 0; // what happened here?
-	//	}
+		if (lds.unpackInt32() != DDBAGENTINFO_RLIST) {
+			lds.unlock();
+			return 0; // what happened here?
+		}
 
-	//	count = lds.unpackInt32();
-	//	Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::convGetAvatarList: recieved %d avatars", count);
+		count = lds.unpackInt32();
+		Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::convGetAgentList: recieved %d agents", count);
 
-	//	UUID thread;
-	//	UUID avatarId;
-	//	UUID agentId;
-	//	AgentType agentType;
+		UUID thread;
+		UUID agentId;
+		AgentType agentType;
+		UUID parent;
 
-	//	for (i = 0; i < count; i++) {
-	//		lds.unpackUUID(&avatarId);
-	//		lds.unpackString(); // avatar type
-	//		lds.unpackUUID(&agentId);
-	//		lds.unpackUUID(&agentType.uuid);
-	//		agentType.instance = lds.unpackInt32();
+		UUID adviceExchangeAgentId;
+		UuidFromString((RPC_WSTR)_T(AgentAdviceExchange_UUID), &adviceExchangeAgentId);
+		UUID individualLearningAgentId;
+		UuidFromString((RPC_WSTR)_T(AgentIndividualLearning_UUID), &individualLearningAgentId);
+
+		for (i = 0; i < count; i++) {
+			lds.unpackUUID(&agentId);
+			lds.unpackString(); // agent type
+			lds.unpackUUID(&agentType.uuid);
+			agentType.instance = lds.unpackInt32();
+			lds.unpackUUID(&parent);
+
+			if (agentType.uuid == adviceExchangeAgentId) {			//The agent is an advice exchange agent
+				Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::convGetAgentList: found an advice exchange agent!");
+
+			}
+			//if (agentType.uuid == individualLearningAgentId) {		//The agent is an individual learning agent
+			//	Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::convGetAgentList: found an individual learning agent!");
+
+			//}
+
+		}
 
 	//		if (agentId == STATE(AgentAdviceExchange)->ownerId) {
 	//			// This is our avatar
@@ -441,14 +436,14 @@ bool AgentAdviceExchange::convGetAgentList(void *vpConv) {
 	//		this->sendMessage(this->hostCon, MSG_DDB_AVATARGETINFO, sds.stream(), sds.length());
 	//		sds.unlock();
 	//	}
-	//	lds.unlock();
+		lds.unlock();
 
 	//}
 	//else {
 	//	lds.unlock();
 	//	// TODO try again?
-	//}
-
+	}
+	this->finishConfigureParameters();
 	return 0;
 }
 

@@ -201,7 +201,7 @@ private:
 	int formAction();
     int getStateVector();
     int policy(std::vector<float> &quality);
-	int getAdvice(std::vector<float> &quality, std::vector<unsigned int> &state_vector);
+	int requestAdvice(std::vector<float> &quality, std::vector<unsigned int> &state_vector);
     int sendAction(ActionPair action);
     int learn();
     float determineReward();
@@ -230,6 +230,7 @@ public:
         AgentIndividualLearning_CBR_convRequestAvatarLoc,
         AgentIndividualLearning_CBR_convGetAvatarList,
         AgentIndividualLearning_CBR_convGetAvatarInfo,
+		AgentIndividualLearning_CBR_convGetLandmarkList,
         AgentIndividualLearning_CBR_convLandmarkInfo,
         AgentIndividualLearning_CBR_convOwnLandmarkInfo,
         AgentIndividualLearning_CBR_convMissionRegion,
@@ -237,7 +238,7 @@ public:
         AgentIndividualLearning_CBR_convGetTaskInfo,
         AgentIndividualLearning_CBR_convCollectLandmark,
 		AgentIndividualLearning_CBR_convRequestAgentAdviceExchange,
-		AgentIndividualLearning_CBR_convGetAdvice,
+		AgentIndividualLearning_CBR_convRequestAdvice,
     };
 
     // Define callback functions (make sure they match CallbackRef above and are added to this->callback during agent creation)
@@ -245,6 +246,7 @@ public:
     bool convRequestAvatarLoc(void *vpConv);
     bool convGetAvatarList(void *vpConv);
     bool convGetAvatarInfo(void *vpConv);
+	bool convGetLandmarkList(void * vpConv);
     bool convLandmarkInfo(void *vpConv);
     bool convOwnLandmarkInfo(void * vpConv);
     bool convMissionRegion(void *vpConv);
@@ -254,7 +256,7 @@ public:
 
     bool convCollectLandmark(void * vpConv);
 	bool convRequestAgentAdviceExchange(void *vpConv);
-	bool convGetAdvice(void *vpConv);
+	bool convRequestAdvice(void *vpConv);
 
 protected:
     virtual int	  freeze( UUID *ticket );

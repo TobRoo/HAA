@@ -9577,9 +9577,9 @@ int AgentHost::ddbLandmarkSetInfo( char *data, unsigned int len ) {
 	return 0;
 }
 
-int AgentHost::ddbGetLandmark( UUID *id, spConnection con, UUID *thread ) {
+int AgentHost::ddbGetLandmark( UUID *id, spConnection con, UUID *thread, bool enumLandmarks ) {
 
-	this->dStore->GetLandmark( id, &this->ds, thread );
+	this->dStore->GetLandmark( id, &this->ds, thread, enumLandmarks );
 
 	this->sendAgentMessage( &con->uuid, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
 	//this->sendMessage( con, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
@@ -11755,11 +11755,15 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 	case MSG_DDB_RLANDMARK:
 		{
 			UUID thread;
+			bool enumLandmarks;
 			lds.setData( data, len );
 			lds.unpackUUID( &uuid );
 			lds.unpackUUID( &thread );
+			enumLandmarks = lds.unpackBool();
 			lds.unlock();
-			this->ddbGetLandmark( &uuid, con, &thread );
+			if(enumLandmarks)
+				Log.log(0, "Received request for landmark list.");
+			this->ddbGetLandmark( &uuid, con, &thread, enumLandmarks );
 		}
 		break;
 	case MSG_DDB_RLANDMARKBYID:

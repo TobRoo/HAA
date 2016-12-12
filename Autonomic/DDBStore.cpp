@@ -454,7 +454,21 @@ int DDBStore::AgentGetInfo( UUID *id, int infoFlags, DataStream *ds, UUID *threa
 	ds->reset();
 	ds->packUUID( thread );
 
-	if ( iterA == this->DDBAgents.end() ) { // unknown agent
+
+	if (infoFlags & DDBAGENTINFO_RLIST) {
+		ds->packChar(DDBR_OK);
+		ds->packInt32(infoFlags);
+		ds->packInt32(this->DDBAgents.size());
+		for (auto& iterA : this->DDBAgents) {
+			ds->packUUID((UUID *)&iterA.first);
+			ds->packString(iterA.second->agentTypeName);
+			ds->packUUID(&iterA.second->agentTypeId);
+			ds->packChar(iterA.second->agentInstance);
+			ds->packUUID(&iterA.second->parent);
+		}
+		return 0;
+	}
+	else if ( iterA == this->DDBAgents.end() ) { // unknown agent
 		ds->packChar( DDBR_NOTFOUND );
 	} else { 
 		ds->packChar( DDBR_OK );
@@ -1475,12 +1489,27 @@ int DDBStore::LandmarkSetInfo( UUID *id, int infoFlags, DataStream *ds ) {
 	return infoFlags;
 }
 
-int DDBStore::GetLandmark( UUID *id, DataStream *ds, UUID *thread ) {
+int DDBStore::GetLandmark( UUID *id, DataStream *ds, UUID *thread, bool enumLandmarks ) {
 	mapDDBLandmark::iterator iter = this->DDBLandmarks.find(*id);
 	
 	ds->reset();
 	ds->packUUID( thread );
 	
+	if (enumLandmarks == true) {
+		ds->packChar(DDBR_OK);
+		ds->packBool(enumLandmarks);
+		ds->packInt32((int)this->DDBLandmarks.size());
+		for (iter = this->DDBLandmarks.begin(); iter != this->DDBLandmarks.end(); iter++) {
+			ds->packUUID((UUID *)&iter->first);
+			ds->packData(iter->second, sizeof(DDBLandmark));
+		}
+		return 0;
+	}
+
+
+
+
+
 	if ( iter == this->DDBLandmarks.end() ) {
 		ds->packChar( DDBR_NOTFOUND );
 		return 1; // not found

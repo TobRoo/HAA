@@ -90,6 +90,9 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
     //Load in learning data from previous runs (if such data exist)
     this->parseLearningData();
 
+	//Advice exchange parameters
+	STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned = false;
+
     // Policy parameters
     this->softmax_temp_ = 0.10;
 
@@ -127,6 +130,7 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
     this->callback[AgentIndividualLearning_CBR_convRequestAvatarLoc] = NEW_MEMBER_CB(AgentIndividualLearning, convRequestAvatarLoc);
     this->callback[AgentIndividualLearning_CBR_convGetAvatarList] = NEW_MEMBER_CB(AgentIndividualLearning, convGetAvatarList);
     this->callback[AgentIndividualLearning_CBR_convGetAvatarInfo] = NEW_MEMBER_CB(AgentIndividualLearning, convGetAvatarInfo);
+	this->callback[AgentIndividualLearning_CBR_convGetLandmarkList] = NEW_MEMBER_CB(AgentIndividualLearning, convGetLandmarkList);
     this->callback[AgentIndividualLearning_CBR_convLandmarkInfo] = NEW_MEMBER_CB(AgentIndividualLearning, convLandmarkInfo);
     this->callback[AgentIndividualLearning_CBR_convOwnLandmarkInfo] = NEW_MEMBER_CB(AgentIndividualLearning, convOwnLandmarkInfo);
     this->callback[AgentIndividualLearning_CBR_convMissionRegion] = NEW_MEMBER_CB(AgentIndividualLearning, convMissionRegion);
@@ -134,9 +138,7 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
     this->callback[AgentIndividualLearning_CBR_convGetTaskInfo] = NEW_MEMBER_CB(AgentIndividualLearning, convGetTaskInfo);
     this->callback[AgentIndividualLearning_CBR_convCollectLandmark] = NEW_MEMBER_CB(AgentIndividualLearning, convCollectLandmark);
 	this->callback[AgentIndividualLearning_CBR_convRequestAgentAdviceExchange] = NEW_MEMBER_CB(AgentIndividualLearning, convRequestAgentAdviceExchange);
-	this->callback[AgentIndividualLearning_CBR_convGetAdvice] = NEW_MEMBER_CB(AgentIndividualLearning, convGetAdvice);
-
-	
+	this->callback[AgentIndividualLearning_CBR_convRequestAdvice] = NEW_MEMBER_CB(AgentIndividualLearning, convRequestAdvice);
 
 }// end constructor
 
@@ -391,7 +393,7 @@ int AgentIndividualLearning::preActionUpdate() {
     // Get quality from state vector
     std::vector<float> q_vals = this->q_learning_.getElements(this->stateVector);
 	// Get advice
-	this->getAdvice(q_vals, this->stateVector);
+	this->requestAdvice(q_vals, this->stateVector);
 
     return 0;
 }// end preActionUpdate
@@ -727,6 +729,7 @@ int AgentIndividualLearning::getStateVector() {
     return 0;
 }
 
+
 /* policy
 *
 * Contains the policy for action selection. Can be multiple of
@@ -990,12 +993,12 @@ bool AgentIndividualLearning::validAction(ActionPair &action) {
 * and once received the formAction method will be called. If the conversation times out, then 
 * individual learning will proceed without advice.
 */
-int AgentIndividualLearning::getAdvice(std::vector<float> &q_vals, std::vector<unsigned int> &state_vector) {
+int AgentIndividualLearning::requestAdvice(std::vector<float> &q_vals, std::vector<unsigned int> &state_vector) {
 
 	Log.log(0, "AgentIndividualLearning::getAdvice: Sending request for advice");
 
 	// Start the conversation
-	STATE(AgentIndividualLearning)->adviceRequestConv = this->conversationInitiate(AgentIndividualLearning_CBR_convGetAdvice, DDB_REQUEST_TIMEOUT);
+	STATE(AgentIndividualLearning)->adviceRequestConv = this->conversationInitiate(AgentIndividualLearning_CBR_convRequestAdvice, DDB_REQUEST_TIMEOUT);
 	if (STATE(AgentIndividualLearning)->adviceRequestConv == nilUUID) {
 		return 1;
 	}
@@ -1015,7 +1018,7 @@ int AgentIndividualLearning::getAdvice(std::vector<float> &q_vals, std::vector<u
 		lds.packUInt32(*state_iter);
 	}
 	
-	this->sendMessageEx(this->hostCon, MSGEX(AgentIndividualLearning_MSGS, MSG_GET_ADVICE), lds.stream(), lds.length(), &STATE(AgentIndividualLearning)->agentAdviceExchange);
+	this->sendMessageEx(this->hostCon, MSGEX(AgentIndividualLearning_MSGS, MSG_REQUEST_ADVICE), lds.stream(), lds.length(), &STATE(AgentIndividualLearning)->agentAdviceExchange);
 	lds.unlock();
 
 	return 0;
@@ -1027,8 +1030,9 @@ int AgentIndividualLearning::getAdvice(std::vector<float> &q_vals, std::vector<u
 */
 int AgentIndividualLearning::spawnAgentAdviceExchange() {
 	UUID thread;
-
+	Log.log(0, "AgentIndividualLearning::spawnAgentAdviceExchange: requesting advice exchange agent...");
 	if (!STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned) {
+		Log.log(0, "AgentIndividualLearning::spawnAgentAdviceExchange: agent not yet spawned, requesting...");
 		UUID aAgentAdviceExchangeuuid;
 		UuidFromString((RPC_WSTR)_T(AgentAdviceExchange_UUID), &aAgentAdviceExchangeuuid);
 		thread = this->conversationInitiate(AgentIndividualLearning_CBR_convRequestAgentAdviceExchange, REQUESTAGENTSPAWN_TIMEOUT, &aAgentAdviceExchangeuuid, sizeof(UUID));
@@ -1183,6 +1187,21 @@ int AgentIndividualLearning::ddbNotification(char *data, int len) {
 
 
         }
+		if (type == DDB_LANDMARK) {
+			// request list of landmarks
+			UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convGetLandmarkList, DDB_REQUEST_TIMEOUT);
+			if (thread == nilUUID) {
+				return 1;
+			}
+			sds.reset();
+			sds.packUUID(this->getUUID()); // dummy id, getting the full list of tasks anyway
+			sds.packUUID(&thread);
+			sds.packBool(true);			   //true == send list of tasks, otherwise only info about a specific task
+			this->sendMessage(this->hostCon, MSG_DDB_RLANDMARK, sds.stream(), sds.length());
+			sds.unlock();
+
+
+		}
     }
     if (type == DDB_AVATAR) {
         if (evt == DDBE_ADD) {
@@ -1256,6 +1275,7 @@ int AgentIndividualLearning::ddbNotification(char *data, int len) {
             sds.reset();
             sds.packUUID(&uuid);
             sds.packUUID(&thread);
+			sds.packBool(false);
             this->sendMessage(this->hostCon, MSG_DDB_RLANDMARK, sds.stream(), sds.length());
             sds.unlock();
             //	}
@@ -1271,6 +1291,7 @@ int AgentIndividualLearning::ddbNotification(char *data, int len) {
             sds.reset();
             sds.packUUID(&uuid);
             sds.packUUID(&thread);
+			sds.packBool(false);
             this->sendMessage(this->hostCon, MSG_DDB_RLANDMARK, sds.stream(), sds.length());
             sds.unlock();
             //	}
@@ -1326,7 +1347,7 @@ int AgentIndividualLearning::conProcessMessage(spConnection con, unsigned char m
             break;
         }
             break;
-		case AgentIndividualLearning_MSGS::MSG_GET_Q_VALUES:
+		case AgentIndividualLearning_MSGS::MSG_REQUEST_Q_VALUES:
 		{
 			
 			UUID conv;
@@ -1554,6 +1575,58 @@ bool AgentIndividualLearning::convGetAvatarInfo(void *vpConv) {
     }
 
     return 0;
+}
+
+bool AgentIndividualLearning::convGetLandmarkList(void * vpConv)
+{
+	Log.log(0, "AgentIndividualLearning::convGetLandmarkList");
+
+	DataStream lds;
+	spConversation conv = (spConversation)vpConv;
+
+	if (conv->response == NULL) { // timed out
+		Log.log(0, "AgentIndividualLearning::convGetLandmarkList: timed out");
+		return 0; // end conversation
+	}
+
+	lds.setData(conv->response, conv->responseLen);
+	lds.unpackData(sizeof(UUID)); // discard thread
+
+	char response = lds.unpackChar();
+	if (response == DDBR_OK) { // succeeded
+		int i, count;
+
+		if (lds.unpackBool() != true) {	//True if we requested a list of landmarks as opposed to just one
+			lds.unlock();
+			return 0; // what happened here?
+		}
+
+		count = lds.unpackInt32();
+		Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::convGetLandmarkList: recieved %d landmarks", count);
+
+		UUID landmarkId;
+		DDBLandmark landmark;
+
+		for (i = 0; i < count; i++) {
+			lds.unpackUUID(&landmarkId);
+			landmark = *(DDBLandmark *)lds.unpackData(sizeof(DDBLandmark)); // avatar type
+
+			if (landmark.landmarkType == NON_COLLECTABLE) {
+				// This is an obstacle
+				this->obstacleList[landmark.code] = landmark;
+			}
+			else {
+				//This is a target
+				this->targetList[landmark.code] = landmark;
+			}
+		}
+		lds.unlock();
+	}
+	else {
+		lds.unlock();
+	}
+
+	return 0;
 }
 
 bool AgentIndividualLearning::convRequestAvatarLoc(void *vpConv) {
@@ -1790,6 +1863,7 @@ bool AgentIndividualLearning::convGetTaskInfo(void * vpConv)
                 sds.reset();
                 sds.packUUID(&landmarkId);
                 sds.packUUID(&thread);
+				sds.packBool(false);
                 this->sendMessage(this->hostCon, MSG_DDB_RLANDMARK, sds.stream(), sds.length());
                 sds.unlock();
 
@@ -1855,6 +1929,7 @@ bool AgentIndividualLearning::convGetTaskList(void * vpConv)
                 sds.reset();
                 sds.packUUID(&landmarkId);
                 sds.packUUID(&thread);
+				sds.packBool(false);
                 this->sendMessage(this->hostCon, MSG_DDB_RLANDMARK, sds.stream(), sds.length());
                 sds.unlock();
 
@@ -1957,7 +2032,7 @@ bool AgentIndividualLearning::convRequestAgentAdviceExchange(void *vpConv) {
 	return 0;
 }
 
-bool AgentIndividualLearning::convGetAdvice(void *vpConv) {
+bool AgentIndividualLearning::convRequestAdvice(void *vpConv) {
 	spConversation conv = (spConversation)vpConv;
 
 	if (conv->response == NULL) {

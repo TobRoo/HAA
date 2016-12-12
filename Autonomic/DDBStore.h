@@ -74,7 +74,7 @@ public:
 	int AddLandmark( UUID *id, unsigned char code, UUID *owner, float height, float elevation, float x, float y, bool estimatedPos, ITEM_TYPES landmarkType );
 	int RemoveLandmark( UUID *id );
 	int LandmarkSetInfo( UUID *id, int infoFlags, DataStream *ds );
-	int GetLandmark( UUID *id, DataStream *ds, UUID *thread );
+	int GetLandmark( UUID *id, DataStream *ds, UUID *thread, bool enumLandmarks );
 	int GetLandmark( unsigned char code, DataStream *ds, UUID *thread );
 	UUID GetLandmarkId( unsigned char code );
 

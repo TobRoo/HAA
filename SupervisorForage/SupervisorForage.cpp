@@ -618,6 +618,7 @@ int SupervisorForage::ddbNotification( char *data, int len ) {
 			sds.reset();
 			sds.packUUID( &uuid );
 			sds.packUUID( &thread );
+			sds.packBool(false);
 			this->sendMessage( this->hostCon, MSG_DDB_RLANDMARK, sds.stream(), sds.length() );
 			sds.unlock();
 		} else if ( uuid == STATE(SupervisorForage)->avatarExecId || this->avatars.find(uuid) != this->avatars.end() ) { // one of our avatar agents
@@ -708,6 +709,7 @@ int SupervisorForage::ddbNotification( char *data, int len ) {
 				sds.reset();
 				sds.packUUID( &uuid );
 				sds.packUUID( &thread );
+				sds.packBool(false);
 				this->sendMessage( this->hostCon, MSG_DDB_RLANDMARK, sds.stream(), sds.length() );
 				sds.unlock();
 			}
@@ -1228,6 +1230,7 @@ int SupervisorForage::recoveryFinish() {
 		lds.reset();
 		lds.packUUID( &STATE(SupervisorForage)->landmarkId );
 		lds.packUUID( &thread );
+		lds.packBool(false);
 		this->sendMessage( this->hostCon, MSG_DDB_RLANDMARK, lds.stream(), lds.length() );
 		lds.unlock();
 	}

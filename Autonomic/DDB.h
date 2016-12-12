@@ -187,6 +187,7 @@ enum DDBAGENTINFO_GET {
 	DDBAGENTINFO_RSTATE = 0x0001 << 7, // data = [_timeb stateTime, unsigned int stateSize, stateData...]
 	DDBAGENTINFO_RMSG_QUEUES = 0x0001 << 8, // data = [<bool 1, unsigned char msg, unsigned int len, data..., ...,> bool 0], primary and secondary queues are packed together
 	DDBAGENTINFO_RBACKUP = 0x0001 << 9, // data = [_timeb backupTime, unsigned int backupSize, backupData...]
+	DDBAGENTINFO_RLIST	= 0x0001 << 10, // data = [int agentCount, String name, UUID agentTypeId, char agentInstance, UUID parentId <for all agents>]
 };
 
 enum DDBAGENTINFO_SET {

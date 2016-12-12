@@ -25,6 +25,12 @@ typedef struct adviceQueryData {
 };
 
 
+struct NameToBeDecided_AdvEx{
+	AgentType agentType;
+
+};
+
+
 class AgentAdviceExchange : public AgentBase {
 
 //-----------------------------------------------------------------------------
@@ -49,8 +55,7 @@ protected:
 	UUID AgentAdviceExchange_recoveryLock;
 	DataStream ds; // shared DataStream object, for temporary, single thread, use only!
 
-	UUID avatarId;
-	UUID avatarAgentId;
+
 	//std::map<UUID, <perfData TO BE DEFINED>, UUIDless> otherAvatars;
 
 	// Advice data
