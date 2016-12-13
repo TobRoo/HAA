@@ -40,14 +40,22 @@ AgentAdviceExchange::AgentAdviceExchange(spAddressPort ap, UUID *ticket, int log
 	STATE(AgentAdviceExchange)->startDelayed = false;
 	STATE(AgentAdviceExchange)->updateId = -1;
 	STATE(AgentAdviceExchange)->setupComplete = false;
-
+	STATE(AgentAdviceExchange)->epoch = 1;  // SET TO 1 FOR DEVELOPMENT, SHOULD BE 0
 
 	//---------------------------------------------------------------
 	// TODO Data that must be loaded in
 
-	// Initialize advice data
+	// Initialize advice parameters
 	this->num_state_vrbls_ = 7;
 	this->num_actions_ = 5;
+	this->alpha = 0.80f;
+	this->beta = 0.95f;
+	this->delta = 0.0f;
+	this->rho = 1.00f;
+
+	// Initialize this agents performance metrics
+	this->cq = 0.0f;
+	this->bq = 0.0f;
 
 	// Seed the random number generator
 	srand(static_cast <unsigned> (time(0)));
@@ -122,14 +130,15 @@ int AgentAdviceExchange::configureParameters(DataStream *ds) {
 	lds.unlock();
 	// NOTE: we request a list of agents once DDBE_WATCH_TYPE notification is received
 
-
-
 	this->backup();
 
 	return 0;
 }// end configureParameters
 
 int	AgentAdviceExchange::finishConfigureParameters() {
+
+	// Perform preEpochUpdate
+	this->preEpochUpdate();
 
 	STATE(AgentAdviceExchange)->parametersSet = true;
 
@@ -196,34 +205,32 @@ int AgentAdviceExchange::step() {
  *
  * Sends the state vector to all the known advisers
  */
-int AgentAdviceExchange::askAdvisers() {
-	// Send state vector to all advisers, to receive their advice in return
-	
-	DataStream lds;
-	std::map<UUID, adviserDataStruct, UUIDless>::iterator iter;
-	for (iter = this->adviserData.begin(); iter != this->adviserData.end(); iter++) {
-
-		iter->second.response = false;
-
-        // Initiate conversation with adviser
-		iter->second.queryConv = this->conversationInitiate(AgentAdviceExchange_CBR_convAdviceQuery, DDB_REQUEST_TIMEOUT);
-		if (iter->second.queryConv == nilUUID) {
-			return 1;
-		}
-
-		// Send a message with the state vector
-		lds.reset();
-		lds.packUUID(&iter->second.queryConv); // Add the thread
-		lds.packUUID(&STATE(AgentBase)->uuid);  // Add sender Id
-		
-		// Pack the state vector
-		for (std::vector<unsigned int>::iterator state_iter = this->state_vector_in.begin(); state_iter != this->state_vector_in.end(); ++state_iter) {
-			lds.packUInt32(*state_iter);
-		}
-
-		this->sendMessageEx(this->hostCon, MSGEX(AgentAdviceExchange_MSGS, MSG_REQUEST_Q_VALUES), lds.stream(), lds.length(), &STATE(AgentAdviceExchange)->ownerId);
-		lds.unlock();
+int AgentAdviceExchange::askAdviser() {
+	// Make sure we have an adviser
+	if (this->adviser == nilUUID) {
+		this->formAdvice();
+		return 0;
 	}
+
+	// Send state vector to the adviser, to receive their advice in return
+	this->adviserData[this->adviser].queryConv = this->conversationInitiate(AgentAdviceExchange_CBR_convAdviceQuery, DDB_REQUEST_TIMEOUT);
+	if (this->adviserData[this->adviser].queryConv == nilUUID) {
+		return 1;
+	}
+
+	// Send a message with the state vector
+	DataStream lds;
+	lds.reset();
+	lds.packUUID(&this->adviserData[this->adviser].queryConv); // Add the thread
+	lds.packUUID(&STATE(AgentBase)->uuid);  // Add sender Id
+
+	// Pack the state vector
+	for (std::vector<unsigned int>::iterator state_iter = this->state_vector_in.begin(); state_iter != this->state_vector_in.end(); ++state_iter) {
+		lds.packUInt32(*state_iter);
+	}
+
+	this->sendMessageEx(this->hostCon, MSGEX(AgentAdviceExchange_MSGS, MSG_REQUEST_Q_VALUES), lds.stream(), lds.length(), &this->adviserData[this->adviser].parentId);
+	lds.unlock();
 
 	return 0;
 }
@@ -233,11 +240,32 @@ int AgentAdviceExchange::askAdvisers() {
 * Performs the AdviceExchange Algorithm
 */
 int AgentAdviceExchange::formAdvice() {
-	// TODO: Add the actual algorithm
+	std::vector<float> advice;
 	
-	// Temporarily default to forwarding back the original q_vals
-	std::vector<float> advice = this->q_vals_in;
-	
+	if (this->adviser == nilUUID) {
+		// Return the original values
+		advice = this->q_vals_in;
+		Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::formAdvice: No adviser, returning original quality values.");
+	}
+	else {
+		// Check Advice Exchange conditions
+		bool condA = (this->q_avg_epoch < this->delta*this->adviserData[this->adviser].bq);
+		bool condB = (this->bq < this->adviserData[this->adviser].bq);
+		bool condC = (std::accumulate(this->q_vals_in.begin(), this->q_vals_in.end(), 0.0f) < this->rho*std::accumulate(this->adviserData[this->adviser].advice.begin(), this->adviserData[this->adviser].advice.end(), 0.0f));
+
+		if (condA && condB && condC) {
+			// Conditions are met, use this adviser's advice
+			advice = this->adviserData[this->adviser].advice;
+			Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::formAdvice: Adviser conditions met, using their advice.");
+		}
+		else {
+			// Conditions not satisfied, do not use the advice
+			advice = this->q_vals_in;
+			Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::formAdvice: Adviser conditions not met, rejecting their advice.");
+		}
+	}
+
+	// Send the advice back
 	DataStream lds;
 	lds.reset();
 	lds.packUUID(&this->adviceRequestConv);
@@ -250,10 +278,80 @@ int AgentAdviceExchange::formAdvice() {
 	this->sendMessage(this->hostCon, MSG_RESPONSE, lds.stream(), lds.length(), &STATE(AgentAdviceExchange)->ownerId);
 	lds.unlock();
 
-	Log.log(0, "AgentAdviceExchange::formAdvice: Sent advice.");
+	return 0;
+}
+
+
+/* preEpochUpdate
+*
+* Retrieves the performance metrics for the parent agent, and each adviser,
+* from the DDB and stores them.
+*/
+int AgentAdviceExchange::preEpochUpdate() {
+	STATE(AgentAdviceExchange)->epoch++;
+	Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::preEpochUpdate: Epoch number: %d.", STATE(AgentAdviceExchange)->epoch);
+
+	// Default to no adviser
+	this->adviser = nilUUID;
+
+	if (STATE(AgentAdviceExchange)->epoch == 1) {
+		// Nothing to update on the first epoch
+		return 0;
+	}
+
+	// Get my cq and bq from the DDB
+	// TODO (fake values for now)
+	this->cq = (float)this->randomGenerator.Uniform01();
+	this->bq = (float)this->randomGenerator.Uniform01();
+
+	// Get the cq and bq values of each adviser from the DDB
+	Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::preEpochUpdate: Requesting adviser performance metrics from the DDB.");
+	std::map<UUID, adviserDataStruct, UUIDless>::iterator iter;
+	for (iter = this->adviserData.begin(); iter != this->adviserData.end(); iter++) {
+		// TODO (fake values for now)
+		iter->second.cq = (float)this->randomGenerator.Uniform01();
+		iter->second.bq = (float)this->randomGenerator.Uniform01();
+	}
+	Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::preEpochUpdate: Adviser performance metrics received.");
+
+	// Select the adviser for this epoch
+	float best_cq = 0.0f;
+	for (iter = this->adviserData.begin(); iter != this->adviserData.end(); iter++) {
+		// Their cq must be better 
+		if ((iter->second.cq > this->cq) && (iter->second.cq > best_cq)) {
+			// Select them as the adviser
+			this->adviser = iter->first;
+		}
+	}
+
+	if (this->adviser == nilUUID) {
+		Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::preEpochUpdate: No superior agents exist, so no advice will be used.");
+	}
+	else {
+		Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::preEpochUpdate: Adviser for this epoch is %s.", Log.formatUUID(LOG_LEVEL_NORMAL, &this->adviser));
+	}
 
 	return 0;
 }
+
+
+/* postEpochUpdate
+*
+* Updates this agents cq and bq metrics, then sends them to the DDB
+*/
+int AgentAdviceExchange::postEpochUpdate() {
+	// Update cq and bq
+	this->cq = this->alpha*this->cq + (1.0f - this->alpha)*this->q_avg_epoch;
+	this->bq = max(this->q_avg_epoch, this->beta*this->bq);
+
+	// Send cq and bq to the DDB
+    Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::postEpochUpdateB: Sending cq and bq to DDB.");
+	// TODO
+	// SAVE(STATE(AgentBase)->uuid, this->cq, this->bq)
+
+	return 0;
+}
+
 
 int AgentAdviceExchange::ddbNotification(char *data, int len) {
 	DataStream lds, sds;
@@ -336,6 +434,9 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 
 		lds.unpackUUID(&this->adviceRequestConv);
 		lds.unpackUUID(&sender);
+
+		// Unpack the epoch average quality
+		this->q_avg_epoch = lds.unpackFloat32();
 	
 		// Unpack Q values
 		for (int i = 0; i < this->num_actions_; i++) {
@@ -347,8 +448,8 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 		}
 		lds.unlock();
 
-		// Proceed to ask advisers for advice
-		this->askAdvisers();
+		// Proceed to ask adviser for advice
+	    this->askAdviser();
 	}
 	break;
 	case AgentAdviceExchange_MSGS::MSG_REQUEST_CAPACITY:
@@ -426,6 +527,8 @@ bool AgentAdviceExchange::convGetAgentList(void *vpConv) {
 				//TODO: Exclude by type
 				this->adviserData[agentId] = empty_data;
 				this->adviserData[agentId].parentId = parent;
+				this->adviserData[agentId].bq = 0.0f;
+				this->adviserData[agentId].cq = 0.0f;
 			}
 		}
 		Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::convGetAgentList: Found %d advisers.", this->adviserData.size());
@@ -526,43 +629,14 @@ bool AgentAdviceExchange::convAdviceQuery(void *vpConv) {
 	lds.unpackUUID(&thread);
 	lds.unpackUUID(&sender);
 
-	Log.log(0, "REMOVETHISWHENDONE - conv %s", Log.formatUUID(0, &thread));
-	Log.log(0, "REMOVETHISWHENDONE - Sender %s", Log.formatUUID(0, &sender));
-
-	int response_count = 0;
-	
-	std::map<UUID, adviserDataStruct, UUIDless>::iterator iter;
-	for (iter = this->adviserData.begin(); iter != this->adviserData.end(); iter++) {
-		Log.log(0, "REMOVETHISWHENDONE - Checking adviser ");
-		if (iter->second.response == false) {
-
-			Log.log(0, "REMOVETHISWHENDONE - Their response was false");
-			Log.log(0, "REMOVETHISWHENDONE - parentId %s", Log.formatUUID(0, &iter->second.parentId));
-
-			// Check for the right adviser
-			if (iter->second.parentId == sender) {
-				Log.log(0, "REMOVETHISWHENDONE - They were the sender");
-				// Unpack Q values
-				iter->second.advice.clear();
-				for (int i = 0; i < this->num_actions_; i++) {
-					iter->second.advice.push_back(lds.unpackFloat32());
-				}
-				iter->second.response = true;
-				response_count++;
-			}
-		}
-		else {
-			response_count++;
-		}
+	// Unpack Q values
+	this->adviserData[this->adviser].advice.clear();
+	for (int i = 0; i < this->num_actions_; i++) {
+		this->adviserData[this->adviser].advice.push_back(lds.unpackFloat32());
 	}
-	lds.unlock();
 
-	Log.log(0, "REMOVETHISWHENDONE - Heard from %d advisers", response_count);
-	
-	// Only proceed to form advice once we have heard from all advisers
-	if (response_count == this->adviserData.size()) {
-		this->formAdvice();
-	}
+	// Proceed to form advice
+	this->formAdvice();
 
 	return 0;
 }
@@ -605,6 +679,8 @@ int AgentAdviceExchange::writeBackup(DataStream *ds) {
 	ds->packBool(STATE(AgentAdviceExchange)->startDelayed);
 	ds->packInt32(STATE(AgentAdviceExchange)->updateId);
 	ds->packBool(STATE(AgentAdviceExchange)->setupComplete);
+	ds->packInt32(STATE(AgentAdviceExchange)->avatarCapacity);
+	ds->packInt32(STATE(AgentAdviceExchange)->epoch);
 
 	return AgentBase::writeBackup(ds);
 }// end writeBackup
@@ -618,6 +694,8 @@ int AgentAdviceExchange::readBackup(DataStream *ds) {
 	STATE(AgentAdviceExchange)->startDelayed = ds->unpackBool();
 	STATE(AgentAdviceExchange)->updateId = ds->unpackInt32();
 	STATE(AgentAdviceExchange)->setupComplete = ds->unpackBool();
+	STATE(AgentAdviceExchange)->avatarCapacity = (ITEM_TYPES)ds->unpackInt32();
+	STATE(AgentAdviceExchange)->epoch = ds->unpackInt32();
 
 	if (STATE(AgentAdviceExchange)->setupComplete) {
 		this->finishConfigureParameters();

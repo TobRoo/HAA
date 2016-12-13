@@ -128,6 +128,7 @@ protected:
 	std::vector<float> q_vals;                  // Vector of quality values (for the current state vector)
     std::vector<unsigned int> stateVector;		// Current state vector
     std::vector<unsigned int> prevStateVector;	// Previous state vector
+	float q_avg;                                // Cumulative average quality for selected action
 
     // Learning parameters
     unsigned int learning_iterations_;          // Counter for how many times learning is performed

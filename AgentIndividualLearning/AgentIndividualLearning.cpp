@@ -118,6 +118,8 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
     this->totalActions = 0;
     this->usefulActions = 0;
 
+	this->q_avg = 0.0f;
+
     // Seed the random number generator
     srand(static_cast <unsigned> (time(0)));
 
@@ -411,6 +413,9 @@ int AgentIndividualLearning::formAction() {
 	// Select action based quality
 	int action = this->policy(this->q_vals);
 
+	// Update average quality
+	this->q_avg = (this->q_vals[action - 1] + this->totalActions*this->q_avg) / (this->totalActions + 1);
+
 	// Form action
 	if (action == MOVE_FORWARD) {
 		Log.log(0, "AgentIndividualLearning::formAction: Selected action MOVE_FORWARD");
@@ -515,6 +520,8 @@ int AgentIndividualLearning::formAction() {
 	}
 	// Send the action to AvatarBase
 	this->sendAction(STATE(AgentIndividualLearning)->action);
+
+	this->totalActions++;
 
 	return 0;
 }// end formAction
@@ -751,7 +758,6 @@ int AgentIndividualLearning::policy(std::vector<float> &quality) {
     // Get the sum of all quality
     float quality_sum = 0.0f;
     for (int i = 0; i < quality.size(); ++i) {
-        Log.log(0, "AgentIndividualLearning::quality[i]: %f", quality[i]);
         quality_sum += quality[i];
     }
     Log.log(0, "AgentIndividualLearning::quality_sum: %f", quality_sum);
@@ -820,8 +826,6 @@ int AgentIndividualLearning::policy(std::vector<float> &quality) {
 * reward = Value of the reward for the previous action
 */
 float AgentIndividualLearning::determineReward() {
-
-    this->totalActions++;
 
     //----------------------------------------------------
     // Create fake data, to be loaded later
@@ -1011,6 +1015,9 @@ int AgentIndividualLearning::requestAdvice(std::vector<float> &q_vals, std::vect
 	lds.packUUID(&STATE(AgentIndividualLearning)->adviceRequestConv);
 	lds.packUUID(&STATE(AgentBase)->uuid);
 
+	// Pack the average quality
+	lds.packFloat32(this->q_avg);
+
 	// Pack the Q values
 	for (std::vector<float>::iterator q_iter = q_vals.begin(); q_iter != q_vals.end(); ++q_iter) {
 		lds.packFloat32(*q_iter);
@@ -1099,6 +1106,7 @@ int AgentIndividualLearning::parseLearningData()
 
     return 0;
 }
+
 
 /* sendAction
 *
@@ -1378,7 +1386,7 @@ int AgentIndividualLearning::conProcessMessage(spConnection con, unsigned char m
 			for (std::vector<float>::iterator q_iter = q_values.begin(); q_iter != q_values.end(); ++q_iter) {
 				lds_qvals.packFloat32(*q_iter);
 			}
-			this->sendMessage(this->hostCon, MSG_RESPONSE, lds_qvals.stream(), lds_qvals.length(), &STATE(AgentIndividualLearning)->agentAdviceExchange);
+			this->sendMessage(this->hostCon, MSG_RESPONSE, lds_qvals.stream(), lds_qvals.length(), &sender);
 			lds_qvals.unlock();
 			
 		}

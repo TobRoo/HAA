@@ -16,21 +16,15 @@
 #pragma once
 
 #include "..\\autonomic\\DDB.h"
+#include <numeric>
 
 
 typedef struct adviserDataStruct {
 	UUID parentId;              // Id of (parent) Individual Learning agent
 	UUID queryConv;             // Thread used to ask this adviser for advice
 	std::vector<float> advice;  // vector of advised quality values
-	bool response;              // Received a response from this adviser
 	float cq;                   // Current average quality
 	float bq;                   // Best average quality
-};
-
-
-struct NameToBeDecided_AdvEx{
-	AgentType agentType;
-
 };
 
 
@@ -51,6 +45,7 @@ public:
 		int updateId;
 		bool setupComplete;
 		ITEM_TYPES avatarCapacity; //Carrying capacity of the parent avatar; 1 = light items, 2 = heavy items (0 = NON_COLLECTABLE, cannot carry items)
+		int epoch;  // Epoch counter
 	};
 
 //-----------------------------------------------------------------------------
@@ -60,23 +55,28 @@ protected:
 	UUID AgentAdviceExchange_recoveryLock;
 	DataStream ds; // shared DataStream object, for temporary, single thread, use only!
 
-
-	//std::map<UUID, <perfData TO BE DEFINED>, UUIDless> otherAvatars;
-
-	// Advice data
-	std::vector<float> q_vals_in;
-	std::vector<unsigned int> state_vector_in;
+	// Configuration data
 	unsigned int num_state_vrbls_;              // Number of variables in state vector 
 	unsigned int num_actions_;                  // Number of possible actions
+	float alpha;                                // Coefficient for current average quality metric cq
+	float beta;                                 // Coefficient for best avrage quality metric bq
+	float delta;                                // Coefficient for bq comparison
+	float rho;                                  // Coefficient for quality sum comparison
 
-	UUID adviceRequestConv;
-	std::map<UUID, adviserDataStruct, UUIDless> adviserData;
+	// Personal data and metrics
+	std::vector<float> q_vals_in;               // Parent agent Q values received during advice request
+	std::vector<unsigned int> state_vector_in;  // Parent agent state vector received during advice request
+	float cq;                                   // Current average quality
+	float bq;                                   // Best average quality
+	float q_avg_epoch;                          // Average quality of the current epoch
 
+	// Advice data
+	UUID adviceRequestConv;                                    // Conversation from parent agent used to request advice
+	std::map<UUID, adviserDataStruct, UUIDless> adviserData;   // All advice data for each adviser
+	UUID adviser;                                              // Id of the AgentAdviceExchange adviser (i.e. the key for adviserData)
+	
 	// Random number generator
 	RandomGenerator randomGenerator;
-
-
-	//Metrics 
 
 //-----------------------------------------------------------------------------
 // Functions	
@@ -90,8 +90,11 @@ public:
 	virtual int stop();			// stop agent
 	virtual int step();			// run one step
 
-	int askAdvisers();
-	int formAdvice();
+	int askAdviser ();        // Sends a request for advice to the advisers
+	int formAdvice();         // Performs the Advice Exchange algorithm and sends the advice back
+
+	int preEpochUpdate();     // Performs the necessary updates before a new epoch begins
+	int postEpochUpdate();   // Performs the necessary updates after an epoch is finished
 
 private:
 
