@@ -203,6 +203,8 @@ int AgentIndividualLearning::configureParameters(DataStream *ds) {
     STATE(AgentIndividualLearning)->maxRotation = ds->unpackFloat32();
     STATE(AgentIndividualLearning)->minLinear = ds->unpackFloat32();
     STATE(AgentIndividualLearning)->minRotation = ds->unpackFloat32();
+	this->avatar.capacity = (ITEM_TYPES)ds->unpackInt32();
+
 
     Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::configureParameters: ownerId %s", Log.formatUUID(LOG_LEVEL_NORMAL, &STATE(AgentIndividualLearning)->ownerId));
 
@@ -1702,7 +1704,6 @@ bool AgentIndividualLearning::convRequestAvatarLoc(void *vpConv) {
 }
 
 bool AgentIndividualLearning::convLandmarkInfo(void *vpConv) {
-	Log.log(0, "REMOVETHISWHENDONE = Inside convLandmarkInfo");
 
     DataStream lds;
     spConversation conv = (spConversation)vpConv;
@@ -2011,6 +2012,8 @@ bool AgentIndividualLearning::convRequestAgentAdviceExchange(void *vpConv) {
 
 		lds.reset();
 		lds.packUUID(&STATE(AgentBase)->uuid);
+		lds.packInt32(this->avatar.capacity);
+		lds.packUUID(&STATE(AgentIndividualLearning)->ownerId);
 		this->sendMessageEx(this->hostCon, MSGEX(AgentAdviceExchange_MSGS, MSG_CONFIGURE), lds.stream(), lds.length(), &STATE(AgentIndividualLearning)->agentAdviceExchange);
 		lds.unlock();
 

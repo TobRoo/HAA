@@ -305,6 +305,7 @@ int	AvatarBase::registerAvatar( char *type, float innerRadius, float outerRadius
 	}
 
 	STATE(AvatarBase)->sensorTypes = sensorTypes;
+	STATE(AvatarBase)->capacity = (ITEM_TYPES)capacity;
 
 	_timeb startTime;
 	apb->apb_ftime_s( &startTime );
@@ -2035,6 +2036,7 @@ bool AvatarBase::convRequestAgentIndividualLearning(void *vpConv) {
 		lds.packFloat32(STATE(AvatarBase)->maxRotation);
 		lds.packFloat32(STATE(AvatarBase)->minLinear);
 		lds.packFloat32(STATE(AvatarBase)->minRotation);
+		lds.packInt32(STATE(AvatarBase)->capacity);
 		this->sendMessageEx(this->hostCon, MSGEX(AgentIndividualLearning_MSGS, MSG_CONFIGURE), lds.stream(), lds.length(), &STATE(AvatarBase)->agentIndividualLearning);
 		lds.unlock();
 

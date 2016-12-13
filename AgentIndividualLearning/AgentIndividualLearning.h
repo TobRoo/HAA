@@ -54,6 +54,7 @@ struct AVATAR_INFO {
     float outerRadius;
     float x, y, r;
     bool locValid; // loc was successfully updated
+	ITEM_TYPES capacity;	//1 = light items, 2 = heavy items (0 = NON_COLLECTABLE, cannot carry items)
 };
 
 class AgentIndividualLearning : public AgentBase {

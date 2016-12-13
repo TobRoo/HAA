@@ -108,6 +108,8 @@ int AgentAdviceExchange::configureParameters(DataStream *ds) {
 
 	// Read in owner ID
 	ds->unpackUUID(&STATE(AgentAdviceExchange)->ownerId);
+	STATE(AgentAdviceExchange)->avatarCapacity = (ITEM_TYPES)ds->unpackInt32();
+	ds->unpackUUID(&STATE(AgentAdviceExchange)->avatarId);
 
 	Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::configureParameters: ownerId %s", Log.formatUUID(LOG_LEVEL_NORMAL, &STATE(AgentAdviceExchange)->ownerId));
 
@@ -196,33 +198,22 @@ int AgentAdviceExchange::step() {
  */
 int AgentAdviceExchange::askAdvisers() {
 	// Send state vector to all advisers, to receive their advice in return
-	// TODO (demo below)
-
-	// Demonstration using only the parent agent, since we are not yet aware of the other advisers
-	// (later, this will not be necessary, since the parent agent's q values are received when advice is requested)
-
-	// Temporarily add the parent agent as the only adviser
-	if (this->adviceQuery.empty()) {
-		Log.log(0, "AgentAdviceExchange::askAdvisers: adviceQuery is empty, adding myself.");
-		adviceQueryData temp_data;
-		this->adviceQuery[STATE(AgentAdviceExchange)->ownerId] = temp_data;
-	}
 	
 	DataStream lds;
-	std::map<UUID, adviceQueryData, UUIDless>::iterator iter;
-	for (iter = this->adviceQuery.begin(); iter != this->adviceQuery.end(); iter++) {
-		// Clear the response
+	std::map<UUID, adviserDataStruct, UUIDless>::iterator iter;
+	for (iter = this->adviserData.begin(); iter != this->adviserData.end(); iter++) {
+
 		iter->second.response = false;
-	
+
         // Initiate conversation with adviser
-		iter->second.conv = this->conversationInitiate(AgentAdviceExchange_CBR_convAdviceQuery, DDB_REQUEST_TIMEOUT);
-		if (iter->second.conv == nilUUID) {
+		iter->second.queryConv = this->conversationInitiate(AgentAdviceExchange_CBR_convAdviceQuery, DDB_REQUEST_TIMEOUT);
+		if (iter->second.queryConv == nilUUID) {
 			return 1;
 		}
 
 		// Send a message with the state vector
 		lds.reset();
-		lds.packUUID(&iter->second.conv); // Add the thread
+		lds.packUUID(&iter->second.queryConv); // Add the thread
 		lds.packUUID(&STATE(AgentBase)->uuid);  // Add sender Id
 		
 		// Pack the state vector
@@ -245,7 +236,7 @@ int AgentAdviceExchange::formAdvice() {
 	// TODO: Add the actual algorithm
 	
 	// Temporarily default to forwarding back the original q_vals
-	std::vector<float> advice = this->adviceQuery[STATE(AgentAdviceExchange)->ownerId].quality;
+	std::vector<float> advice = this->q_vals_in;
 	
 	DataStream lds;
 	lds.reset();
@@ -294,6 +285,19 @@ int AgentAdviceExchange::ddbNotification(char *data, int len) {
 	}
 	if (evt == DDBE_UPDATE) {
 		if (type == DDB_AGENT) {
+			// request agent info
+			UUID thread = this->conversationInitiate(AgentAdviceExchange_CBR_convGetAgentInfo, DDB_REQUEST_TIMEOUT);
+			if (thread == nilUUID) {
+				return 1;
+			}
+			sds.reset();
+			sds.packUUID(&uuid); // Agent id 
+			sds.packInt32(DDBAGENTINFO_RTYPE| DDBAGENTINFO_RPARENT);
+			sds.packUUID(&thread);
+			this->sendMessage(this->hostCon, MSG_DDB_RAGENTINFO, sds.stream(), sds.length());
+			sds.unlock();
+
+
 		}
 	}
 
@@ -347,6 +351,21 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 		this->askAdvisers();
 	}
 	break;
+	case AgentAdviceExchange_MSGS::MSG_REQUEST_CAPACITY:
+	{
+		DataStream sds;
+
+		//int infoFlags;
+		//UUID thread;
+		//lds.setData(data, len);
+		//lds.unpackUUID(&uuid);
+		//infoFlags = lds.unpackInt32();
+		//lds.unpackUUID(&thread);
+		//lds.unlock();
+		//this->ddbAgentGetInfo(&uuid, infoFlags, con, &thread);
+
+	}
+	break;
 	default:
 		return 1; // unhandled message
 	}
@@ -372,13 +391,14 @@ bool AgentAdviceExchange::convGetAgentList(void *vpConv) {
 
 	char response = lds.unpackChar();
 	if (response == DDBR_OK) { // succeeded
-		int i, count;
-
+		
 		if (lds.unpackInt32() != DDBAGENTINFO_RLIST) {
 			lds.unlock();
 			return 0; // what happened here?
 		}
 
+		// Get number of agents
+		int count;
 		count = lds.unpackInt32();
 		Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::convGetAgentList: recieved %d agents", count);
 
@@ -392,56 +412,25 @@ bool AgentAdviceExchange::convGetAgentList(void *vpConv) {
 		UUID individualLearningAgentId;
 		UuidFromString((RPC_WSTR)_T(AgentIndividualLearning_UUID), &individualLearningAgentId);
 
-		for (i = 0; i < count; i++) {
+		// Scan agents of type AgentAdviceExchange
+		adviserDataStruct empty_data;
+		for (int i = 0; i < count; i++) {
 			lds.unpackUUID(&agentId);
 			lds.unpackString(); // agent type
 			lds.unpackUUID(&agentType.uuid);
-			agentType.instance = lds.unpackInt32();
+			agentType.instance = lds.unpackChar();
 			lds.unpackUUID(&parent);
 
-			if (agentType.uuid == adviceExchangeAgentId) {			//The agent is an advice exchange agent
-				Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::convGetAgentList: found an advice exchange agent!");
-
+			if (agentType.uuid == adviceExchangeAgentId && agentId != STATE(AgentBase)->uuid) {			//The agent is an advice exchange agent
+				// Add agent to the list if it has the same capacity as own capacity (Light or heavy)
+				//TODO: Exclude by type
+				this->adviserData[agentId] = empty_data;
+				this->adviserData[agentId].parentId = parent;
 			}
-			//if (agentType.uuid == individualLearningAgentId) {		//The agent is an individual learning agent
-			//	Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::convGetAgentList: found an individual learning agent!");
-
-			//}
-
 		}
+		Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::convGetAgentList: Found %d advisers.", this->adviserData.size());
 
-	//		if (agentId == STATE(AgentAdviceExchange)->ownerId) {
-	//			// This is our avatar
-	//			this->avatar.ready = false;
-	//			this->avatar.start.time = 0;
-	//			this->avatar.retired = 0;
-	//			this->avatarId = avatarId;
-	//		}
-	//		else {
-	//			this->otherAvatars[avatarId].ready = false;
-	//			this->otherAvatars[avatarId].start.time = 0;
-	//			this->otherAvatars[avatarId].retired = 0;
-	//			//this->otherAvatarsLocUpdateId[avatarId] = -1;
-	//		}
-
-	//		// request avatar info
-	//		thread = this->conversationInitiate(AgentAdviceExchange_CBR_convGetAgentInfo, DDB_REQUEST_TIMEOUT, &avatarId, sizeof(UUID));
-	//		if (thread == nilUUID) {
-	//			return 1;
-	//		}
-	//		sds.reset();
-	//		sds.packUUID((UUID *)&avatarId);
-	//		sds.packInt32(DDBAVATARINFO_RAGENT | DDBAVATARINFO_RPF | DDBAVATARINFO_RRADII | DDBAVATARINFO_RTIMECARD);
-	//		sds.packUUID(&thread);
-	//		this->sendMessage(this->hostCon, MSG_DDB_AVATARGETINFO, sds.stream(), sds.length());
-	//		sds.unlock();
-	//	}
 		lds.unlock();
-
-	//}
-	//else {
-	//	lds.unlock();
-	//	// TODO try again?
 	}
 	this->finishConfigureParameters();
 	return 0;
@@ -537,25 +526,41 @@ bool AgentAdviceExchange::convAdviceQuery(void *vpConv) {
 	lds.unpackUUID(&thread);
 	lds.unpackUUID(&sender);
 
+	Log.log(0, "REMOVETHISWHENDONE - conv %s", Log.formatUUID(0, &thread));
+	Log.log(0, "REMOVETHISWHENDONE - Sender %s", Log.formatUUID(0, &sender));
+
 	int response_count = 0;
 	
-	std::map<UUID, adviceQueryData, UUIDless>::iterator iter;
-	for (iter = this->adviceQuery.begin(); iter != this->adviceQuery.end(); iter++) {
-		// Check for the right adviser and thread
-		if (iter->first == sender) {
-			// Unpack Q values
-			iter->second.quality.clear();
-			for (int i = 0; i < this->num_actions_; i++) {
-				iter->second.quality.push_back(lds.unpackFloat32());
+	std::map<UUID, adviserDataStruct, UUIDless>::iterator iter;
+	for (iter = this->adviserData.begin(); iter != this->adviserData.end(); iter++) {
+		Log.log(0, "REMOVETHISWHENDONE - Checking adviser ");
+		if (iter->second.response == false) {
+
+			Log.log(0, "REMOVETHISWHENDONE - Their response was false");
+			Log.log(0, "REMOVETHISWHENDONE - parentId %s", Log.formatUUID(0, &iter->second.parentId));
+
+			// Check for the right adviser
+			if (iter->second.parentId == sender) {
+				Log.log(0, "REMOVETHISWHENDONE - They were the sender");
+				// Unpack Q values
+				iter->second.advice.clear();
+				for (int i = 0; i < this->num_actions_; i++) {
+					iter->second.advice.push_back(lds.unpackFloat32());
+				}
+				iter->second.response = true;
+				response_count++;
 			}
-			this->adviceQuery[iter->first].response = true;
+		}
+		else {
 			response_count++;
 		}
 	}
 	lds.unlock();
+
+	Log.log(0, "REMOVETHISWHENDONE - Heard from %d advisers", response_count);
 	
 	// Only proceed to form advice once we have heard from all advisers
-	if (response_count == this->adviceQuery.size()) {
+	if (response_count == this->adviserData.size()) {
 		this->formAdvice();
 	}
 

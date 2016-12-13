@@ -94,6 +94,7 @@ public:
 		char	retireMode;
 		bool	retireSet;	 // set to retire
 		int		sensorTypes;
+		ITEM_TYPES		capacity;	//1 = Light objects, 2  = Heavy objects  (0 = NON_COLLECTABLE, cannot carry items)
 	
 		// particle filter
 		UUID	pfId; // particle filter UUID

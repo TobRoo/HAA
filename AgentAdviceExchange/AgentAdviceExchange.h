@@ -18,10 +18,13 @@
 #include "..\\autonomic\\DDB.h"
 
 
-typedef struct adviceQueryData {
-	UUID conv;
-	std::vector<float> quality;
-	bool response;
+typedef struct adviserDataStruct {
+	UUID parentId;              // Id of (parent) Individual Learning agent
+	UUID queryConv;             // Thread used to ask this adviser for advice
+	std::vector<float> advice;  // vector of advised quality values
+	bool response;              // Received a response from this adviser
+	float cq;                   // Current average quality
+	float bq;                   // Best average quality
 };
 
 
@@ -42,10 +45,12 @@ public:
 
 		// Agent data --
 		UUID ownerId;
+		UUID avatarId;
 		bool parametersSet;
 		bool startDelayed; // start has been delayed because parameters are not set yet
 		int updateId;
 		bool setupComplete;
+		ITEM_TYPES avatarCapacity; //Carrying capacity of the parent avatar; 1 = light items, 2 = heavy items (0 = NON_COLLECTABLE, cannot carry items)
 	};
 
 //-----------------------------------------------------------------------------
@@ -65,7 +70,7 @@ protected:
 	unsigned int num_actions_;                  // Number of possible actions
 
 	UUID adviceRequestConv;
-	std::map<UUID, adviceQueryData, UUIDless> adviceQuery;
+	std::map<UUID, adviserDataStruct, UUIDless> adviserData;
 
 	// Random number generator
 	RandomGenerator randomGenerator;
