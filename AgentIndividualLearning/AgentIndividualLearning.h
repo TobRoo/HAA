@@ -119,8 +119,7 @@ protected:
     UUID avatarId;
     UUID avatarAgentId;
     std::map<UUID, AVATAR_INFO, UUIDless> otherAvatars;
-    DDBLandmark landmark;
-    UUID landmarkId;
+    
     bool hasCargo;
     bool hasDelivered;
 
@@ -168,19 +167,19 @@ protected:
 		ADVICE_FAILURE
 	};
 
-    // Random number generator
-    RandomGenerator randomGenerator;
-
-    //mapTask  taskList;
+    // Task data
     UUID taskId;
     DDBTask task;
+	DDBLandmark target;
     std::map<unsigned char, DDBLandmark> targetList;
     std::map<unsigned char, DDBLandmark> obstacleList;
 
     //Metrics
-
     unsigned long totalActions;
     unsigned long usefulActions;
+
+	// Random number generator
+	RandomGenerator randomGenerator;
 
 //-----------------------------------------------------------------------------
 // Functions
@@ -234,7 +233,7 @@ public:
         AgentIndividualLearning_CBR_convGetAvatarInfo,
 		AgentIndividualLearning_CBR_convGetLandmarkList,
         AgentIndividualLearning_CBR_convLandmarkInfo,
-        AgentIndividualLearning_CBR_convOwnLandmarkInfo,
+        AgentIndividualLearning_CBR_convGetTargetInfo,
         AgentIndividualLearning_CBR_convMissionRegion,
         AgentIndividualLearning_CBR_convGetTaskList,
         AgentIndividualLearning_CBR_convGetTaskInfo,
@@ -250,7 +249,7 @@ public:
     bool convGetAvatarInfo(void *vpConv);
 	bool convGetLandmarkList(void * vpConv);
     bool convLandmarkInfo(void *vpConv);
-    bool convOwnLandmarkInfo(void * vpConv);
+    bool convGetTargetInfo(void * vpConv);
     bool convMissionRegion(void *vpConv);
 
     bool convGetTaskInfo(void * vpConv);

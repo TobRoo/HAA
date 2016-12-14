@@ -72,8 +72,8 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
     STATE(AgentIndividualLearning)->action.action = AvatarBase_Defs::AA_WAIT;
     STATE(AgentIndividualLearning)->action.val = 0.0;
 
-    // initialize avatar and landmark info
-    this->landmarkId = nilUUID;
+    // initialize avatar and target info
+    this->task.landmarkUUID = nilUUID;
     this->avatar.ready = false;	// Avatar's status will be set once the avatar info is recieved
 
     //---------------------------------------------------------------
@@ -103,7 +103,6 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
     this->robot_further_reward_ = -0.1f;
     this->return_reward_ = 10.0f;
     this->empty_reward_value_ = -0.01f;
-    this->reward_activation_dist_ = 0.15f;
 
     // Action parameters
     this->backupFractionalSpeed = 0.5f;
@@ -134,7 +133,7 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
     this->callback[AgentIndividualLearning_CBR_convGetAvatarInfo] = NEW_MEMBER_CB(AgentIndividualLearning, convGetAvatarInfo);
 	this->callback[AgentIndividualLearning_CBR_convGetLandmarkList] = NEW_MEMBER_CB(AgentIndividualLearning, convGetLandmarkList);
     this->callback[AgentIndividualLearning_CBR_convLandmarkInfo] = NEW_MEMBER_CB(AgentIndividualLearning, convLandmarkInfo);
-    this->callback[AgentIndividualLearning_CBR_convOwnLandmarkInfo] = NEW_MEMBER_CB(AgentIndividualLearning, convOwnLandmarkInfo);
+    this->callback[AgentIndividualLearning_CBR_convGetTargetInfo] = NEW_MEMBER_CB(AgentIndividualLearning, convGetTargetInfo);
     this->callback[AgentIndividualLearning_CBR_convMissionRegion] = NEW_MEMBER_CB(AgentIndividualLearning, convMissionRegion);
     this->callback[AgentIndividualLearning_CBR_convGetTaskList] = NEW_MEMBER_CB(AgentIndividualLearning, convGetTaskList);
     this->callback[AgentIndividualLearning_CBR_convGetTaskInfo] = NEW_MEMBER_CB(AgentIndividualLearning, convGetTaskInfo);
@@ -206,6 +205,10 @@ int AgentIndividualLearning::configureParameters(DataStream *ds) {
     STATE(AgentIndividualLearning)->minLinear = ds->unpackFloat32();
     STATE(AgentIndividualLearning)->minRotation = ds->unpackFloat32();
 	this->avatar.capacity = (ITEM_TYPES)ds->unpackInt32();
+
+	// Set the reward activation distance
+	// (must move at least at a 45 degree angle relative to target or goal)
+	this->reward_activation_dist_ = 0.707f*STATE(AgentIndividualLearning)->maxLinear;
 
 
     Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::configureParameters: ownerId %s", Log.formatUUID(LOG_LEVEL_NORMAL, &STATE(AgentIndividualLearning)->ownerId));
@@ -451,19 +454,19 @@ int AgentIndividualLearning::formAction() {
 
 		if (!this->hasCargo) {
 			// see if we are within range of the landmark
-			dx = STATE(AgentIndividualLearning)->prev_pos_x - this->landmark.x;
-			dy = STATE(AgentIndividualLearning)->prev_pos_y - this->landmark.y;
+			dx = STATE(AgentIndividualLearning)->prev_pos_x - this->target.x;
+			dy = STATE(AgentIndividualLearning)->prev_pos_y - this->target.y;
 
 			if (dx*dx + dy*dy < COLLECTION_THRESHOLD*COLLECTION_THRESHOLD) { // should be close enough
-				Log.log(0, "AgentIndividualLearning::formAction: collecting landmark at %f %f", this->landmark.x, this->landmark.y);
+				Log.log(0, "AgentIndividualLearning::formAction: collecting landmark at %f %f", this->target.x, this->target.y);
 				thread = this->conversationInitiate(AgentIndividualLearning_CBR_convCollectLandmark, -1, &avAgent, sizeof(UUID));
 				if (thread == nilUUID) {
 					return 1;
 				}
 				lds.reset();
-				lds.packUChar(this->landmark.code);
-				lds.packFloat32(this->landmark.x);
-				lds.packFloat32(this->landmark.y);
+				lds.packUChar(this->target.code);
+				lds.packFloat32(this->target.x);
+				lds.packFloat32(this->target.y);
 				lds.packUUID(this->getUUID());
 				lds.packUUID(&thread);
 				this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_COLLECT_LANDMARK), lds.stream(), lds.length(), &avAgent);
@@ -476,7 +479,7 @@ int AgentIndividualLearning::formAction() {
 
 							// drop off
 			lds.reset();
-			lds.packUChar(this->landmark.code);
+			lds.packUChar(this->target.code);
 			this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_DEPOSIT_LANDMARK), lds.stream(), lds.length(), &avAgent);
 			lds.unlock();
 
@@ -534,11 +537,10 @@ int AgentIndividualLearning::learn() {
     // TODO: Adjust learning frequency based on experience
     if ((this->learning_iterations_ % this->learning_frequency_ == 0) && (STATE(AgentIndividualLearning)->action.action > 0)) {
         float reward = this->determineReward();
-        //Log.log(0, "AgentIndividualLearning::learn():: Reward is: %f", reward);
-        //Log.log(0, "AgentIndividualLearning::learn():: Action is: %d", STATE(AgentIndividualLearning)->action.action);
+        Log.log(0, "AgentIndividualLearning::learn: Reward: %f", reward);
 
         this->q_learning_.learn(this->prevStateVector, this->stateVector, STATE(AgentIndividualLearning)->action.action, reward);
-        this->learning_iterations_++;	//TODO: Check if incremented elsewhere - could not find anywhere else- should be incremented, right?
+        this->learning_iterations_++;
     }
     return 0;
 }
@@ -669,8 +671,8 @@ int AgentIndividualLearning::getStateVector() {
     float orient = this->avatar.r;
 
     // Calculate relative distances
-    float rel_target_x = this->landmark.x - this->avatar.x;
-    float rel_target_y = this->landmark.y - this->avatar.y;
+    float rel_target_x = this->target.x - this->avatar.x;
+    float rel_target_y = this->target.y - this->avatar.y;
     float rel_goal_x = STATE(AgentIndividualLearning)->goal_x - this->avatar.x;
     float rel_goal_y = STATE(AgentIndividualLearning)->goal_y - this->avatar.y;
 
@@ -684,7 +686,7 @@ int AgentIndividualLearning::getStateVector() {
     //   obst_angle
 
     // Get target type
-    unsigned int target_type = this->landmark.landmarkType;	// 0=None, 1=Light, 2=Heavy
+    unsigned int target_type = this->target.landmarkType;	// 0=None, 1=Light, 2=Heavy
 
     // Small factor to adjust distances by to make sure they are within boundaries
     float delta = 0.0001f;
@@ -760,7 +762,7 @@ int AgentIndividualLearning::policy(std::vector<float> &quality) {
     for (int i = 0; i < quality.size(); ++i) {
         quality_sum += quality[i];
     }
-    Log.log(0, "AgentIndividualLearning::quality_sum: %f", quality_sum);
+
     if (quality_sum == 0.0f) {
         random_actions_++;
         int action = (int)ceil(randomGenerator.Uniform01() * num_actions_);
@@ -827,14 +829,6 @@ int AgentIndividualLearning::policy(std::vector<float> &quality) {
 */
 float AgentIndividualLearning::determineReward() {
 
-    //----------------------------------------------------
-    // Create fake data, to be loaded later
-    //bool has_target = false;		//Replaced by check for nilUUID
-    //bool target_state = false;		//Replaced by this->hasDelivered
-    //bool prev_target_state = false;	//Replaced by this->hasDelivered
-    //bool carrying_item = false;	//Replaced by this->hasCargo
-    //----------------------------------------------------
-
     // First handle the case where no target is assigned, since the target
     // distance cannot be calculated if there is no target
 
@@ -845,10 +839,10 @@ float AgentIndividualLearning::determineReward() {
                                        + (float)pow(STATE(AgentIndividualLearning)->prev_pos_y - STATE(AgentIndividualLearning)->goal_y, 2));
     float delta_goal_dist = goal_dist - prev_goal_dist;
 
-    if (this->landmarkId == nilUUID) {
+	// Reward moving closer to goal area, to encourage waiting there until a task is received
+    if (this->task.landmarkUUID == nilUUID) {
         if (delta_goal_dist < -reward_activation_dist_) {
-            //Log.log(0, "AgentIndividualLearning::determineReward():: DEBUG 1");
-            return 1;
+            return 1.0f;
         }
         else {
             return empty_reward_value_;
@@ -856,54 +850,44 @@ float AgentIndividualLearning::determineReward() {
     }
 
     // Now handle the cases where the robot has a target
-
     this->usefulActions++;
-
-    //// When the target is returned
-    //if (target_state && !prev_target_state) {
-    //	// Item has been returned
-    //	return return_reward_;
-    //}
 
     // When the target is returned
     if (this->hasDelivered == true) {
         // Item has been returned
         this->hasDelivered = false;	//Set back to false in perparation for new task
         return return_reward_;
-
     }
 
-
-
     // Calculate change in distance from target item to goal
-    float item_goal_dist = (float)sqrt((float)pow(this->landmark.x - STATE(AgentIndividualLearning)->goal_x, 2)
-                                       + (float)pow(this->landmark.y - STATE(AgentIndividualLearning)->goal_y, 2));
+    float item_goal_dist = (float)sqrt((float)pow(this->target.x - STATE(AgentIndividualLearning)->goal_x, 2)
+                                       + (float)pow(this->target.y - STATE(AgentIndividualLearning)->goal_y, 2));
     float prev_item_goal_dist = (float)sqrt((float)pow(STATE(AgentIndividualLearning)->prev_target_x - STATE(AgentIndividualLearning)->goal_x, 2)
                                             + (float)pow(STATE(AgentIndividualLearning)->prev_target_y - STATE(AgentIndividualLearning)->goal_y, 2));
     float delta_item_goal_dist = item_goal_dist - prev_item_goal_dist;
 
     // Calculate change in distance from robot to target item
-    float robot_item_dist = (float)sqrt((float)pow(this->landmark.x - this->avatar.x, 2) + (float)pow(this->landmark.y - this->avatar.y, 2));
+    float robot_item_dist = (float)sqrt((float)pow(this->target.x - this->avatar.x, 2) + (float)pow(this->target.y - this->avatar.y, 2));
     float prev_robot_item_dist = (float)sqrt((float)pow(STATE(AgentIndividualLearning)->prev_target_x - STATE(AgentIndividualLearning)->prev_pos_x, 2)
                                              + (float)pow(STATE(AgentIndividualLearning)->prev_target_y - STATE(AgentIndividualLearning)->prev_pos_y, 2));
     float delta_robot_item_dist = robot_item_dist - prev_robot_item_dist;
 
     // Rewards depend on if the robot is going to an item, or carrying one
-    if (this->hasCargo && delta_item_goal_dist < -reward_activation_dist_) {
+    if (this->hasCargo && delta_item_goal_dist < -this->reward_activation_dist_) {
         // Item has moved closer
-        return item_closer_reward_;
+        return this->item_closer_reward_;
     }
-    else if (this->hasCargo && delta_item_goal_dist > reward_activation_dist_) {
+    else if (this->hasCargo && delta_item_goal_dist > this->reward_activation_dist_) {
         // Item has moved further away
-        return item_further_reward_;
+        return this->item_further_reward_;
     }
-    else if (!this->hasCargo && delta_robot_item_dist < -reward_activation_dist_) {
+    else if (!this->hasCargo && delta_robot_item_dist < -this->reward_activation_dist_) {
         // Robot moved closer to item
-        return robot_closer_reward_;
+        return this->robot_closer_reward_;
     }
-    else if (!this->hasCargo && delta_robot_item_dist > reward_activation_dist_) {
+    else if (!this->hasCargo && delta_robot_item_dist > this->reward_activation_dist_) {
         // Robot moved further away from item
-        return robot_further_reward_;
+        return this->robot_further_reward_;
     }
     else {
         // Penalize for not getting any reward
@@ -917,8 +901,6 @@ float AgentIndividualLearning::determineReward() {
 * new position and world boundaries, obstacles, or other avatars.
 */
 bool AgentIndividualLearning::validAction(ActionPair &action) {
-
-    Log.log(0, "AgentIndividualLearning::validAction: action.action == %d", action.action);
 
     // Only need to consider movement actions
     if (!(action.action == MOVE_FORWARD ||action.action == MOVE_BACKWARD )){
@@ -1194,8 +1176,6 @@ int AgentIndividualLearning::ddbNotification(char *data, int len) {
             sds.packBool(true);			   //true == send list of tasks, otherwise only info about a specific task
             this->sendMessage(this->hostCon, MSG_DDB_TASKGETINFO, sds.stream(), sds.length());
             sds.unlock();
-
-
         }
 		if (type == DDB_LANDMARK) {
 			// request list of landmarks
@@ -1209,8 +1189,6 @@ int AgentIndividualLearning::ddbNotification(char *data, int len) {
 			sds.packBool(true);			   //true == send list of tasks, otherwise only info about a specific task
 			this->sendMessage(this->hostCon, MSG_DDB_RLANDMARK, sds.stream(), sds.length());
 			sds.unlock();
-
-
 		}
     }
     if (type == DDB_AVATAR) {
@@ -1254,49 +1232,21 @@ int AgentIndividualLearning::ddbNotification(char *data, int len) {
     }
     else if (type == DDB_LANDMARK) {
 
-        DataStream derpStream;
-        UUID derpUUID;
-
-        derpStream.setData(data, len);
-
-        derpStream.unpackData(sizeof(UUID)); // key
-        derpStream.unpackInt32();
-        derpStream.unpackUUID(&derpUUID);
-
-        //	Log.log(0, "AgentIndividualLearning::ddbNotification:Received update about landmark with UUID %s", Log.formatUUID(0, &derpUUID));
-
-
-
-        //// **********************************************************************
-        //// Temporarily assignng the landmark ID to the first landmark found
-        //if (this->landmarkId == nilUUID) {
-        //	this->landmarkId = uuid;
-        //}
-        //// **********************************************************************
-
         // Only update if it is for our assigned landmark
-        if (uuid == this->landmarkId) {
-			Log.log(0, "REMOVETHISWHENDONE - Inside ddbNotification: adding assigned landmark");
-            //	if (evt == DDBE_UPDATE || evt == DDBE_ADD ) {
+        if (uuid == this->task.landmarkUUID) {
             int infoFlags = lds.unpackInt32();
-            //	if (infoFlags & DDBLANDMARKINFO_POS) {
-            // get landmark
-            UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convOwnLandmarkInfo, DDB_REQUEST_TIMEOUT, &uuid, sizeof(UUID));
+            // Get target position information
+            UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convGetTargetInfo, DDB_REQUEST_TIMEOUT, &uuid, sizeof(UUID));
             sds.reset();
             sds.packUUID(&uuid);
             sds.packUUID(&thread);
 			sds.packBool(false);
             this->sendMessage(this->hostCon, MSG_DDB_RLANDMARK, sds.stream(), sds.length());
             sds.unlock();
-            //	}
-            //	}
         }
         else {
-			Log.log(0, "REMOVETHISWHENDONE - Inside ddbNotification: adding NOT assigned landmark");
-            //	if (evt == DDBE_UPDATE || evt == DDBE_ADD ) {
             int infoFlags = lds.unpackInt32();
-            //	if (infoFlags & DDBLANDMARKINFO_POS) {
-            // get landmark
+
             UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convLandmarkInfo, DDB_REQUEST_TIMEOUT, &uuid, sizeof(UUID));
             sds.reset();
             sds.packUUID(&uuid);
@@ -1304,11 +1254,6 @@ int AgentIndividualLearning::ddbNotification(char *data, int len) {
 			sds.packBool(false);
             this->sendMessage(this->hostCon, MSG_DDB_RLANDMARK, sds.stream(), sds.length());
             sds.unlock();
-            //	}
-            //	}
-
-
-
         }
     }
     else if (type == DDB_TASK) {
@@ -1330,7 +1275,6 @@ int AgentIndividualLearning::ddbNotification(char *data, int len) {
         else if (evt == DDBE_REM) {
             // TODO
         }
-
 
     }
 
@@ -1401,12 +1345,18 @@ int AgentIndividualLearning::conProcessMessage(spConnection con, unsigned char m
 //-----------------------------------------------------------------------------
 // Callbacks
 
+/* convGetLandmarkList
+*
+* Callback for response from AvatarSimulation with the result of the action. When the
+* action fails, it will be resent. When the action is a success, it proceeds to update
+* for the next action. This callback is solely responsible for initiating the next action.
+*/
 bool AgentIndividualLearning::convAction(void *vpConv) {
     spConversation conv = (spConversation)vpConv;
     UUID thread;
 
     if (conv->response == NULL) {
-        Log.log(0, "AgentIndividualLearning::convAction: request timed out");
+        Log.log(0, "AgentIndividualLearning::convAction: Request timed out");
         return 0; // end conversation
     }
 
@@ -1442,12 +1392,21 @@ bool AgentIndividualLearning::convAction(void *vpConv) {
 
 }// end convAction
 
+/* convGetAvatarList
+*
+* Callback for being an avatar watcher. Called from ddbNotification when the event is 
+* DDBE_WATCH_TYPE and the type DDB_AVATAR.
+*
+* Loops through all known avatars. When this agent belongs to the avatar their info is
+* add to the class property avatar. All other avatars are added to otherAvatars. For both
+* types, their position information is requested via convGetAvatarInfo.
+*/
 bool AgentIndividualLearning::convGetAvatarList(void *vpConv) {
     DataStream lds, sds;
     spConversation conv = (spConversation)vpConv;
 
     if (conv->response == NULL) { // timed out
-        Log.log(0, "AgentIndividualLearning::convGetAvatarList: timed out");
+        Log.log(0, "AgentIndividualLearning::convGetAvatarList: Timed out");
         return 0; // end conversation
     }
 
@@ -1464,7 +1423,7 @@ bool AgentIndividualLearning::convGetAvatarList(void *vpConv) {
         }
 
         count = lds.unpackInt32();
-        Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::convGetAvatarList: recieved %d avatars", count);
+        Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::convGetAvatarList: Notified of %d avatars", count);
 
         UUID thread;
         UUID avatarId;
@@ -1489,7 +1448,6 @@ bool AgentIndividualLearning::convGetAvatarList(void *vpConv) {
                 this->otherAvatars[avatarId].ready = false;
                 this->otherAvatars[avatarId].start.time = 0;
                 this->otherAvatars[avatarId].retired = 0;
-                //this->otherAvatarsLocUpdateId[avatarId] = -1;
             }
 
             // request avatar info
@@ -1515,12 +1473,17 @@ bool AgentIndividualLearning::convGetAvatarList(void *vpConv) {
     return 0;
 }
 
+/* convGetAvatarInfo
+*
+* Callback for the request to the DDB for avatar info. When the avatar is the owner of this
+* agent their info is added to avatar, otherwise it is added to otherAvatars.
+*/
 bool AgentIndividualLearning::convGetAvatarInfo(void *vpConv) {
     DataStream lds;
     spConversation conv = (spConversation)vpConv;
 
     if (conv->response == NULL) { // timed out
-        Log.log(0, "AgentIndividualLearning::convGetAvatarInfo: timed out");
+        Log.log(0, "AgentIndividualLearning::convGetAvatarInfo: Timed out");
         return 0; // end conversation
     }
 
@@ -1551,7 +1514,7 @@ bool AgentIndividualLearning::convGetAvatarInfo(void *vpConv) {
             endTime = *(_timeb *)lds.unpackData(sizeof(_timeb));
         lds.unlock();
 
-        Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::convGetAvatarInfo: recieved avatar (%s) pf id: %s",
+        Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::convGetAvatarInfo: Recieved avatar (%s) pf id: %s",
                 Log.formatUUID(LOG_LEVEL_VERBOSE, &avatarId), Log.formatUUID(LOG_LEVEL_VERBOSE, &pfId));
 
         if (avatarId == this->avatarId) {
@@ -1587,10 +1550,15 @@ bool AgentIndividualLearning::convGetAvatarInfo(void *vpConv) {
     return 0;
 }
 
-bool AgentIndividualLearning::convGetLandmarkList(void * vpConv)
-{
-	Log.log(0, "AgentIndividualLearning::convGetLandmarkList");
-
+/* convGetLandmarkList
+*
+* Callback for being a landmark watcher. Called from ddbNotification when the event is 
+* DDBE_WATCH_TYPE and the type DDB_LANDMARK.
+*
+* Loops through all known landmarks, and adds the landmark to either obstacleList or 
+* targetList, depending if it is collectable or not.
+*/
+bool AgentIndividualLearning::convGetLandmarkList(void * vpConv) {
 	DataStream lds;
 	spConversation conv = (spConversation)vpConv;
 
@@ -1612,7 +1580,7 @@ bool AgentIndividualLearning::convGetLandmarkList(void * vpConv)
 		}
 
 		count = lds.unpackInt32();
-		Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::convGetLandmarkList: recieved %d landmarks", count);
+		Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::convGetLandmarkList: Notified of %d landmarks", count);
 
 		UUID landmarkId;
 		DDBLandmark landmark;
@@ -1626,19 +1594,23 @@ bool AgentIndividualLearning::convGetLandmarkList(void * vpConv)
 				this->obstacleList[landmark.code] = landmark;
 			}
 			else {
-				//This is a target
+				// This is a target
 				this->targetList[landmark.code] = landmark;
 			}
 		}
-		lds.unlock();
+		Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::convGetLandmarkList: %d Non-Collectable, %d Collectable.", this->obstacleList.size(), this->targetList.size());
 	}
-	else {
-		lds.unlock();
-	}
+	lds.unlock();
 
 	return 0;
 }
 
+/* convRequestAvatarLoc
+*
+* Callback for updateing the avatars position. For this avatar it updates the class 
+* property avatar, and the previous positions in STATE(AgentIndividualLearning). For
+* all other avaters their info is saved in otherAvatars.
+*/
 bool AgentIndividualLearning::convRequestAvatarLoc(void *vpConv) {
     spConversation conv = (spConversation)vpConv;
     DataStream lds;
@@ -1711,6 +1683,11 @@ bool AgentIndividualLearning::convRequestAvatarLoc(void *vpConv) {
     return 0;
 }
 
+/* convLandmarkInfo
+*
+* Callback for landmark info update from the DDB. Simply adds the landmark to either
+* obstacleList or targetList, depending on its type.
+*/
 bool AgentIndividualLearning::convLandmarkInfo(void *vpConv) {
 
     DataStream lds;
@@ -1727,27 +1704,18 @@ bool AgentIndividualLearning::convLandmarkInfo(void *vpConv) {
 
     response = lds.unpackChar();
     if (response == DDBR_OK) { // succeeded
-
         DDBLandmark newLandmark = *(DDBLandmark *)lds.unpackData(sizeof(DDBLandmark));
-
-
-//		Log.log(0, "AgentIndividualLearning::convLandmarkInfo: landmark code %d, owner %s, x: %f, y: %f, type %d", newLandmark.code, Log.formatUUID(0, &newLandmark.owner), newLandmark.x, newLandmark.y, newLandmark.landmarkType);
-
         lds.unlock();
 
-        //Add or update to landmark list
-
-
-		if (newLandmark.landmarkType == NON_COLLECTABLE) {			//Obstacle, cannot be collected
+		if (newLandmark.landmarkType == NON_COLLECTABLE) {			
+			// Obstacle, cannot be collected
 			this->obstacleList[newLandmark.code] = newLandmark;
-			Log.log(0, "AgentIndividualLearning::convLandmarkInfo: Adding obstacle");
+			Log.log(0, "AgentIndividualLearning::convLandmarkInfo: Updating obstacle");
 		} else {
+			// Target
 			this->targetList[newLandmark.code] = newLandmark;
-			Log.log(0, "AgentIndividualLearning::convLandmarkInfo: Adding landmark");
+			Log.log(0, "AgentIndividualLearning::convLandmarkInfo: Updating target");
 		}
-
-
-        //this->backup();
     }
     else {
         lds.unlock();
@@ -1756,13 +1724,18 @@ bool AgentIndividualLearning::convLandmarkInfo(void *vpConv) {
     return 0;
 }
 
-bool AgentIndividualLearning::convOwnLandmarkInfo(void *vpConv) {
+/* convGetTargetInfo
+*
+* Callback for landmark info ONLY when the landmark is the assigned target. The new target data
+* is set, and the previous target position is updated.
+*/
+bool AgentIndividualLearning::convGetTargetInfo(void *vpConv) {
     DataStream lds;
     spConversation conv = (spConversation)vpConv;
     char response;
 
     if (conv->response == NULL) {
-        Log.log(0, "AgentIndividualLearning::convOwnLandmarkInfo: request timed out");
+        Log.log(0, "AgentIndividualLearning::convGetTargetInfo: request timed out");
         return 0; // end conversation
     }
 
@@ -1772,19 +1745,22 @@ bool AgentIndividualLearning::convOwnLandmarkInfo(void *vpConv) {
     response = lds.unpackChar();
     if (response == DDBR_OK) { // succeeded
 
-        // Save the old position
-        STATE(AgentIndividualLearning)->prev_target_x = this->landmark.x;
-        STATE(AgentIndividualLearning)->prev_target_y = this->landmark.y;
-
-        this->landmark = *(DDBLandmark *)lds.unpackData(sizeof(DDBLandmark));
-//		Log.log(0, "AgentIndividualLearning::convOwnLandmarkInfo: own landmark updated");
-//		Log.log(0, "AgentIndividualLearning::convOwnLandmarkInfo: landmark code %d, owner %s, x: %f, y: %f, type %d", landmark.code, Log.formatUUID(0, &landmark.owner), landmark.x, landmark.y, landmark.landmarkType);
-
-        lds.unlock();
-
-        this->targetList[landmark.code] = landmark;
-
-//		this->backup();
+		// Save the new target, and update the previous one
+		if (this->target.owner == nilUUID) {
+			// There was no previous target, so set it to the new one
+			this->target = *(DDBLandmark *)lds.unpackData(sizeof(DDBLandmark));
+			STATE(AgentIndividualLearning)->prev_target_x = this->target.x;
+			STATE(AgentIndividualLearning)->prev_target_y = this->target.y;
+		}
+		else {
+			// There is a previous target to update
+			STATE(AgentIndividualLearning)->prev_target_x = this->target.x;
+			STATE(AgentIndividualLearning)->prev_target_y = this->target.y;
+			this->target = *(DDBLandmark *)lds.unpackData(sizeof(DDBLandmark));
+		}
+		lds.unlock();
+		
+        this->targetList[target.code] = target;
     }
     else {
         lds.unlock();
@@ -1793,6 +1769,12 @@ bool AgentIndividualLearning::convOwnLandmarkInfo(void *vpConv) {
     return 0;
 }
 
+/* convMissionRegion
+*
+* Callback for getting mission region info at the start of a new run. Data is
+* saved in STATE(AgentIndividualLearning). Responsible for calling finishConfigureParameters,
+* but only when AgentAdviceExchange has already been spawned.
+*/
 bool AgentIndividualLearning::convMissionRegion(void *vpConv) {
     spConversation conv = (spConversation)vpConv;
 
@@ -1824,8 +1806,15 @@ bool AgentIndividualLearning::convMissionRegion(void *vpConv) {
     return 0;
 }
 
-bool AgentIndividualLearning::convGetTaskInfo(void * vpConv)
-{
+/* convGetTaskInfo
+*
+* Callback for when a DDB_TASK event occurs in ddbNotification.
+*
+* Loops through all known landmarks checking for the one assigned to this avatar.
+* Once found the AgentIndividualLearning properties task, and taskId are 
+* filled. Then, request the position information for the target.
+*/
+bool AgentIndividualLearning::convGetTaskInfo(void * vpConv) {
     DataStream lds;
     spConversation conv = (spConversation)vpConv;
 
@@ -1843,46 +1832,41 @@ bool AgentIndividualLearning::convGetTaskInfo(void * vpConv)
             return 0; // what happened here?
         }
 
-        UUID taskId;
-        lds.unpackUUID(&taskId);
-
+        UUID taskIdIn;
+        lds.unpackUUID(&taskIdIn);
         DDBTask newTask = *(DDBTask *)lds.unpackData(sizeof(DDBTask));
 
-        if (newTask.avatar == STATE(AgentIndividualLearning)->ownerId) {	//The task is assigned to this avatar
-            if (taskId != this->taskId) {	//Only need new info if the task has changed
+		// Make sure the task is assigned to this avatar
+        if (newTask.avatar == STATE(AgentIndividualLearning)->ownerId) {	
+			//Only need new info if the task has changed
+            if (taskIdIn != this->taskId) {	
 
-                DataStream sds;
-                if (this->hasCargo) { //Drop the cargo if we get a new task assigned
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Received new task assignment: %s.", Log.formatUUID(0, &taskIdIn));
+
+				// Drop the cargo if we get a new task assigned
+                if (this->hasCargo) { 
                     lds.reset();
-                    lds.packUChar(this->landmark.code);
+                    lds.packUChar(this->target.code);
                     this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_DEPOSIT_LANDMARK), lds.stream(), lds.length(), &this->avatarAgentId); // drop off
                     lds.unlock();
-
                 }
 
-                //Log.log(0, "AgentIndividualLearning::convGetTaskInfo: Old task: %s, new task %s", Log.formatUUID(0,&this->taskId), Log.formatUUID(0, &taskId) );
-                //Log.log(0, "AgentIndividualLearning::convGetTaskInfo: New task assigned, getting info...");
-                //Log.log(0, "AgentIndividualLearning::convGetTaskInfo: task assigned DERP!");
+				// Save the new task data
                 this->task = newTask;
-                this->taskId = taskId;
-                this->landmarkId = newTask.landmarkUUID;
+                this->taskId = taskIdIn;
 
-
-                UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convOwnLandmarkInfo, DDB_REQUEST_TIMEOUT, &landmarkId, sizeof(UUID));
-                sds.reset();
-                sds.packUUID(&landmarkId);
+				// Get position information for this target
+                UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convGetTargetInfo, DDB_REQUEST_TIMEOUT, &this->task.landmarkUUID, sizeof(UUID));
+				DataStream sds;
+				sds.reset();
+                sds.packUUID(&this->task.landmarkUUID);
                 sds.packUUID(&thread);
 				sds.packBool(false);
                 this->sendMessage(this->hostCon, MSG_DDB_RLANDMARK, sds.stream(), sds.length());
                 sds.unlock();
-
             }
-
         }
-
         lds.unlock();
-//		Log.log(0, "AgentIndividualLearning::convGetTaskInfo: 1 updated task with uuid %s, responsible avatar %s and responsible agent %s", Log.formatUUID(LOG_LEVEL_NORMAL, &taskId), Log.formatUUID(LOG_LEVEL_NORMAL, &newTask.avatar), Log.formatUUID(LOG_LEVEL_NORMAL, &newTask.agentUUID));
-
     }
     else {
         lds.unlock();
@@ -1891,6 +1875,14 @@ bool AgentIndividualLearning::convGetTaskInfo(void * vpConv)
     return 0;
 }
 
+/* convGetTaskList
+*
+* Callback for being a task watcher. Called from ddbNotification when the event is
+* DDBE_WATCH_TYPE and the type DDB_TASK.
+*
+* Loops through all known tasks, and if the task is assigned to this avatar, then
+* the position information for that target is requested.
+*/
 bool AgentIndividualLearning::convGetTaskList(void * vpConv)
 {
     DataStream lds;
@@ -1914,34 +1906,33 @@ bool AgentIndividualLearning::convGetTaskList(void * vpConv)
         }
 
         count = lds.unpackInt32();
-        Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning: received %d tasks", count);
+        Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::convGetTaskList: Notified of %d tasks", count);
 
-        UUID taskId;
+        UUID taskIdIn;
         DDBTask newTask;
 
         for (i = 0; i < count; i++) {
-            lds.unpackUUID(&taskId);
+            lds.unpackUUID(&taskIdIn);
             newTask = *(DDBTask *)lds.unpackData(sizeof(DDBTask));
-            Log.log(0, "AgentIndividualLearning::convGetTaskList: got task with uuid %s", Log.formatUUID(LOG_LEVEL_NORMAL, &taskId));
-            Log.log(0, "AgentIndividualLearning::convGetTaskList: task contents: landmark UUID: %s,agent UUID: %s, avatar UUID: %s, completed: %s, ITEM_TYPES: %d", Log.formatUUID(LOG_LEVEL_NORMAL, &newTask.landmarkUUID), Log.formatUUID(LOG_LEVEL_NORMAL, &newTask.agentUUID), Log.formatUUID(LOG_LEVEL_NORMAL, &newTask.avatar), newTask.completed ? "true" : "false", newTask.type);
+            //Log.log(0, "AgentIndividualLearning::convGetTaskList: Received task with uuid %s", Log.formatUUID(LOG_LEVEL_NORMAL, &taskIdIn));
+            //Log.log(0, "AgentIndividualLearning::convGetTaskList: Task contents: landmark UUID: %s, agent UUID: %s, avatar UUID: %s, completed: %s, ITEM_TYPES: %d", Log.formatUUID(LOG_LEVEL_NORMAL, &newTask.landmarkUUID), Log.formatUUID(LOG_LEVEL_NORMAL, &newTask.agentUUID), Log.formatUUID(LOG_LEVEL_NORMAL, &newTask.avatar), newTask.completed ? "true" : "false", newTask.type);
 
-            if (newTask.avatar == this->avatarId){//   this->taskId) {
-                //Log.log(0, "AgentIndividualLearning::convGetTaskList: task %s assigned. DERP!", Log.formatUUID(LOG_LEVEL_NORMAL, &taskId));
-
-                this->taskId == taskId;
-                //if (taskId == this->taskId) {
+            if (newTask.avatar == this->avatarId){
+                Log.log(0, "AgentIndividualLearning::convGetTaskList: task %s is assigned to this avatar.", Log.formatUUID(LOG_LEVEL_NORMAL, &taskIdIn));
+				
+				// Save the task data
+                this->taskId == taskIdIn;
                 this->task = newTask;
-                this->landmarkId = newTask.landmarkUUID;
-                DataStream sds;
 
-                UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convOwnLandmarkInfo, DDB_REQUEST_TIMEOUT, &landmarkId, sizeof(UUID));
-                sds.reset();
-                sds.packUUID(&landmarkId);
+				// Get position information for this target
+                UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convGetTargetInfo, DDB_REQUEST_TIMEOUT, &this->task.landmarkUUID, sizeof(UUID));
+				DataStream sds;
+				sds.reset();
+                sds.packUUID(&this->task.landmarkUUID);
                 sds.packUUID(&thread);
 				sds.packBool(false);
                 this->sendMessage(this->hostCon, MSG_DDB_RLANDMARK, sds.stream(), sds.length());
                 sds.unlock();
-
             }
         }
         lds.unlock();
@@ -1952,15 +1943,17 @@ bool AgentIndividualLearning::convGetTaskList(void * vpConv)
     }
 
 
-
     return 0;
 }
 
-bool AgentIndividualLearning::convCollectLandmark(void * vpConv)
-{
+/* convCollectLandmark
+*
+* Callback for attempting to collect a landmark. Called from fromAction when the action 
+* is INTERACT. Responsible for setting the hasCargo flag (only when the collection is a success).
+*/
+bool AgentIndividualLearning::convCollectLandmark(void * vpConv) {
 
     //TODO: Do we need to add any logic to handle -actually- collecting the landmark, or is that handled in the simulation?
-
 
     DataStream lds;
     spConversation conv = (spConversation)vpConv;
@@ -1983,11 +1976,17 @@ bool AgentIndividualLearning::convCollectLandmark(void * vpConv)
         this->backup(); // landmarkCollected
     }
     else {
-        Log.log(0, "SupervisorForage::convCollectLandmark: failed");
+        Log.log(0, "AgentIndividualLearning::convCollectLandmark: failed");
     }
 
 }
 
+/* convRequestAgentAdviceExchange
+*
+* Callback for the request to spawn AgentAdviceExchange. Responsible for calling
+* finishConfigureParameters, but only when the mission region info has already been
+* received.
+*/
 bool AgentIndividualLearning::convRequestAgentAdviceExchange(void *vpConv) {
 	DataStream lds;
 	spConversation conv = (spConversation)vpConv;
@@ -2032,22 +2031,28 @@ bool AgentIndividualLearning::convRequestAgentAdviceExchange(void *vpConv) {
 
 		if (STATE(AgentIndividualLearning)->missionRegionReceived && STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned)
 			this->finishConfigureParameters();
-
 	}
 	else {
 		lds.unlock();
-
 		// TODO try again?
 	}
 
 	return 0;
 }
 
+/* convRequestAdvice
+*
+* Callback for request to AgentAdviceExchange for advice.
+*
+* Unpacks the advised quality values, then calls the formAction method.
+* When the request times out it proceeds to formAction without the quality
+* values being overwritten by the advice.
+*/
 bool AgentIndividualLearning::convRequestAdvice(void *vpConv) {
 	spConversation conv = (spConversation)vpConv;
 
 	if (conv->response == NULL) {
-		Log.log(0, "AgentIndividualLearning::convGetAdvice: request timed out");
+		Log.log(0, "AgentIndividualLearning::convRequestAdvice: request timed out");
 		this->formAction(); // Continue without advice
 		return 0; // end conversation
 	}
@@ -2066,7 +2071,7 @@ bool AgentIndividualLearning::convRequestAdvice(void *vpConv) {
 	}
 	this->ds.unlock();
 
-	Log.log(0, "AgentIndividualLearning::convGetAdvice: Received advice.");
+	Log.log(0, "AgentIndividualLearning::convRequestAdvice: Received advice.");
 
 	// Proceed to form the next action
 	this->formAction();
