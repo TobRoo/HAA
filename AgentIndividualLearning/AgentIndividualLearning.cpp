@@ -175,7 +175,7 @@ int AgentIndividualLearning::configure() {
         Log.setLogMode(LOG_MODE_COUT);
         Log.setLogMode(LOG_MODE_FILE, logName);
         Log.setLogLevel(LOG_LEVEL_VERBOSE);
-        Log.log(0, "AgentIndividualLearning %.2d.%.2d.%.5d.%.2d", AgentIndividualLearning_MAJOR, AgentIndividualLearning_MINOR, AgentIndividualLearning_BUILDNO, AgentIndividualLearning_EXTEND);
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning %.2d.%.2d.%.5d.%.2d", AgentIndividualLearning_MAJOR, AgentIndividualLearning_MINOR, AgentIndividualLearning_BUILDNO, AgentIndividualLearning_EXTEND);
     }// end if
 
     if (AgentBase::configure()) {
@@ -269,7 +269,7 @@ int AgentIndividualLearning::start(char *missionFile) {
     STATE(AgentBase)->started = false;
 
     // register as avatar watcher
-    Log.log(0, "AgentIndividualLearning::start: registering as avatar watcher");
+    Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::start: registering as avatar watcher");
     lds.reset();
     lds.packUUID(&STATE(AgentBase)->uuid);
     lds.packInt32(DDB_AVATAR);
@@ -293,7 +293,7 @@ int AgentIndividualLearning::start(char *missionFile) {
 
 
 
-    Log.log(0, "AgentIndividualLearning::start: Preparing for first action");
+    Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::start: Preparing for first action");
     this->updateStateData();
 
     STATE(AgentBase)->started = true;
@@ -318,7 +318,6 @@ int AgentIndividualLearning::stop() {
 // Step
 
 int AgentIndividualLearning::step() {
-    //Log.log(0, "AgentIndividualLearning::step()");
     if (STATE(AgentBase)->stopFlag) {
         uploadLearningData();	//Stores individual learningdata in DDB for next simulation run
     }
@@ -333,7 +332,7 @@ int AgentIndividualLearning::step() {
 int AgentIndividualLearning::updateStateData() {
     // Only update if avatar is ready
     if (!this->avatar.ready) {
-        Log.log(0, "AgentIndividualLearning::getStateData: Avatar not ready, sending wait action");
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateData: Avatar not ready, sending wait action");
         ActionPair action;
         action.action = AvatarBase_Defs::AA_WAIT;
         this->sendAction(action);
@@ -421,27 +420,27 @@ int AgentIndividualLearning::formAction() {
 
 	// Form action
 	if (action == MOVE_FORWARD) {
-		Log.log(0, "AgentIndividualLearning::formAction: Selected action MOVE_FORWARD");
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action MOVE_FORWARD");
 		STATE(AgentIndividualLearning)->action.action = MOVE_FORWARD; //	AvatarBase_Defs::AA_MOVE;
 		STATE(AgentIndividualLearning)->action.val = STATE(AgentIndividualLearning)->maxLinear;
 	}
 	else if (action == MOVE_BACKWARD) {
-		Log.log(0, "AgentIndividualLearning::formAction: Selected action MOVE_BACKWARD");
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action MOVE_BACKWARD");
 		STATE(AgentIndividualLearning)->action.action = MOVE_BACKWARD; //AvatarBase_Defs::AA_MOVE;
 		STATE(AgentIndividualLearning)->action.val = STATE(AgentIndividualLearning)->maxLinear*this->backupFractionalSpeed;
 	}
 	else if (action == ROTATE_LEFT) {
-		Log.log(0, "AgentIndividualLearning::formAction: Selected action ROTATE_LEFT");
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action ROTATE_LEFT");
 		STATE(AgentIndividualLearning)->action.action = ROTATE_LEFT; // AvatarBase_Defs::AA_ROTATE;
 		STATE(AgentIndividualLearning)->action.val = STATE(AgentIndividualLearning)->maxRotation;
 	}
 	else if (action == ROTATE_RIGHT) {
-		Log.log(0, "AgentIndividualLearning::formAction: Selected action ROTATE_RIGHT");
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action ROTATE_RIGHT");
 		STATE(AgentIndividualLearning)->action.action = ROTATE_RIGHT;// AvatarBase_Defs::AA_ROTATE;
 		STATE(AgentIndividualLearning)->action.val = -STATE(AgentIndividualLearning)->maxRotation;
 	}
 	else if (action == INTERACT) {
-		Log.log(0, "AgentIndividualLearning::formAction: Selected action INTERACT");
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action INTERACT");
 		// TODO: Add interact capabilities
 		//If we have no cargo, pick up - first check if we can carry it (strength, capacity)
 		//If we have cargo, drop it
@@ -458,7 +457,7 @@ int AgentIndividualLearning::formAction() {
 			dy = STATE(AgentIndividualLearning)->prev_pos_y - this->target.y;
 
 			if (dx*dx + dy*dy < COLLECTION_THRESHOLD*COLLECTION_THRESHOLD) { // should be close enough
-				Log.log(0, "AgentIndividualLearning::formAction: collecting landmark at %f %f", this->target.x, this->target.y);
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: collecting landmark at %f %f", this->target.x, this->target.y);
 				thread = this->conversationInitiate(AgentIndividualLearning_CBR_convCollectLandmark, -1, &avAgent, sizeof(UUID));
 				if (thread == nilUUID) {
 					return 1;
@@ -497,7 +496,7 @@ int AgentIndividualLearning::formAction() {
 					//Upload task completion info to DDB
 					DataStream lds;
 					UUID *myUUID = this->getUUID();
-					Log.log(0, "AgentIndividualLearning::formAction: task %s completed, uploading to DDB...", Log.formatUUID(LOG_LEVEL_NORMAL, &this->taskId));
+					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: task %s completed, uploading to DDB...", Log.formatUUID(LOG_LEVEL_NORMAL, &this->taskId));
 					lds.reset();
 					lds.packUUID(&this->taskId);		//Task id
 					lds.packUUID(&this->task.agentUUID);						//Agent id
@@ -513,8 +512,10 @@ int AgentIndividualLearning::formAction() {
 		STATE(AgentIndividualLearning)->action.val = 0.0;
 	}
 	else {
-		Log.log(0, "AgentIndividualLearning::formAction: No matching action, %d", action);
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: No matching action, %d", action);
 	}// end form action if
+
+	Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::formAction: Averag action quality: %.3f", this->q_avg);
 
 	 // When the action is not valid retain the type, but zero the movement value
 	 // (so that it can still be used for learning)
@@ -537,7 +538,7 @@ int AgentIndividualLearning::learn() {
     // TODO: Adjust learning frequency based on experience
     if ((this->learning_iterations_ % this->learning_frequency_ == 0) && (STATE(AgentIndividualLearning)->action.action > 0)) {
         float reward = this->determineReward();
-        Log.log(0, "AgentIndividualLearning::learn: Reward: %f", reward);
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::learn: Reward: %f", reward);
 
         this->q_learning_.learn(this->prevStateVector, this->stateVector, STATE(AgentIndividualLearning)->action.action, reward);
         this->learning_iterations_++;
@@ -726,8 +727,8 @@ int AgentIndividualLearning::getStateVector() {
     // Check that state vector is valid
     for(int i = 0; i < this->num_state_vrbls_; i++) {
         if (state_vector[i] > this->state_resolution_[i]) {
-            Log.log(0, "AgentIndividualLearning::getStateVector: Error, invalid state vector. Reducing to max allowable value");
-            Log.log(0, "AgentIndividualLearning::getStateVector: Element: %d, Current value: %d, Max Allowable value: %d\n", i, state_vector[i], this->state_resolution_[i]);
+            Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateVector: Error, invalid state vector. Reducing to max allowable value");
+            Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateVector: Element: %d, Current value: %d, Max Allowable value: %d\n", i, state_vector[i], this->state_resolution_[i]);
 
             state_vector[i] = this->state_resolution_[i];
         }
@@ -766,7 +767,7 @@ int AgentIndividualLearning::policy(std::vector<float> &quality) {
     if (quality_sum == 0.0f) {
         random_actions_++;
         int action = (int)ceil(randomGenerator.Uniform01() * num_actions_);
-        Log.log(0, "AgentIndividualLearning::policy: All zero quality, selecting a random action");
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::policy: All zero quality, selecting a random action");
         return action;
     }
     else {
@@ -914,14 +915,14 @@ bool AgentIndividualLearning::validAction(ActionPair &action) {
     // Check X world boundaries
     if ((new_pos_x - this->avatar.outerRadius) < STATE(AgentIndividualLearning)->missionRegion.x ||
         new_pos_x + this->avatar.outerRadius > (STATE(AgentIndividualLearning)->missionRegion.x + STATE(AgentIndividualLearning)->missionRegion.w)) {
-        Log.log(0, "AgentIndividualLearning::validAction: Invalid action (world X boundary)");
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Invalid action (world X boundary)");
         return false;
     }
 
     // Check Y world boundaries
     if ((new_pos_y - this->avatar.outerRadius) < STATE(AgentIndividualLearning)->missionRegion.y ||
         new_pos_y + this->avatar.outerRadius > (STATE(AgentIndividualLearning)->missionRegion.y + STATE(AgentIndividualLearning)->missionRegion.h)) {
-        Log.log(0, "AgentIndividualLearning::validAction: Invalid action (world Y boundary)");
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Invalid action (world Y boundary)");
         return false;
     }
 
@@ -943,14 +944,14 @@ bool AgentIndividualLearning::validAction(ActionPair &action) {
 
         if (abs(new_pos_y - avatarIter->second.y) < (this->avatar.outerRadius + avatarIter->second.outerRadius) &&
             abs(new_pos_x - avatarIter->second.x) < (this->avatar.outerRadius + avatarIter->second.outerRadius)) {
-            Log.log(0, "AgentIndividualLearning::validAction: Invalid action (avatar collision)");
+            Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Invalid action (avatar collision)");
             return false;
         }
     }
 
 
     // Check against obstacles
-	Log.log(0, "AgentIndividualLearning::validAction: Checking obstacles (%d obstacles found)", this->obstacleList.size());
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Checking obstacles (%d obstacles found)", this->obstacleList.size());
     for (auto& obstIter : this->obstacleList) {				//Get distance to closest obstacle
 
         float rel_obst_x_high = obstIter.second.x + 0.5f;	//Magic number for now, TODO: Define obstacle width and height in a header file (autonomic.h?)
@@ -966,7 +967,7 @@ bool AgentIndividualLearning::validAction(ActionPair &action) {
 		float obst_y_low_diff = rel_obst_y_low - (new_pos_y + this->avatar.outerRadius);
         
 		if ((obst_x_high_diff < 0) && (obst_x_low_diff < 0) && (obst_y_high_diff < 0) && (obst_y_low_diff < 0)) {
-            Log.log(0, "AgentIndividualLearning::validAction: Invalid action (obstacle boundary)");
+            Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Invalid action (obstacle boundary)");
             return false;
         }
     }
@@ -983,7 +984,7 @@ bool AgentIndividualLearning::validAction(ActionPair &action) {
 */
 int AgentIndividualLearning::requestAdvice(std::vector<float> &q_vals, std::vector<unsigned int> &state_vector) {
 
-	Log.log(0, "AgentIndividualLearning::getAdvice: Sending request for advice");
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getAdvice: Sending request for advice");
 
 	// Start the conversation
 	STATE(AgentIndividualLearning)->adviceRequestConv = this->conversationInitiate(AgentIndividualLearning_CBR_convRequestAdvice, DDB_REQUEST_TIMEOUT);
@@ -1021,9 +1022,9 @@ int AgentIndividualLearning::requestAdvice(std::vector<float> &q_vals, std::vect
 */
 int AgentIndividualLearning::spawnAgentAdviceExchange() {
 	UUID thread;
-	Log.log(0, "AgentIndividualLearning::spawnAgentAdviceExchange: requesting advice exchange agent...");
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::spawnAgentAdviceExchange: requesting advice exchange agent...");
 	if (!STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned) {
-		Log.log(0, "AgentIndividualLearning::spawnAgentAdviceExchange: agent not yet spawned, requesting...");
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::spawnAgentAdviceExchange: agent not yet spawned, requesting...");
 		UUID aAgentAdviceExchangeuuid;
 		UuidFromString((RPC_WSTR)_T(AgentAdviceExchange_UUID), &aAgentAdviceExchangeuuid);
 		thread = this->conversationInitiate(AgentIndividualLearning_CBR_convRequestAgentAdviceExchange, REQUESTAGENTSPAWN_TIMEOUT, &aAgentAdviceExchangeuuid, sizeof(UUID));
@@ -1126,7 +1127,7 @@ int AgentIndividualLearning::sendAction(ActionPair action) {
             break;
 
         default:
-            Log.log(0, "AgentIndividualLearning::sendAction: Unknown action, cannot send.");
+            Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::sendAction: Unknown action, cannot send.");
             break;
     }
     lds.packFloat32(action.val);
@@ -1356,7 +1357,7 @@ bool AgentIndividualLearning::convAction(void *vpConv) {
     UUID thread;
 
     if (conv->response == NULL) {
-        Log.log(0, "AgentIndividualLearning::convAction: Request timed out");
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convAction: Request timed out");
         return 0; // end conversation
     }
 
@@ -1369,17 +1370,17 @@ bool AgentIndividualLearning::convAction(void *vpConv) {
     this->ds.unlock();
 
     if (result == AAR_SUCCESS) {
-        Log.log(0, "AgentIndividualLearning::convAction: Action successful, getting new action");
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convAction: Action successful, getting new action");
 
         // Begin getting new action
         this->updateStateData();
     }
     else {
         if (result == AAR_CANCELLED) {
-            Log.log(0, "AgentIndividualLearning::convAction: Action canceled, reason %d. Resending previous action", reason);
+            Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convAction: Action canceled, reason %d. Resending previous action", reason);
         }
         else if (result == AAR_ABORTED) {
-            Log.log(0, "AgentIndividualLearning::convAction: Action aborted, reason %d. Resending previous action", reason);
+            Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convAction: Action aborted, reason %d. Resending previous action", reason);
         }
 
         // Resend the action
@@ -1406,7 +1407,7 @@ bool AgentIndividualLearning::convGetAvatarList(void *vpConv) {
     spConversation conv = (spConversation)vpConv;
 
     if (conv->response == NULL) { // timed out
-        Log.log(0, "AgentIndividualLearning::convGetAvatarList: Timed out");
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetAvatarList: Timed out");
         return 0; // end conversation
     }
 
@@ -1483,7 +1484,7 @@ bool AgentIndividualLearning::convGetAvatarInfo(void *vpConv) {
     spConversation conv = (spConversation)vpConv;
 
     if (conv->response == NULL) { // timed out
-        Log.log(0, "AgentIndividualLearning::convGetAvatarInfo: Timed out");
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetAvatarInfo: Timed out");
         return 0; // end conversation
     }
 
@@ -1563,7 +1564,7 @@ bool AgentIndividualLearning::convGetLandmarkList(void * vpConv) {
 	spConversation conv = (spConversation)vpConv;
 
 	if (conv->response == NULL) { // timed out
-		Log.log(0, "AgentIndividualLearning::convGetLandmarkList: timed out");
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetLandmarkList: timed out");
 		return 0; // end conversation
 	}
 
@@ -1629,7 +1630,7 @@ bool AgentIndividualLearning::convRequestAvatarLoc(void *vpConv) {
         return 0; // ignore
 
     if (conv->response == NULL) {
-        Log.log(0, "AgentIndividualLearning::convRequestAvatarLoc: request timed out");
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAvatarLoc: request timed out");
         return 0; // end conversation
     }
 
@@ -1677,7 +1678,7 @@ bool AgentIndividualLearning::convRequestAvatarLoc(void *vpConv) {
     }
     else {
         lds.unlock();
-        Log.log(0, "AgentIndividualLearning::convRequestAvatarLoc: request failed %d", response);
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAvatarLoc: request failed %d", response);
     }
 
     return 0;
@@ -1695,7 +1696,7 @@ bool AgentIndividualLearning::convLandmarkInfo(void *vpConv) {
     char response;
 
     if (conv->response == NULL) {
-        Log.log(0, "AgentIndividualLearning::convLandmarkInfo: request timed out");
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convLandmarkInfo: request timed out");
         return 0; // end conversation
     }
 
@@ -1710,11 +1711,11 @@ bool AgentIndividualLearning::convLandmarkInfo(void *vpConv) {
 		if (newLandmark.landmarkType == NON_COLLECTABLE) {			
 			// Obstacle, cannot be collected
 			this->obstacleList[newLandmark.code] = newLandmark;
-			Log.log(0, "AgentIndividualLearning::convLandmarkInfo: Updating obstacle");
+			Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::convLandmarkInfo: Updating obstacle");
 		} else {
 			// Target
 			this->targetList[newLandmark.code] = newLandmark;
-			Log.log(0, "AgentIndividualLearning::convLandmarkInfo: Updating target");
+			Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::convLandmarkInfo: Updating target");
 		}
     }
     else {
@@ -1735,7 +1736,7 @@ bool AgentIndividualLearning::convGetTargetInfo(void *vpConv) {
     char response;
 
     if (conv->response == NULL) {
-        Log.log(0, "AgentIndividualLearning::convGetTargetInfo: request timed out");
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTargetInfo: request timed out");
         return 0; // end conversation
     }
 
@@ -1779,7 +1780,7 @@ bool AgentIndividualLearning::convMissionRegion(void *vpConv) {
     spConversation conv = (spConversation)vpConv;
 
     if (conv->response == NULL) {
-        Log.log(0, "AgentIndividualLearning::convMissionRegion: request timed out");
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convMissionRegion: request timed out");
         return 0; // end conversation
     }
 
@@ -1819,7 +1820,7 @@ bool AgentIndividualLearning::convGetTaskInfo(void * vpConv) {
     spConversation conv = (spConversation)vpConv;
 
     if (conv->response == NULL) { // timed out
-        Log.log(0, "AgentIndividualLearning::convGetTaskInfo: timed out");
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: timed out");
         return 0; // end conversation
     }
 
@@ -1889,7 +1890,7 @@ bool AgentIndividualLearning::convGetTaskList(void * vpConv)
     spConversation conv = (spConversation)vpConv;
 
     if (conv->response == NULL) { // timed out
-        Log.log(0, "AgentIndividualLearning::convGetTaskList: timed out");
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskList: timed out");
         return 0; // end conversation
     }
 
@@ -1914,11 +1915,9 @@ bool AgentIndividualLearning::convGetTaskList(void * vpConv)
         for (i = 0; i < count; i++) {
             lds.unpackUUID(&taskIdIn);
             newTask = *(DDBTask *)lds.unpackData(sizeof(DDBTask));
-            //Log.log(0, "AgentIndividualLearning::convGetTaskList: Received task with uuid %s", Log.formatUUID(LOG_LEVEL_NORMAL, &taskIdIn));
-            //Log.log(0, "AgentIndividualLearning::convGetTaskList: Task contents: landmark UUID: %s, agent UUID: %s, avatar UUID: %s, completed: %s, ITEM_TYPES: %d", Log.formatUUID(LOG_LEVEL_NORMAL, &newTask.landmarkUUID), Log.formatUUID(LOG_LEVEL_NORMAL, &newTask.agentUUID), Log.formatUUID(LOG_LEVEL_NORMAL, &newTask.avatar), newTask.completed ? "true" : "false", newTask.type);
 
             if (newTask.avatar == this->avatarId){
-                Log.log(0, "AgentIndividualLearning::convGetTaskList: task %s is assigned to this avatar.", Log.formatUUID(LOG_LEVEL_NORMAL, &taskIdIn));
+                Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskList: task %s is assigned to this avatar.", Log.formatUUID(LOG_LEVEL_NORMAL, &taskIdIn));
 				
 				// Save the task data
                 this->taskId == taskIdIn;
@@ -1960,7 +1959,7 @@ bool AgentIndividualLearning::convCollectLandmark(void * vpConv) {
     char success;
 
     if (conv->response == NULL) {
-        Log.log(0, "AgentIndividualLearning::convCollectLandmark: request timed out");
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convCollectLandmark: request timed out");
         return 0; // end conversation
     }
 
@@ -1971,12 +1970,12 @@ bool AgentIndividualLearning::convCollectLandmark(void * vpConv) {
     lds.unlock();
 
     if (success) { // succeeded
-        Log.log(0, "AgentIndividualLearning::convCollectLandmark: success");
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convCollectLandmark: success");
         this->hasCargo = true;
         this->backup(); // landmarkCollected
     }
     else {
-        Log.log(0, "AgentIndividualLearning::convCollectLandmark: failed");
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convCollectLandmark: failed");
     }
 
 }
@@ -1992,7 +1991,7 @@ bool AgentIndividualLearning::convRequestAgentAdviceExchange(void *vpConv) {
 	spConversation conv = (spConversation)vpConv;
 
 	if (conv->response == NULL) { // spawn timed out
-		Log.log(0, "AgentIndividualLearning::convRequestAgentAdviceExchange: request spawn timed out");
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAgentAdviceExchange: request spawn timed out");
 		return 0; // end conversation
 	}
 
@@ -2004,7 +2003,7 @@ bool AgentIndividualLearning::convRequestAgentAdviceExchange(void *vpConv) {
 		lds.unlock();
 		STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned = 1; // ready
 
-		Log.log(0, "AgentIndividualLearning::convRequestAgentAdviceExchange: Advice exchange agent %s", Log.formatUUID(0, &STATE(AgentIndividualLearning)->agentAdviceExchange));
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAgentAdviceExchange: Advice exchange agent %s", Log.formatUUID(0, &STATE(AgentIndividualLearning)->agentAdviceExchange));
 
 		// register as agent watcher
 		lds.reset();
@@ -2052,7 +2051,7 @@ bool AgentIndividualLearning::convRequestAdvice(void *vpConv) {
 	spConversation conv = (spConversation)vpConv;
 
 	if (conv->response == NULL) {
-		Log.log(0, "AgentIndividualLearning::convRequestAdvice: request timed out");
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAdvice: request timed out");
 		this->formAction(); // Continue without advice
 		return 0; // end conversation
 	}
@@ -2071,7 +2070,7 @@ bool AgentIndividualLearning::convRequestAdvice(void *vpConv) {
 	}
 	this->ds.unlock();
 
-	Log.log(0, "AgentIndividualLearning::convRequestAdvice: Received advice.");
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAdvice: Received advice.");
 
 	// Proceed to form the next action
 	this->formAction();

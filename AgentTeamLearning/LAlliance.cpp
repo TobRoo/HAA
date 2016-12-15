@@ -22,36 +22,10 @@
  */
 //---------------------------------------
 
-
 #include "stdafx.h"
 #include "LAlliance.h"
 #include "AgentTeamLearning.h"
 #include "AgentTeamLearningVersion.h"
-
-// Constructor
-//LAlliance::LAlliance(UUID *idIn) {
-//
-//    // Algorithm variables (TODO: Load these in from a config file)
-//    maxTaskTime = 500;
-//    motivFreq = 5;
-//    impatienceRateTheta = 1.0;
-//    stochasticUpdateTheta2 = 0.9;
-//    stochasticUpdateTheta3 = 1.0;
-//    stochasticUpdateTheta4 = 2.5;
-//
-//    // Initialize variables
-//   // id = idIn;
-//    myData.psi = 0;
-//    delta = maxTaskTime;    // Default to this
-//
-//	UuidCreateNil(&this->nilUUID);
-//	// uuid
-//
-//	if (*idIn == this->nilUUID)
-//		UuidCreate(&id);
-//	else
-//		id = *idIn;
-//}
 
 LAlliance::LAlliance(AgentTeamLearning *parentAgent) {
 
@@ -98,12 +72,9 @@ int LAlliance::addTask(UUID id) {
     myData.impatience.insert(std::pair<UUID, float>(id, 0));
     myData.attempts.insert(std::pair<UUID, int>(id, 0));
 
-    // Initialize tau as the max task time, since it converges quickly, and add
-    // noise since identical taus will cause problems in the impatience calculation
-    // TODO: Replace this with Boost Random generator in HAA?
-    float low = 0.9f*0.5f*maxTaskTime;
-    float high = 1.1f*0.5f*maxTaskTime;
-    myData.tau.insert(std::pair<UUID, int>(id, low + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(high - low)))));
+    // Initialize tau as the half the max task time, and draw from a distribution
+	// since identical taus will cause problems in the impatience calculation.
+	myData.tau.insert(std::pair<UUID, int>(id, parentAgent->randomGenerator.NormalDistribution(0.5f*maxTaskTime, 2)));
 
     return 0;
 }
@@ -157,12 +128,15 @@ int LAlliance::chooseTask(const taskList &tasks) {
         return 0;
     }
 
+	parentAgent->logWrapper(LOG_LEVEL_VERBOSE, "chooseTask: Choosing new task.");
+
     std::map<UUID, float, UUIDless> category1;
     std::map<UUID, float, UUIDless> category2;
 
     // Go through each incomplete task, and assign it to category 1 or 2
     // Category 1: This avatar is expected to be the best at this task
     // Category 2: Another avatar is expected to be the best at this task
+	int available_count = 1;
     std::map<UUID, TASK, UUIDless>::const_iterator taskIter;
     for (taskIter = tasks.begin(); taskIter != tasks.end(); taskIter++) {
 
@@ -183,7 +157,8 @@ int LAlliance::chooseTask(const taskList &tasks) {
         }
 
         if (available) {
-            parentAgent->logWrapper(" chooseTask: Available.");
+			available_count++;
+
             // Check each avatar
             bool fastest = true;
             bool mostMotivated = true;
@@ -199,7 +174,6 @@ int LAlliance::chooseTask(const taskList &tasks) {
                     // Check if another avatar is more motivated
                     if (avatarIter->second.motivation[taskIter->first] > myData.motivation[taskIter->first]) {
                         mostMotivated = false;
-                        parentAgent->logWrapper(" chooseTask: another is more motivated...");
                     }
 
                 }
@@ -218,6 +192,10 @@ int LAlliance::chooseTask(const taskList &tasks) {
         }
     }
 
+	char message[100];
+	sprintf(message, "chooseTask: %d tasks, %d available, %d category1, %d category2.",tasks.size(), available_count, category1.size(), category2.size());
+	parentAgent->logWrapper(LOG_LEVEL_VERBOSE, message);
+
     // Take the longest task from category 1, or if no tasks belong to category 1
     // take the shortest task from category 2
     UUID taskAssignment = this->nilUUID;
@@ -231,7 +209,6 @@ int LAlliance::chooseTask(const taskList &tasks) {
             if (cat1Iter->second > longestTime) {
                 longestTime = cat1Iter->second;
                 taskAssignment = cat1Iter->first;
-                parentAgent->logWrapper(" chooseTask: cat1...");
             }
         }
 
@@ -244,13 +221,19 @@ int LAlliance::chooseTask(const taskList &tasks) {
             if (cat2Iter->second < shortestTime) {
                 shortestTime = cat2Iter->second;
                 taskAssignment = cat2Iter->first;
-                parentAgent->logWrapper(" chooseTask:cat2...");
             }
         }
     }
 
+	if (taskAssignment == this->nilUUID) {
+		// No task was assigned
+		parentAgent->logWrapper(LOG_LEVEL_VERBOSE, "chooseTask: No task was assigned.");
+		return 0;
+	}
+
     // Assign the task
     myData.taskId = taskAssignment;
+	parentAgent->logWrapper(LOG_LEVEL_VERBOSE, "chooseTask: Task has been assigned.");
 
     if (taskAssignment != nilUUID) {
         //parentAgent->logWrapper(" chooseTask: We dont reach here...");
@@ -263,7 +246,6 @@ int LAlliance::chooseTask(const taskList &tasks) {
     myData.attempts[taskAssignment]++;
 
     if (taskAssignment != nilUUID && tasks.at(taskAssignment)->avatar != nilUUID) {
-        parentAgent->logWrapper(" chooseTask: requesting acquiescence...");
         // Another avatar was assigned, and they must acquiesce
         requestAcquiescence(tasks.at(taskAssignment)->agentUUID);	//Send directly to the team learning agent, not the avatar agent
     }
@@ -381,6 +363,8 @@ int LAlliance::acquiesce(UUID id) {
  */
 
 int LAlliance::updateTau() {
+	parentAgent->logWrapper(LOG_LEVEL_VERBOSE, "updateTau: Updating tau values.");
+
     // Useful values
     int n = myData.attempts[myData.taskId];
     unsigned int time_on_task = myData.psi;
@@ -410,6 +394,15 @@ int LAlliance::updateTau() {
     myData.mean[myData.taskId] = current_mean;
     myData.stddev[myData.taskId] = current_stddev;
 
+	// Log the update
+	char message[100];
+	sprintf(message, "updateTau: Old tau: %.2f, New tau: %.2f", prev_tau, current_tau);
+	parentAgent->logWrapper(LOG_LEVEL_VERBOSE, message);
+	sprintf(message, "updateTau: Old mean: %.2f, New mean: %.2f", prev_mean, current_mean);
+	parentAgent->logWrapper(LOG_LEVEL_VERBOSE, message);
+	sprintf(message, "updateTau: Old stddev: %.2f, New stddev: %.2f", prev_stddev, current_stddev);
+	parentAgent->logWrapper(LOG_LEVEL_VERBOSE, message);
+
     return 0;
 }
 
@@ -421,22 +414,7 @@ int LAlliance::updateTau() {
  */
 
 int LAlliance::requestAcquiescence(UUID agentId) {
-
     parentAgent->sendRequest(&agentId, AgentTeamLearning_MSGS::MSG_REQUEST_ACQUIESCENCE, &nilUUID);
-
-
-    //DataStream lds;
-
-    //UUID thread = parentAgent->conversationInitiate(AgentTeamLearning::AgentTeamLearning_CBR_convReqAcquiescence, DDB_REQUEST_TIMEOUT, &id, sizeof(UUID));
-    //if (thread == nilUUID) {
-    //	//AgentTeamLearning_MSGS::
-    //	return 1;
-    //}
-    //lds.reset();
-    //lds.packUUID(parentAgent->getUUID());			// Sender id
-    //lds.packUUID(&thread);
-    //parentAgent->sendAgentMessage(&id, AgentTeamLearning_MSGS::MSG_REQUEST_ACQUIESCENCE, lds.stream(), lds.length());
-    //lds.unlock();
     return 0;
 }
 
@@ -453,7 +431,7 @@ int LAlliance::motivationReset(UUID id) {
     if (testIt != myData.motivation.end())
         myData.motivation[id] = 0;
     else
-        parentAgent->logWrapper("LAlliance::motivationReset error.");
+        parentAgent->logWrapper(LOG_LEVEL_NORMAL, "motivationReset: Error.");
     return 0;
 }
 
@@ -465,18 +443,14 @@ int LAlliance::motivationReset(UUID id) {
  */
 
 int LAlliance::requestMotivationReset(UUID id) {
-    parentAgent->logWrapper("requestMotivationReset");
     DataStream lds;
     UUID agentId;
 
     std::map<UUID, DDBTaskData, UUIDless>::iterator avatarIter;
     if (teammatesData.empty() == false) {
         for (avatarIter = teammatesData.begin(); avatarIter != teammatesData.end(); avatarIter++) {
-
             agentId = avatarIter->second.agentId;
-
             parentAgent->sendRequest(&agentId, AgentTeamLearning_MSGS::MSG_REQUEST_MOTRESET, &id);
-
         }
     }
 

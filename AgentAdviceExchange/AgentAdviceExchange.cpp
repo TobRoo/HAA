@@ -57,6 +57,12 @@ AgentAdviceExchange::AgentAdviceExchange(spAddressPort ap, UUID *ticket, int log
 	this->cq = 0.0f;
 	this->bq = 0.0f;
 
+	// Zero counters
+	this->condA_count = 0;
+	this->condB_count = 0;
+	this->condC_count = 0;
+	this->ask_count = 0;
+
 	// Seed the random number generator
 	srand(static_cast <unsigned> (time(0)));
 
@@ -240,6 +246,7 @@ int AgentAdviceExchange::askAdviser() {
 * Performs the AdviceExchange Algorithm
 */
 int AgentAdviceExchange::formAdvice() {
+	this->ask_count++;
 	std::vector<float> advice;
 	
 	if (this->adviser == nilUUID) {
@@ -252,6 +259,13 @@ int AgentAdviceExchange::formAdvice() {
 		bool condA = (this->q_avg_epoch < this->delta*this->adviserData[this->adviser].bq);
 		bool condB = (this->bq < this->adviserData[this->adviser].bq);
 		bool condC = (std::accumulate(this->q_vals_in.begin(), this->q_vals_in.end(), 0.0f) < this->rho*std::accumulate(this->adviserData[this->adviser].advice.begin(), this->adviserData[this->adviser].advice.end(), 0.0f));
+
+		this->condA_count += condA;
+		this->condB_count += condB;
+		this->condC_count += condC;
+
+		Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::formAdvice: Advice conditions: A=%s, B=%s, C=%s.", condA ? "true":"false", condB ? "true" : "false", condC ? "true" : "false");
+		Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::formAdvice: Advice conditions average: A=%.2f, B=%.2f, C=%.2f.", (float)this->condA_count / (float)this->ask_count, (float)this->condB_count / (float)this->ask_count, (float)this->condC_count / (float)this->ask_count);
 
 		if (condA && condB && condC) {
 			// Conditions are met, use this adviser's advice
@@ -315,12 +329,14 @@ int AgentAdviceExchange::preEpochUpdate() {
 	Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::preEpochUpdate: Adviser performance metrics received.");
 
 	// Select the adviser for this epoch
+	Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::preEpochUpdate: My cq: %.2f.", this->cq);
 	float best_cq = 0.0f;
 	for (iter = this->adviserData.begin(); iter != this->adviserData.end(); iter++) {
 		// Their cq must be better 
 		if ((iter->second.cq > this->cq) && (iter->second.cq > best_cq)) {
 			// Select them as the adviser
 			this->adviser = iter->first;
+			best_cq = iter->second.cq;
 		}
 	}
 
@@ -329,6 +345,7 @@ int AgentAdviceExchange::preEpochUpdate() {
 	}
 	else {
 		Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::preEpochUpdate: Adviser for this epoch is %s.", Log.formatUUID(LOG_LEVEL_NORMAL, &this->adviser));
+		Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::preEpochUpdate: Adviser cq: %.2f.", best_cq);
 	}
 
 	return 0;
@@ -341,8 +358,10 @@ int AgentAdviceExchange::preEpochUpdate() {
 */
 int AgentAdviceExchange::postEpochUpdate() {
 	// Update cq and bq
+	Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::postEpochUpdateB: Old cq: %.2f, old bq: %.2f.", this->cq, this->bq);
 	this->cq = this->alpha*this->cq + (1.0f - this->alpha)*this->q_avg_epoch;
 	this->bq = max(this->q_avg_epoch, this->beta*this->bq);
+	Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::postEpochUpdateB: New cq: %.2f, new bq: %.2f.", this->cq, this->bq);
 
 	// Send cq and bq to the DDB
     Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::postEpochUpdateB: Sending cq and bq to DDB.");
@@ -425,6 +444,8 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 	break;
 	case AgentAdviceExchange_MSGS::MSG_REQUEST_ADVICE:
 	{
+		Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage: Received request for advice.");
+
 		// Clear the old data
 		this->q_vals_in.clear();
 		this->state_vector_in.clear();

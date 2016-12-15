@@ -156,16 +156,15 @@ int	AgentTeamLearning::finishConfigureParameters() {
 } // end finishConfigureParameters
 
 
-int AgentTeamLearning::uploadTask(UUID *taskId, DDBTask *task)
-{
-	DataStream lds;
-
+int AgentTeamLearning::uploadTask(UUID *taskId, DDBTask *task) {
 	UUID *myUUID = this->getUUID();
-	//Log.log(0, "AgentTeamLearning::uploadTaskInfo: uploading task with uuid %s, responsible avatar %s and responsible agent %s", Log.formatUUID(LOG_LEVEL_NORMAL, taskId), Log.formatUUID(LOG_LEVEL_NORMAL, &task->avatar), Log.formatUUID(LOG_LEVEL_NORMAL, &task->agentUUID));
+	Log.log(LOG_LEVEL_VERBOSE, "AgentTeamLearning::uploadTaskInfo: Uploading task: %s, Responsible avatar: %s, Responsible agent: %s.", Log.formatUUID(LOG_LEVEL_NORMAL, taskId), Log.formatUUID(LOG_LEVEL_NORMAL, &task->avatar), Log.formatUUID(LOG_LEVEL_NORMAL, &task->agentUUID));
+	
+	DataStream lds;
 	lds.reset();
-	lds.packUUID(taskId);		//Task id
-	lds.packUUID(&task->agentUUID);						//Agent id
-	lds.packUUID(&task->avatar);	//Avatar id
+	lds.packUUID(taskId); // Task id
+	lds.packUUID(&task->agentUUID); // Agent id
+	lds.packUUID(&task->avatar); // Avatar id
 	lds.packBool(task->completed);
 	this->sendMessage(this->hostCon, MSG_DDB_TASKSETINFO, lds.stream(), lds.length());
 	lds.unlock();
@@ -292,39 +291,35 @@ int AgentTeamLearning::step() {
 }// end step
 
 
-int AgentTeamLearning::sendRequest(UUID *agentId, int message, UUID *id)
-{
-	Log.log(0, "AgentTeamLearning::sendRequest: Request sent to agent %s.", Log.formatUUID(0, agentId));
-
+int AgentTeamLearning::sendRequest(UUID *agentId, int message, UUID *id) {
 	DataStream lds;
 
 	switch (message) {
-
 	case AgentTeamLearning_MSGS::MSG_REQUEST_ACQUIESCENCE:
 	{
+		Log.log(0, "AgentTeamLearning::sendRequest: Sending acquiescence request to agent %s.", Log.formatUUID(0, agentId));
 		UUID thread = this->conversationInitiate(AgentTeamLearning::AgentTeamLearning_CBR_convReqAcquiescence, DDB_REQUEST_TIMEOUT, &agentId, sizeof(UUID));
 		if (thread == nilUUID) {
 			return 1;
 		}
 		lds.reset();
-		lds.packUUID(this->getUUID());			// Sender id
+		lds.packUUID(this->getUUID()); // Sender id
 		lds.packUUID(&thread);
 		lds.packUUID(&previousTaskId);
-		//parentAgent->sendAgentMessage(&agentId, AgentTeamLearning_MSGS::MSG_REQUEST_MOTRESET, lds.stream(), lds.length());
 		this->sendMessageEx(this->hostCon, MSGEX(AgentTeamLearning_MSGS, MSG_REQUEST_ACQUIESCENCE), lds.stream(), lds.length(), agentId);
 	}
 	break;
 	case AgentTeamLearning_MSGS::MSG_REQUEST_MOTRESET:
 	{
+		Log.log(0, "AgentTeamLearning::sendRequest: Sending motivation reset request to agent %s.", Log.formatUUID(0, agentId));
 		UUID thread = this->conversationInitiate(AgentTeamLearning::AgentTeamLearning_CBR_convReqMotReset, DDB_REQUEST_TIMEOUT, &agentId, sizeof(UUID));
 		if (thread == nilUUID) {
 			return 1;
 		}
 		lds.reset();
-		lds.packUUID(this->getUUID());			// Sender id
+		lds.packUUID(this->getUUID()); // Sender id
 		lds.packUUID(&thread);
 		lds.packUUID(id);
-		//parentAgent->sendAgentMessage(&agentId, AgentTeamLearning_MSGS::MSG_REQUEST_MOTRESET, lds.stream(), lds.length());
 		this->sendMessageEx(this->hostCon, MSGEX(AgentTeamLearning_MSGS, MSG_REQUEST_MOTRESET), lds.stream(), lds.length(), agentId);
 	}
 	break;
@@ -335,23 +330,19 @@ int AgentTeamLearning::sendRequest(UUID *agentId, int message, UUID *id)
 	return 0;
 }
 
-void AgentTeamLearning::logWrapper(char* message) {
-
-	Log.log(0, "LALLIANCE: %s", message);
-
+void AgentTeamLearning::logWrapper(int log_level, char* message) {
+	Log.log(log_level, "AgentTeamLearning::L-ALLIANCE::%s", message);
 }
 
-void AgentTeamLearning::negotiateTasks()
-{
+void AgentTeamLearning::negotiateTasks() {
 
-	if (lAllianceObject.teammatesData.size() == lastTeammateDataSize) { //No new teammates discovered, taskdata update came from known teammate
+	// Update teammates data
+	if (lAllianceObject.teammatesData.size() == lastTeammateDataSize) { 
+		// No new teammates discovered, taskdata update came from known teammate
 		itNoTeammateChange++;	//increment counter for iterations with no teammate changes
-		/*Log.log(0, "AgentTeamLearning::negotiateTasks: my teammateData size is: %d", lAllianceObject.teammatesData.size());*/
-
 	}
 	else {
 		itNoTeammateChange = 0;
-		//Log.log(0, "AgentTeamLearning::negotiateTasks: my teammateData size has changed.");
 		hasStabilityOccurred = false;
 	}
 	lastTeammateDataSize = lAllianceObject.teammatesData.size();
@@ -438,13 +429,6 @@ void AgentTeamLearning::negotiateTasks()
 	if (this->isReadyToBroadcast) {
 		//Log.log(0, "AgentTeamLearning::negotiateTasks: Avatar %s ready to broadcast.", Log.formatUUID(0, &STATE(AgentTeamLearning)->ownerId));
 
-		mapTask::const_iterator taskIt;
-		for (taskIt = mTaskList.begin(); taskIt != mTaskList.end(); taskIt++) {
-			UUID taskId = taskIt->first;
-			//Log.log(0, "AgentTeamLearning::negotiateTasks: mTaskList: Task %s has agent with UUID %s assigned.", Log.formatUUID(0, &taskId), Log.formatUUID(0, &taskIt->second->agentUUID));
-
-		}
-
 		DDBTask previousTask;
 		previousTaskId = lAllianceObject.myData.taskId;
 		previousTask.avatar = nilUUID;
@@ -454,22 +438,15 @@ void AgentTeamLearning::negotiateTasks()
 		}
 		//Log.log(0, "AgentTeamLearning::negotiateTasks: Avatar %s has previous task %s with avatar id %s", Log.formatUUID(0, &STATE(AgentTeamLearning)->ownerId), Log.formatUUID(0, &previousTaskId), Log.formatUUID(0, &previousTask.avatar));
 
+		// Perform L-Alliance algorithm
 		lAllianceObject.updateTaskProperties(mTaskList);
-		//Log.log(0, "AgentTeamLearning::negotiateTasks: 1 ");
-
 		lAllianceObject.chooseTask(mTaskList);
 
-		if (previousTaskId != lAllianceObject.myData.taskId) {  //We have changed our task by own choice - upload info about our former task being unassigned
-			//Log.log(0, "AgentTeamLearning::negotiateTasks: We have changed our task by own choice - upload info about our former task being unassigned");
-			//previousTask.landmarkUUID = nilUUID;
-			//previousTask.agentUUID = nilUUID,
-			//previousTask.avatar = STATE(AgentTeamLearning)->ownerId;
-			//previousTask.type = NON_COLLECTABLE;
-			//previousTask.completed = false;
-
-
+		// Upload previous task info
+		if (previousTaskId != lAllianceObject.myData.taskId) {  
 			if (previousTaskId != nilUUID) {
-				//Log.log(0, "AgentTeamLearning::negotiateTasks: Previous task was not nil, uploading...");
+				// We have changed our task by own choice - upload info about our former task being unassigned
+				Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::negotiateTasks: New task: %s", Log.formatUUID(LOG_LEVEL_NORMAL, &lAllianceObject.myData.taskId));
 
 				mTaskList[previousTaskId]->avatar = nilUUID;
 				mTaskList[previousTaskId]->agentUUID = nilUUID;
@@ -479,95 +456,27 @@ void AgentTeamLearning::negotiateTasks()
 			}
 		}
 
-		//Log.log(0, "AgentTeamLearning::negotiateTasks: 2 ");
-		//Log.log(0, "AgentTeamLearning::negotiateTasks: Avatar %s selecting task %s ", Log.formatUUID(0, &STATE(AgentTeamLearning)->ownerId), Log.formatUUID(0, &lAllianceObject.myData.taskId));
-
-		//Log.log(0, "AgentTeamLearning::negotiateTasks: It is %s that task %s and nilUUID %s are equal.", (lAllianceObject.myData.taskId == nilUUID) ? "true":"false", Log.formatUUID(0, &lAllianceObject.myData.taskId), Log.formatUUID(0, &nilUUID));
-
+		// Upload new task info
 		if (lAllianceObject.myData.taskId != nilUUID) {
 			mTaskList[lAllianceObject.myData.taskId]->agentUUID = *this->getUUID();
-			//Log.log(0, "AgentTeamLearning::negotiateTasks: 3 ");
 			mTaskList[lAllianceObject.myData.taskId]->avatar = STATE(AgentTeamLearning)->ownerId;
 			//Log.log(0, "AgentTeamLearning::negotiateTasks: Avatar %s broadcasting task %s ", Log.formatUUID(0, &STATE(AgentTeamLearning)->ownerId), Log.formatUUID(0, &lAllianceObject.myData.taskId));
 			uploadTask(&lAllianceObject.myData.taskId, mTaskList[lAllianceObject.myData.taskId]);	//send our task to the DBB
 		}
-		else if (lAllianceObject.myData.taskId == nilUUID){		//Create nilTask to upload, just to have the succeeding avatar continue - we never read from this task
-			//Log.log(0, "AgentTeamLearning::negotiateTasks: 4 ");
-
-			//DDBTask nilTask;
-			//nilTask.landmarkUUID = nilUUID;
-			//nilTask.agentUUID = *this->getUUID();
-			//nilTask.avatar = STATE(AgentTeamLearning)->ownerId;
-			//nilTask.type = NON_COLLECTABLE;
-			//nilTask.completed = false;
-
-			//uploadTask(&nilUUID, &nilTask);
-			//Log.log(0, "AgentTeamLearning::negotiateTasks: Agent %s sending  MSG_SET_BROADCAST_READY to agent %s ", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &agentListeningForUs));
-
+		else if (lAllianceObject.myData.taskId == nilUUID){		
+			//Create nilTask to upload, just to have the succeeding avatar continue - we never read from this task
 			DataStream lds;
-
 			lds.reset();
-			lds.packUUID(this->getUUID());			// Sender id
-			//parentAgent->sendAgentMessage(&agentId, AgentTeamLearning_MSGS::MSG_REQUEST_MOTRESET, lds.stream(), lds.length());
+			lds.packUUID(this->getUUID());	// Sender id
 			this->sendMessageEx(this->hostCon, MSGEX(AgentTeamLearning_MSGS, MSG_SET_BROADCAST_READY), lds.stream(), lds.length(), &agentListeningForUs);
 			lds.unlock();
-
 		}
+
 		uploadTaskDataInfo();
 		_ftime64_s(&this->lastTaskUpdateSent);
 		this->isReadyToBroadcast = false;		//Set as true again in convGetTaskInfo
 		this->timeoutPeriod = (lAllianceObject.teammatesData.size() + 1)*TEAMMATE_CRASH_TIMEOUT;	//Wait for the whole list to time out (nearly), plus margin - worst case scenario
 	}
-
-	//if (avatarList.front() == STATE(AgentTeamLearning)->ownerId) {
-	//	if (this->isReadyToBroadcast) {
-	//		lAllianceObject.updateTaskProperties(mTaskList);
-	//		lAllianceObject.chooseTask(mTaskList);
-	//		
-	//		mTaskList[lAllianceObject.myData.taskId]->agentUUID = *this->getUUID();
-	//		mTaskList[lAllianceObject.myData.taskId]->avatar = STATE(AgentTeamLearning)->ownerId;
-	//		Log.log(0, "AgentTeamLearning::negotiateTasks: First in line uploading task with UUID %s", Log.formatUUID(0, &lAllianceObject.myData.taskId));
-	//		uploadTask(&lAllianceObject.myData.taskId, mTaskList[lAllianceObject.myData.taskId]);	//send our task to the DBB
-	//		this->avatarToListenFor = avatarList.back();
-	//		_ftime64_s(&this->lastTaskUpdateSent);
-	//		this->isReadyToBroadcast = false;		//Set as true again in convGetTaskInfo
-	//		this->timeoutPeriod = (avatarList.size())*TEAMMATE_CRASH_TIMEOUT;	//Wait for the whole list to time out (nearly), plus margin - worst case scenario
-	//	}
-	//	else {
-	//		//Do nothing? Wait for timeout
-	//	}
-	//}
-	//else {	//We are not first in line, wait for those before us
-	//	if (!hasStabilityOccurred) {
-	//		int count = 0;
-	//		this->isReadyToBroadcast == false;
-	//		for (std::list<UUID>::iterator avatarIt = avatarList.begin(); avatarIt != avatarList.end(); avatarIt++) {
-	//			count++;
-	//			if (*avatarIt == STATE(AgentTeamLearning)->ownerId) {
-	//				avatarIt--;	//Find the previous avatar in the list
-	//				avatarToListenFor = *avatarIt;
-	//				break;
-	//			}
-	//		}
-	//		this->timeoutPeriod = count*TEAMMATE_CRASH_TIMEOUT;
-	//		_ftime64_s(&this->lastTaskUpdateSent);
-	//	}
-	//	else {
-	//		if (this->isReadyToBroadcast) {
-	//			lAllianceObject.updateTaskProperties(mTaskList);
-	//			lAllianceObject.chooseTask(mTaskList);
-	//			mTaskList[lAllianceObject.myData.taskId]->agentUUID = *this->getUUID();
-	//			mTaskList[lAllianceObject.myData.taskId]->avatar = STATE(AgentTeamLearning)->ownerId;
-	//			uploadTask(&lAllianceObject.myData.taskId, mTaskList[lAllianceObject.myData.taskId]);	//send our task to the DBB
-	//			_ftime64_s(&this->lastTaskUpdateSent);
-	//			this->isReadyToBroadcast = false;		//Set as true again in convGetTaskInfo
-	//			this->timeoutPeriod = (avatarList.size())*TEAMMATE_CRASH_TIMEOUT;	//Wait for the whole list to time out (nearly), plus margin - worst case scenario
-	//		}
-
-	//	}
-
-	//}
-
 
 }
 

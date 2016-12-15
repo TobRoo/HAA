@@ -75,6 +75,12 @@ protected:
 	std::map<UUID, adviserDataStruct, UUIDless> adviserData;   // All advice data for each adviser
 	UUID adviser;                                              // Id of the AgentAdviceExchange adviser (i.e. the key for adviserData)
 	
+	// Data monitoring
+	int condA_count;
+	int condB_count;
+	int condC_count;
+	int ask_count;
+
 	// Random number generator
 	RandomGenerator randomGenerator;
 

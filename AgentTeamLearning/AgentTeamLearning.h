@@ -38,6 +38,9 @@ public:
 
 	};
 
+	// Random number generator
+	RandomGenerator randomGenerator;
+
 //-----------------------------------------------------------------------------
 // Non-state member variables	
 
@@ -74,7 +77,7 @@ public:
 
 	int sendRequest(UUID *agentId, int message, UUID *id = NULL);
 
-	void logWrapper(char * message);
+	void logWrapper(int log_level, char * message);
 
 	void negotiateTasks();
 
