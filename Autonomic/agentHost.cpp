@@ -10780,21 +10780,24 @@ int AgentHost::LearningDataDump()
 	DataStream taskDataDS;
 	DataStream taskDS;
 
-	this->dStore->GetTaskData(&nilUUID, &taskDataDS, &nilUUID, true);
-	this->dStore->GetTask(&nilUUID, &taskDS, &nilUUID, true);
-	taskDataDS.unlock();
-	taskDS.unlock();
 
+	this->dStore->GetTaskData(&nilUUID, &taskDataDS, &nilUUID, true);
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: 2");
 	taskDataDS.unpackData(sizeof(UUID)); // discard thread
 	char taskDataOk = taskDataDS.unpackChar();	//DDBR_OK
-	taskDataDS.unpackBool();	//EnumTaskData
+	bool enumTaskData = taskDataDS.unpackBool();	//EnumTaskData
 	int numTaskDatas = taskDataDS.unpackInt32();
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: taskDataOk is %d, enumTaskData is %d, numTaskDatas is %d", taskDataOk, enumTaskData, numTaskDatas);
 
+
+
+	this->dStore->GetTask(&nilUUID, &taskDS, &nilUUID, true);
 	taskDS.unpackData(sizeof(UUID)); // discard thread
 	char taskOk = taskDS.unpackChar();	//DDBR_OK
-	taskDS.unpackBool();	//EnumTasks
+	bool enumTask = taskDS.unpackBool();	//EnumTasks
 	int numTasks = taskDS.unpackInt32();
-	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: numTasks is %d, numTaskDatas is %d", numTasks, numTaskDatas);
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: 3");
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: taskOk is %d, enumTask is %d, numTasks is %d, ", taskOk, enumTask, numTasks);
 
 
 
@@ -10806,7 +10809,8 @@ int AgentHost::LearningDataDump()
 
 	//WriteLearningData(&taskDataDS, &taskDS, &QLData);
 
-
+	taskDataDS.unlock();
+	taskDS.unlock();
 
 	return 0;
 }

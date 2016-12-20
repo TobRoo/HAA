@@ -66,11 +66,13 @@ AgentAdviceExchange::AgentAdviceExchange(spAddressPort ap, UUID *ticket, int log
 	// Seed the random number generator
 	srand(static_cast <unsigned> (time(0)));
 
+	//No other advice exchange agents known at startup
+	advExAgentCount = 0;
+
 	// Prepare callbacks
 	this->callback[AgentAdviceExchange_CBR_convGetAgentList] = NEW_MEMBER_CB(AgentAdviceExchange, convGetAgentList);
 	this->callback[AgentAdviceExchange_CBR_convGetAgentInfo] = NEW_MEMBER_CB(AgentAdviceExchange, convGetAgentInfo);
 	this->callback[AgentAdviceExchange_CBR_convAdviceQuery] = NEW_MEMBER_CB(AgentAdviceExchange, convAdviceQuery);
-
 }// end constructor
 
 //-----------------------------------------------------------------------------
@@ -212,6 +214,21 @@ int AgentAdviceExchange::step() {
  * Sends the state vector to all the known advisers
  */
 int AgentAdviceExchange::askAdviser() {
+
+	// Check the adviser list for agents that have not yet returned their capacity value and contact them
+	DataStream sds;
+	for (auto& advIter : adviserData) {
+
+		if (advIter.second.hasReplied == false) {
+			UUID adviserUUID = advIter.first;
+			sds.reset();
+			sds.packUUID(this->getUUID()); // Sender id
+			this->sendMessageEx(this->hostCon, MSGEX(AgentAdviceExchange_MSGS, MSG_REQUEST_CAPACITY), sds.stream(), sds.length(), &adviserUUID);
+			sds.unlock();
+		}
+
+	}
+
 	// Make sure we have an adviser
 	if (this->adviser == nilUUID) {
 		this->formAdvice();
@@ -475,17 +492,54 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 	break;
 	case AgentAdviceExchange_MSGS::MSG_REQUEST_CAPACITY:
 	{
+		Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage: Received capacity query.");
 		DataStream sds;
+		UUID sender;
+		UUID thread;
 
-		//int infoFlags;
-		//UUID thread;
-		//lds.setData(data, len);
-		//lds.unpackUUID(&uuid);
-		//infoFlags = lds.unpackInt32();
+		lds.setData(data, len);
+		lds.unpackUUID(&sender);
 		//lds.unpackUUID(&thread);
-		//lds.unlock();
-		//this->ddbAgentGetInfo(&uuid, infoFlags, con, &thread);
+		lds.unlock();
+		sds.reset();
+		//sds.packUUID(&thread);
+		sds.packUUID( this->getUUID() );
+		sds.packInt32(STATE(AgentAdviceExchange)->avatarCapacity);
+		Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage: Sending capacity query reply to %s", Log.formatUUID(0,&sender) );
+		this->sendMessageEx(this->hostCon, MSGEX(AgentAdviceExchange_MSGS, MSG_CAPACITY_REPLY), sds.stream(), sds.length(), &sender);
+		sds.unlock();
+	}
+	break;
+	case AgentAdviceExchange_MSGS::MSG_CAPACITY_REPLY:
+	{
+		Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage: Received capacity reply.");
 
+		DataStream sds;
+		UUID sender;
+		ITEM_TYPES capacity;
+		//UUID thread;
+
+		lds.setData(data, len);
+		lds.unpackUUID(&sender);
+		capacity = (ITEM_TYPES)lds.unpackInt32();
+		lds.unlock();
+		this->advExAgentCountReceived++;
+		Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage. advExAgentCountReceived is %d.", advExAgentCountReceived);
+		if (capacity != STATE(AgentAdviceExchange)->avatarCapacity) {
+			Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage. Number of advisers: %d", adviserData.size());
+			auto advIter = adviserData.find(sender);
+			this->adviserData.erase(advIter);				//Delete any advisrs from our list that are not of the same type
+			Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage. Removing agent %s from adviser list, not same capacity.", Log.formatUUID(0,&sender));
+			Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage. Number of advisers: %d", adviserData.size());
+
+		}
+		else {
+			auto advIter = adviserData.find(sender);							// Adviser is of same type (same capacity)
+			this->adviserData[advIter->first].hasReplied = true;				// Adviser has responded
+		}
+
+		if (advExAgentCountReceived == advExAgentCount)		//We have received capacity info from all agents in our list - finish configuration and start the agent
+			this->finishConfigureParameters();
 	}
 	break;
 	default:
@@ -522,7 +576,8 @@ bool AgentAdviceExchange::convGetAgentList(void *vpConv) {
 		// Get number of agents
 		int count;
 		count = lds.unpackInt32();
-		Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::convGetAgentList: recieved %d agents", count);
+
+		Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::convGetAgentList: received %d agents", count);
 
 		UUID thread;
 		UUID agentId;
@@ -544,19 +599,31 @@ bool AgentAdviceExchange::convGetAgentList(void *vpConv) {
 			lds.unpackUUID(&parent);
 
 			if (agentType.uuid == adviceExchangeAgentId && agentId != STATE(AgentBase)->uuid) {			//The agent is an advice exchange agent
+				this->advExAgentCount++;
 				// Add agent to the list if it has the same capacity as own capacity (Light or heavy)
 				//TODO: Exclude by type
 				this->adviserData[agentId] = empty_data;
 				this->adviserData[agentId].parentId = parent;
 				this->adviserData[agentId].bq = 0.0f;
 				this->adviserData[agentId].cq = 0.0f;
+				this->adviserData[agentId].hasReplied = false;
+
+				Log.log(0, "AgentAdviceExchange::convGetAgentList: Sending capacity request to agent %s.", Log.formatUUID(0, &agentId));
+				/*UUID thread = this->conversationInitiate(AgentAdviceExchange::AgentAdviceExchange_CBR_convCapacityQuery, DDB_REQUEST_TIMEOUT, &agentId, sizeof(UUID));
+				if (thread == nilUUID) {
+					return 1;
+				}*/
+				sds.reset();
+				sds.packUUID(this->getUUID()); // Sender id
+				//sds.packUUID(&thread);
+				this->sendMessageEx(this->hostCon, MSGEX(AgentAdviceExchange_MSGS, MSG_REQUEST_CAPACITY), sds.stream(), sds.length(), &agentId);
 			}
 		}
 		Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::convGetAgentList: Found %d advisers.", this->adviserData.size());
 
 		lds.unlock();
 	}
-	this->finishConfigureParameters();
+	//this->finishConfigureParameters();
 	return 0;
 }
 
@@ -661,6 +728,8 @@ bool AgentAdviceExchange::convAdviceQuery(void *vpConv) {
 
 	return 0;
 }
+
+
 
 //-----------------------------------------------------------------------------
 // State functions

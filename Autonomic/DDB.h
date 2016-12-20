@@ -29,7 +29,8 @@ public:
 enum ITEM_TYPES {
 	NON_COLLECTABLE = 0,
 	LIGHT_ITEM = 1,
-	HEAVY_ITEM = 2
+	HEAVY_ITEM = 2,
+	TYPE_PENDING = 3,	//Used as a placeholder when the exact type is not yet known
 };
 
 enum DATATYPES {

@@ -25,6 +25,7 @@ typedef struct adviserDataStruct {
 	std::vector<float> advice;  // vector of advised quality values
 	float cq;                   // Current average quality
 	float bq;                   // Best average quality
+	bool hasReplied;			// Flag for capacity reply status
 };
 
 
@@ -74,6 +75,8 @@ protected:
 	UUID adviceRequestConv;                                    // Conversation from parent agent used to request advice
 	std::map<UUID, adviserDataStruct, UUIDless> adviserData;   // All advice data for each adviser
 	UUID adviser;                                              // Id of the AgentAdviceExchange adviser (i.e. the key for adviserData)
+	int advExAgentCount;									   // Count of the number of advice exchange agents there are in the system
+	int advExAgentCountReceived;							   // Count of the number of advice exchange agents that have sent replies to capacity requests	
 	
 	// Data monitoring
 	int condA_count;

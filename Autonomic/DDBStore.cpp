@@ -4898,16 +4898,21 @@ int DDBStore::GetTaskData(UUID *id, DataStream *ds, UUID *thread, bool enumTaskD
 
 	DDBTaskData taskData;
 	DataStream lds;
+	Log->log(0," DDBStore::GetTaskData 1");
+
 
 
 	ds->reset();
 	ds->packUUID(thread);
-
+	Log->log(0, " DDBStore::GetTaskData:: enumTaskData is %d", enumTaskData);
 	if (enumTaskData == true) {
+		Log->log(0, " DDBStore::GetTaskData:: packing char %d", DDBR_OK);
 		ds->packChar(DDBR_OK);
+		Log->log(0, " DDBStore::GetTaskData:: enumTaskData is %d", enumTaskData);
 		ds->packBool(enumTaskData);
+		Log->log(0, " DDBStore::GetTaskData:: DDBTaskDatas.size() is %d", (int)this->DDBTaskDatas.size());
 		ds->packInt32((int)this->DDBTaskDatas.size());
-
+		Log->log(0, " DDBStore::GetTaskData:: DDBTaskDatas.empty() is %d", DDBTaskDatas.empty());
 		if (DDBTaskDatas.empty() == false) {
 			for (iter = this->DDBTaskDatas.begin(); iter != this->DDBTaskDatas.end(); iter++) {
 				ds->packUUID((UUID *)&iter->first);

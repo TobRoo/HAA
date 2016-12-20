@@ -20,6 +20,7 @@ namespace AgentAdviceExchange_MSGS {
 		MSG_REQUEST_ADVICE,        // Requesting advice from AgentAdviceExchange [UUID owner, UUID convo, float q[0], float q[1], ..., unsigned int state[0], unsigned int state[1], ...]
 		MSG_REQUEST_Q_VALUES,      // Requesting Q-values from Q-learning [UUID owner, UUID convo, float q[0], float q[1], ..., unsigned int state[0], unsigned int state[1], ...]
 		MSG_REQUEST_CAPACITY,	   // Request capacity value from AgentAdviceExchange [TODO............................]
+		MSG_CAPACITY_REPLY,		   // Reply containing the capacity value
 		MSG_LAST			       // last message id
 	};
 	
@@ -28,6 +29,7 @@ namespace AgentAdviceExchange_MSGS {
 		-2,                 // MSG_REQUEST_ADVICE
 		-2,                 // MSG_REQUEST_Q_VALUES
 		-2,					//MSG_REQUEST_CAPACITY
+		-2,					//MSG_CAPACITY_REPLY
 	};
 
 }
