@@ -235,13 +235,17 @@ void DataStream::packTaskData(DDBTaskData *taskData) {
 	int meanLength = taskData->mean.size()*(sizeof(UUID) + sizeof(float));
 	int stddevLength = taskData->stddev.size()*(sizeof(UUID) + sizeof(float));
 
-	length = sizeof(UUID) + sizeof(UUID) + tauLength + motLength + impLength + attLength + meanLength + stddevLength + sizeof(taskData->psi) + sizeof(taskData->updateTime);
+	length = sizeof(UUID) + sizeof(UUID) + tauLength + motLength + impLength + attLength + meanLength + stddevLength + sizeof(taskData->psi) + sizeof(taskData->updateTime) + sizeof(taskData->round_number);
 
 	if (this->dataLength + length > this->bufSize) {
 		if (this->increaseBuffer(this->dataLength + length))
 			return;
 	}
 
+	//Pack round number
+	memcpy(this->head, (char *)&taskData->round_number, sizeof(int));
+	this->head += sizeof(int);
+	this->dataLength += sizeof(int);
 
 	//First pack the taskId
 	memcpy(this->head, (char *)&taskData->taskId, sizeof(UUID));
@@ -324,15 +328,16 @@ void DataStream::packTaskData(DDBTaskData *taskData) {
 		
 	}
 	//Pack psi
-	memcpy(this->head, (char *)&taskData->psi, sizeof(unsigned int));
-	this->head += sizeof(unsigned int);
-	this->dataLength += sizeof(unsigned int);
+	memcpy(this->head, (char *)&taskData->psi, sizeof(int));
+	this->head += sizeof(int);
+	this->dataLength += sizeof(int);
 
 	//Pack updateTime
 	memcpy(this->head, (char *)&taskData->updateTime, sizeof(_timeb));
 	this->head += sizeof(_timeb);
 	this->dataLength += sizeof(_timeb);
 
+	
 }
 
 
@@ -486,6 +491,10 @@ void DataStream::unpackUUID( UUID *uuid ) {
 }
 void DataStream::unpackTaskData(DDBTaskData *taskData) {
 
+	//Unpack round number
+	memcpy((char *)&taskData->round_number, this->head, sizeof(int));
+	this->head += sizeof(int);
+
 	//Unpack taskId
 	memcpy((char *)&taskData->taskId, this->head, sizeof(UUID));
 	this->head += sizeof(UUID);
@@ -564,6 +573,8 @@ void DataStream::unpackTaskData(DDBTaskData *taskData) {
 	//Unpack updateTime
 	memcpy((char *)&taskData->updateTime, this->head, sizeof(_timeb));
 	this->head += sizeof(_timeb);
+
+	
 }
 
 

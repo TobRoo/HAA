@@ -37,16 +37,26 @@ AgentTeamLearning::AgentTeamLearning(spAddressPort ap, UUID *ticket, int logLeve
 	STATE(AgentTeamLearning)->isSetupComplete = false;
 	STATE(AgentTeamLearning)->hasReceivedTaskList = false;
 	STATE(AgentTeamLearning)->hasReceivedTaskDataList = false;
+	STATE(AgentTeamLearning)->receivedAllTeamLearningAgents = false;
 	STATE(AgentTeamLearning)->parametersSet = false;
 	STATE(AgentTeamLearning)->updateId = -1;
 
 	STATE(AgentTeamLearning)->isMyDataFound = false;
 
+	// V2 team learning stuff
+	STATE(AgentTeamLearning)->round_number = 0;
+	this->new_round_number = 0;
+	this->lAllianceObject.myData.round_number = 0;
+	this->round_info_set = true;
+	this->delta_learn_time = 3000; // [ms]
+	this->round_timout = 500;  // [ms]
+
 	// Prepare callbacks
-	this->callback[AgentTeamLearning_CBR_convGetTaskInfo] = NEW_MEMBER_CB(AgentTeamLearning, convGetTaskInfo);
-	this->callback[AgentTeamLearning_CBR_convGetTaskDataInfo] = NEW_MEMBER_CB(AgentTeamLearning, convGetTaskDataInfo);
+	this->callback[AgentTeamLearning_CBR_convGetAgentList] = NEW_MEMBER_CB(AgentTeamLearning, convGetAgentList);
 	this->callback[AgentTeamLearning_CBR_convGetTaskList] = NEW_MEMBER_CB(AgentTeamLearning, convGetTaskList);
 	this->callback[AgentTeamLearning_CBR_convGetTaskDataList] = NEW_MEMBER_CB(AgentTeamLearning, convGetTaskDataList);
+	this->callback[AgentTeamLearning_CBR_convGetTaskInfo] = NEW_MEMBER_CB(AgentTeamLearning, convGetTaskInfo);
+	this->callback[AgentTeamLearning_CBR_convGetTaskDataInfo] = NEW_MEMBER_CB(AgentTeamLearning, convGetTaskDataInfo);
 	this->callback[AgentTeamLearning_CBR_convReqAcquiescence] = NEW_MEMBER_CB(AgentTeamLearning, convReqAcquiescence);
 	this->callback[AgentTeamLearning_CBR_convReqMotReset] = NEW_MEMBER_CB(AgentTeamLearning, convReqMotReset);
 
@@ -99,10 +109,19 @@ int AgentTeamLearning::configureParameters(DataStream *ds) {
 
 	//Get owner id
 	ds->unpackUUID(&STATE(AgentTeamLearning)->ownerId);
-	lAllianceObject.id = STATE(AgentTeamLearning)->ownerId;
-	lAllianceObject.myData.agentId = *this->getUUID();
+	this->lAllianceObject.id = STATE(AgentTeamLearning)->ownerId;
+	this->lAllianceObject.myData.agentId = *this->getUUID();
 	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::configureParameters: ownerId %s", Log.formatUUID(LOG_LEVEL_NORMAL, &STATE(AgentTeamLearning)->ownerId));
 	STATE(AgentTeamLearning)->isSetupComplete = false; // need taskdata info and task info
+
+	// register as agent watcher
+	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::start: registering as agent watcher");
+	lds.reset();
+	lds.packUUID(&STATE(AgentBase)->uuid);
+	lds.packInt32(DDB_AGENT);
+	this->sendMessage(this->hostCon, MSG_DDB_WATCH_TYPE, lds.stream(), lds.length());
+	lds.unlock();
+	// NOTE: we request a list of agents once DDBE_WATCH_TYPE notification is received
 
 	// register as task watcher
 	lds.reset();
@@ -118,19 +137,6 @@ int AgentTeamLearning::configureParameters(DataStream *ds) {
 	this->sendMessage(this->hostCon, MSG_DDB_WATCH_TYPE, lds.stream(), lds.length());
 	lds.unlock();
 
-
-	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::configureParameters: teammatesData is empty == %s", lAllianceObject.teammatesData.empty() ? "true" : "false");
-
-	this->itNoTeammateChange = 0;
-	this->isReadyToBroadcast = false;	//Default start value, will be adjusted as necessary in negotiateTasks()
-	this->broadCastUnlocked = false;	//Default start value, will be adjusted as necessary in uploadTaskDataInfo()
-	this->broadCastPending = false;		//Default start value, will be adjusted as necessary in uploadTaskDataInfo()
-	this->avatarToListenFor = nilUUID;	
-	this->timeoutPeriod = 0;
-	this->hasStabilityOccurred = false;
-	_ftime64_s(&lastTaskUpdateSent);	//Initialize
-	//Request lists of tasks and task data when confirmation from the DDB is received
-
 	this->backup(); // initialSetup
 	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::configureParameters: done.");
 	// finishConfigureParameters will be called once task, taskdata and agent info is received
@@ -140,7 +146,12 @@ int AgentTeamLearning::configureParameters(DataStream *ds) {
 
 int	AgentTeamLearning::finishConfigureParameters() {
 
-	if (STATE(AgentTeamLearning)->hasReceivedTaskList == true && STATE(AgentTeamLearning)->hasReceivedTaskDataList == true && STATE(AgentTeamLearning)->parametersSet == false) {		//Only proceed to start if we have tasks and taskdata, and have not yet started (prevents double start)
+	//Only proceed to start if we have other agenbts, tasks, and taskdata, and have not yet started (prevents double start)
+	if (STATE(AgentTeamLearning)->hasReceivedTaskList == true 
+		&& STATE(AgentTeamLearning)->hasReceivedTaskDataList == true 
+		&& STATE(AgentTeamLearning)->parametersSet == false
+		&& STATE(AgentTeamLearning)->receivedAllTeamLearningAgents == true) {
+
 		STATE(AgentTeamLearning)->isSetupComplete = true;
 		this->previousTaskId = nilUUID;
 		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::finishConfigureParameters");
@@ -149,65 +160,11 @@ int	AgentTeamLearning::finishConfigureParameters() {
 		if (STATE(AgentTeamLearning)->startDelayed) {
 			STATE(AgentTeamLearning)->startDelayed = false;
 			this->start(STATE(AgentBase)->missionFile);
-		}// end if
+		}
 		this->backup(); // initialSetup
 	}
 	return 0;
 } // end finishConfigureParameters
-
-
-int AgentTeamLearning::uploadTask(UUID *taskId, DDBTask *task) {
-	UUID *myUUID = this->getUUID();
-	Log.log(LOG_LEVEL_VERBOSE, "AgentTeamLearning::uploadTaskInfo: Uploading task: %s, Responsible avatar: %s, Responsible agent: %s.", Log.formatUUID(LOG_LEVEL_NORMAL, taskId), Log.formatUUID(LOG_LEVEL_NORMAL, &task->avatar), Log.formatUUID(LOG_LEVEL_NORMAL, &task->agentUUID));
-	
-	DataStream lds;
-	lds.reset();
-	lds.packUUID(taskId); // Task id
-	lds.packUUID(&task->agentUUID); // Agent id
-	lds.packUUID(&task->avatar); // Avatar id
-	lds.packBool(task->completed);
-	this->sendMessage(this->hostCon, MSG_DDB_TASKSETINFO, lds.stream(), lds.length());
-	lds.unlock();
-	return 0;
-}
-
-int AgentTeamLearning::uploadTaskDataInfo()
-{
-	if (broadCastUnlocked == true) {
-
-		DataStream lds;
-
-	/*	Log.log(LOG_LEVEL_VERBOSE, "AgentTeamLearning::uploadTaskDataInfo: My avatar id is: %s", Log.formatUUID(0, &STATE(AgentTeamLearning)->ownerId));
-		Log.log(0, "AgentTeamLearning::uploadTaskDataInfo: My task id is: %s", Log.formatUUID(0, &lAllianceObject.myData.taskId));*/
-		//Log.log(LOG_LEVEL_VERBOSE, "AgentTeamLearning::uploadTaskDataInfo: teammatesData are: ");
-		std::map<UUID, DDBTaskData, UUIDless>::iterator tmIter;
-		UUID teammate;
-		if (lAllianceObject.teammatesData.empty() == false) {
-			for (tmIter = lAllianceObject.teammatesData.begin(); tmIter != lAllianceObject.teammatesData.end(); tmIter++) {
-				teammate = tmIter->first;
-					/*Log.log(0, "AgentTeamLearning::uploadTaskDataInfo teammateId: %s", Log.formatUUID(0, &teammate));
-					Log.log(0, "AgentTeamLearning::uploadTaskDataInfo teammate agentId: %s", Log.formatUUID(0, &tmIter->second.agentId));
-					Log.log(0, "AgentTeamLearning::uploadTaskDataInfo taskId: %s", Log.formatUUID(0, &tmIter->second.taskId));*/
-			}
-		}
-
-		_ftime64_s(&lAllianceObject.myData.updateTime);	//Update time
-		lds.reset();
-		lds.packUUID(&STATE(AgentTeamLearning)->ownerId);	//Avatar id
-		lds.packTaskData(&lAllianceObject.myData);
-		this->sendMessage(this->hostCon, MSG_DDB_TASKDATASETINFO, lds.stream(), lds.length());
-		lds.unlock();
-		broadCastUnlocked = false;	//Set to true at next step()
-		broadCastPending = false;	//We have broadcast already, none pending right now
-	}
-	else {
-		broadCastPending = true;
-		Log.log(0, "AgentTeamLearning::uploadTaskDataInfo:: Setting broadcast pending...");
-	}
-
-	return 0;
-}
-
 
 
 //-----------------------------------------------------------------------------
@@ -240,22 +197,22 @@ int AgentTeamLearning::start(char *missionFile) {
 
 		DataStream lds;
 
-		Log.log(LOG_LEVEL_VERBOSE, "AgentTeamLearning::start: uploading... my avatar id is: %s", Log.formatUUID(0, &STATE(AgentTeamLearning)->ownerId));
-		Log.log(LOG_LEVEL_VERBOSE, "AgentTeamLearning::start: uploading... my task id is: %s", Log.formatUUID(0, &lAllianceObject.myData.taskId));
+		//Log.log(LOG_LEVEL_VERBOSE, "AgentTeamLearning::start: uploading... my avatar id is: %s", Log.formatUUID(0, &STATE(AgentTeamLearning)->ownerId));
+		//Log.log(LOG_LEVEL_VERBOSE, "AgentTeamLearning::start: uploading... my task id is: %s", Log.formatUUID(0, &lAllianceObject.myData.taskId));
 		lds.reset();
 		lds.packUUID(&STATE(AgentTeamLearning)->ownerId);
-		_ftime64_s(&lAllianceObject.myData.updateTime);	//Update time
-		lAllianceObject.myData.taskId = nilUUID;
-		lAllianceObject.myData.agentId = *this->getUUID();
-		lds.packTaskData(&lAllianceObject.myData);
+		//_ftime64_s(&this->lAllianceObject.myData.updateTime);	//Update time
+		this->lAllianceObject.myData.taskId = nilUUID;
+		this->lAllianceObject.myData.agentId = *this->getUUID();
+		lds.packTaskData(&this->lAllianceObject.myData);
 		this->sendMessage(this->hostCon, MSG_DDB_ADDTASKDATA, lds.stream(), lds.length());	//... then upload
 		lds.unlock();
 	}
 
-	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::start: teammatesData is empty == %s", lAllianceObject.teammatesData.empty() ? "true" : "false");
+	//Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::start: teammatesData is empty == %s", lAllianceObject.teammatesData.empty() ? "true" : "false");
 
 
-	Log.log(0, "AgentTeamLearning::start completed.");
+	//Log.log(0, "AgentTeamLearning::start completed.");
 
 	STATE(AgentBase)->started = true;
 	return 0;
@@ -279,18 +236,205 @@ int AgentTeamLearning::stop() {
 // Step
 
 int AgentTeamLearning::step() {
-	this->broadCastUnlocked = true;		//Unlock broadcast - only broadcast once per step, maximum. Will lock again in uploadTaskData
-	if (this->broadCastPending)
-		this->uploadTaskDataInfo();
 
-	if (STATE(AgentBase)->started){
-//		Log.log(0, "AgentTeamLearning::step()");
+	// Don't perform learning/task allocation every single step
+	_timeb currentTime;
+	_ftime64_s(&currentTime);
+	bool round_started = (currentTime.time * 1000 + currentTime.millitm) > (this->round_start_time.time * 1000 + this->round_start_time.millitm);
+	bool update_round_info = (currentTime.time * 1000 + currentTime.millitm) > (this->round_info_receive_time.time * 1000 + this->round_info_receive_time.millitm + this->round_timout);
+
+	if (STATE(AgentTeamLearning)->round_number > 0) {
+		// Round info is updated here after one timeout, to allow messaged to come in, and cutting off any
+		// that are too old (since they are rejected based on their round number)
+		if (update_round_info && !this->round_info_set) {
+			STATE(AgentTeamLearning)->round_number = this->new_round_number;
+			this->lAllianceObject.myData.round_number = this->new_round_number;
+			this->TLAgents = this->new_round_order;
+			this->round_info_set = true;
+		}
+
+		if (round_started) {
+			// See if any action is required this round
+			this->checkRoundStatus();
+		}
 	}
-
+	
 	return AgentBase::step();
 }// end step
 
 
+/* checkRoundStatus
+*
+* Main method for determining when this agent should perform their task allocation. The ordered list of agents
+* for this round is scanned to determine how many agents are ahead in line that still need to respond, which 
+* which determines the maximum wait time. The response of each agent is marked in convGetTaskDataInfo.
+*
+* When this agent is the last in the list for the current round, they are responsible for initiating the next
+* round (i.e. distributing a new randomized round order) by calling initiateNextRound.
+*/
+int AgentTeamLearning::checkRoundStatus() {
+
+	// Only proceed if we have not participated in this round yet
+	if (this->TLAgentData[STATE(AgentBase)->uuid].response)
+		return 0;
+	
+	int n = 0;                 // Count of how many agents ahead of us left to participate
+	bool last_agent = false;   // Flag for if we are the last agent in the round (and need to initiate the next round)
+	
+	// Find the number of agents ahead that still need to participate
+	std::vector<UUID>::iterator iter;
+	int count = 1;
+	for (iter = this->TLAgents.begin(); iter != this->TLAgents.end(); ++iter) {
+		// Stop counting once we've found ourself
+		if (*iter == STATE(AgentBase)->uuid) {
+			last_agent = (count == this->TLAgents.size());
+			break;
+		}
+
+		// Increment counter (but reset when encountering an agent that has participated, because if they
+		// defaulted to participating after a previous agent failed, we don't want to count that extra agent)
+		n = !this->TLAgentData[*iter].response*(n + 1);
+
+		count++;
+	}
+
+	// Perform task allocation, only when we are next in line or previous agents have timed out
+	_timeb currentTime;
+	_ftime64_s(&currentTime);
+	if ((currentTime.time * 1000 + currentTime.millitm) > (this->last_response_time.time * 1000 + this->last_response_time.millitm + n*this->round_timout)) {
+		
+		if (n > 0)
+			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Round %d: Timed out waiting for response.", STATE(AgentTeamLearning)->round_number);
+		
+		// Record our previous task
+		UUID prev_task_id = this->lAllianceObject.myData.taskId;
+
+		// Perform the L-Alliance algorithm
+		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Round %d: Updating and performing task selection.", STATE(AgentTeamLearning)->round_number);
+		this->lAllianceObject.updateTaskProperties(this->mTaskList);
+		this->lAllianceObject.chooseTask(this->mTaskList);
+
+		// Upload the new task data (DDBTask), and 
+		UUID new_task_id = this->lAllianceObject.myData.taskId;
+		if (new_task_id == nilUUID) {
+			// When voluntarily leaving a task upload nil task data (DDBTask) to DDB to reset the task
+			uploadTask(prev_task_id, nilUUID, nilUUID, false);
+		}
+		else {
+			this->uploadTask(new_task_id, this->mTaskList[new_task_id]->agentUUID, this->mTaskList[new_task_id]->avatar, this->mTaskList[new_task_id]->completed);
+		}
+
+		// Upload the L-Alliance data (DDBTaskData)
+		this->uploadTaskDataInfo();
+
+		// Mark our participation
+		this->TLAgentData[STATE(AgentBase)->uuid].response = true;
+
+		// Do we need to initiate the next round?
+		if (last_agent)
+			this->initiateNextRound();
+	}
+
+	return 0;
+}
+
+/* initiateNextRound
+*
+* To be called when this agent is the last agent in the current round, after they have performed their task allocation.
+* The list of agents is randomized, and sent to the other agents along with the new round number and the start time
+* of the next round.
+*
+* When this method is called, it updates the round number for this agent. All other agents have their round numbers updated
+* upon receiving the message sent by this method.
+*/
+int AgentTeamLearning::initiateNextRound() { 
+	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::initiateNextRound: Round %d: Sending info for the next round.", STATE(AgentTeamLearning)->round_number);
+
+	// Increment out own round counters (others will increment when they receive the message)
+	STATE(AgentTeamLearning)->round_number++;
+	this->lAllianceObject.myData.round_number = STATE(AgentTeamLearning)->round_number;
+
+	// Set the next round start time
+	_ftime64_s(&this->round_start_time);
+	this->round_start_time.millitm += this->delta_learn_time;
+
+	// Randomize the agent list
+	std::random_shuffle(this->TLAgents.begin(), this->TLAgents.end());
+
+	// Send the info for the next round
+	DataStream lds;
+	std::vector<UUID>::iterator iter_outer;
+	std::vector<UUID>::iterator iter_inner;
+	int pos = 1;
+	for (iter_outer = this->TLAgents.begin(); iter_outer != this->TLAgents.end(); ++iter_outer) {
+
+		// Zero everyone's response
+		this->TLAgentData[*iter_outer].response = false;
+
+		// Don't send to ourselves
+		if (*iter_outer == STATE(AgentBase)->uuid) {
+			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::initiateNextRound: Round %d: This round our position is %d.", STATE(AgentTeamLearning)->round_number, pos);
+		}
+		else {
+			pos++;
+
+			// Send the data
+			lds.reset();
+			lds.packInt32(STATE(AgentTeamLearning)->round_number);  // Next round number
+			lds.packData(&this->round_start_time, sizeof(_timeb));  // Next round start time
+
+			// Pack the new (randomized) list
+			for (iter_inner = this->TLAgents.begin(); iter_inner != this->TLAgents.end(); ++iter_inner) {
+				lds.packUUID(&*iter_inner);
+			}
+
+			this->sendMessageEx(this->hostCon, MSGEX(AgentTeamLearning_MSGS, MSG_ROUND_INFO), lds.stream(), lds.length(), &*iter_outer);
+			lds.unlock();
+		}
+	}
+
+	return 0;
+}
+
+/* uploadTask
+*
+* For the given task id, uploads the contents of a DDBTask strcut to the DDB
+* (i.e. the assigned agent, avatar, and a completion flag).
+*/
+int AgentTeamLearning::uploadTask(UUID &task_id, UUID &agent_id, UUID &avatar_id, bool completed) {
+	DataStream lds;
+	lds.reset();
+	lds.packUUID(&task_id);    // Task id
+	lds.packUUID(&agent_id);   // Agent id
+	lds.packUUID(&avatar_id);  // Avatar id
+	lds.packBool(&completed);  // Completion flag
+	this->sendMessage(this->hostCon, MSG_DDB_TASKSETINFO, lds.stream(), lds.length());
+	lds.unlock();
+
+	return 0;
+}
+
+/* uploadTaskDataInfo
+*
+* Uploads this agent's L-Alliance info (i.e. tau, motivation, impatience, etc.) in a DDBTaskData struct
+* to the DDB.
+*/
+int AgentTeamLearning::uploadTaskDataInfo() {
+	DataStream lds;
+	lds.reset();
+	_ftime64_s(&this->lAllianceObject.myData.updateTime);  // Update time
+	lds.packUUID(&STATE(AgentTeamLearning)->ownerId);	   // Avatar id
+	lds.packTaskData(&this->lAllianceObject.myData);       // DDBTaskData
+	this->sendMessage(this->hostCon, MSG_DDB_TASKDATASETINFO, lds.stream(), lds.length());
+	lds.unlock();
+
+	return 0;
+}
+
+/* sendRequest
+*
+* Handles sending acquiescence and motivation reset requests to other other team learning agents.
+*/
 int AgentTeamLearning::sendRequest(UUID *agentId, int message, UUID *id) {
 	DataStream lds;
 
@@ -330,524 +474,14 @@ int AgentTeamLearning::sendRequest(UUID *agentId, int message, UUID *id) {
 	return 0;
 }
 
+/* logWrapper
+*
+* Enables the L-Alliance object to write log messages by passing in the desired log level
+* along with the message.
+*/
 void AgentTeamLearning::logWrapper(int log_level, char* message) {
 	Log.log(log_level, "AgentTeamLearning::L-ALLIANCE::%s", message);
 }
-
-void AgentTeamLearning::negotiateTasks() {
-
-	// Update teammates data
-	if (lAllianceObject.teammatesData.size() == lastTeammateDataSize) { 
-		// No new teammates discovered, taskdata update came from known teammate
-		itNoTeammateChange++;	//increment counter for iterations with no teammate changes
-	}
-	else {
-		itNoTeammateChange = 0;
-		hasStabilityOccurred = false;
-	}
-	lastTeammateDataSize = lAllianceObject.teammatesData.size();
-
-	if (hasStabilityOccurred) {
-		_timeb currentTime;
-		_ftime64_s(&currentTime);
-
-		if (currentTime.time * 1000 + currentTime.millitm - (lastTaskUpdateSent.time * 1000 + lastTaskUpdateSent.millitm) > this->timeoutPeriod)
-			this->isReadyToBroadcast = true;	//Others have timed out, send again
-	}
-
-	if (itNoTeammateChange >= TEAMMATE_NOCHANGE_COUNT) {
-		if (!hasStabilityOccurred) {
-			/*Log.log(0, "AgentTeamLearning::negotiateTasks: my teammateData size is: %d", lAllianceObject.teammatesData.size());
-			Log.log(0, "AgentTeamLearning::negotiateTasks: STABILITY REACHED");*/
-
-			std::list<UUID> avatarList;
-			avatarList.push_back(STATE(AgentTeamLearning)->ownerId);
-
-			std::map<UUID, DDBTaskData, UUIDless>::const_iterator tmIter;
-			for (tmIter = lAllianceObject.teammatesData.begin(); tmIter != lAllianceObject.teammatesData.end(); tmIter++) {
-				avatarList.push_back(tmIter->first);
-			}
-			avatarList.sort(UUIDless());
-
-			UUID avatarListeningForUs;
-
-			if (avatarList.front() == STATE(AgentTeamLearning)->ownerId) {
-				//Log.log(0, "AgentTeamLearning::negotiateTasks: I'm in front!!!");
-				this->isReadyToBroadcast = true;
-				this->avatarToListenFor = avatarList.back();
-				std::list<UUID>::const_iterator avatarItFront = avatarList.begin();
-				avatarItFront++;
-				avatarListeningForUs = *avatarItFront;
-			}
-			else {
-				//Log.log(0, "AgentTeamLearning::negotiateTasks: I'm NOT in front!!!");
-				this->isReadyToBroadcast = false;
-				int count = 0;
-				for (std::list<UUID>::const_iterator avatarIt = avatarList.begin(); avatarIt != avatarList.end(); avatarIt++) {
-					count++;
-					if (*avatarIt == STATE(AgentTeamLearning)->ownerId) {
-						avatarIt--;	//Find the previous avatar in the list
-						avatarToListenFor = *avatarIt;
-						avatarIt++;
-						avatarIt++;
-						if (avatarIt == avatarList.end())
-							avatarIt = avatarList.begin();
-						avatarListeningForUs = *avatarIt;
-
-						//Log.log(0, "AgentTeamLearning::negotiateTasks: Agent %s has avatarToListenFor %s and avatarListeningForUs %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &avatarToListenFor), Log.formatUUID(0, &avatarListeningForUs));
-
-
-						break;
-					}
-				}
-				this->timeoutPeriod = count*TEAMMATE_CRASH_TIMEOUT;
-			}
-
-			for (auto& agentIter : lAllianceObject.teammatesData){
-		//	std::map<UUID, DDBTaskData, UUIDless>::iterator agentIter;
-		//	for (agentIter = lAllianceObject.teammatesData.begin(); agentIter != lAllianceObject.teammatesData.end(); agentIter++) {
-				//Log.log(0, "AgentTeamLearning::negotiateTasks: Iterating through teammates to find agentListeningForUs, current avatar id is %s, target is %s", Log.formatUUID(0, &(UUID)agentIter.first), Log.formatUUID(0, &avatarListeningForUs));
-
-				if ((UUID)agentIter.first == avatarListeningForUs) {
-					//Log.log(0, "AgentTeamLearning::negotiateTasks: Iterating through teammates to find agentListeningForUs, found the target!");
-
-					agentListeningForUs = agentIter.second.agentId;
-					break;
-				}
-				
-			}
-
-			//Log.log(0, "AgentTeamLearning::negotiateTasks: Agent %s has avatarToListenFor %s and agentListeningForUs %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &avatarToListenFor), Log.formatUUID(0, &agentListeningForUs));
-
-			this->hasStabilityOccurred = true;
-		}
-	}
-	else {
-		uploadTaskDataInfo();		//Upload empty (or static) taskdata until stabilization (or re-stabilization)
-	}
-
-	if (this->isReadyToBroadcast) {
-		//Log.log(0, "AgentTeamLearning::negotiateTasks: Avatar %s ready to broadcast.", Log.formatUUID(0, &STATE(AgentTeamLearning)->ownerId));
-
-		DDBTask previousTask;
-		previousTaskId = lAllianceObject.myData.taskId;
-		previousTask.avatar = nilUUID;
-
-		if (this->mTaskList.find(previousTaskId) != this->mTaskList.end()) {
-			previousTask = *mTaskList.find(previousTaskId)->second;
-		}
-		//Log.log(0, "AgentTeamLearning::negotiateTasks: Avatar %s has previous task %s with avatar id %s", Log.formatUUID(0, &STATE(AgentTeamLearning)->ownerId), Log.formatUUID(0, &previousTaskId), Log.formatUUID(0, &previousTask.avatar));
-
-		// Perform L-Alliance algorithm
-		lAllianceObject.updateTaskProperties(mTaskList);
-		lAllianceObject.chooseTask(mTaskList);
-
-		// Upload previous task info
-		if (previousTaskId != lAllianceObject.myData.taskId) {  
-			if (previousTaskId != nilUUID) {
-				// We have changed our task by own choice - upload info about our former task being unassigned
-				Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::negotiateTasks: New task: %s", Log.formatUUID(LOG_LEVEL_NORMAL, &lAllianceObject.myData.taskId));
-
-				mTaskList[previousTaskId]->avatar = nilUUID;
-				mTaskList[previousTaskId]->agentUUID = nilUUID;
-				previousTask.agentUUID = nilUUID,
-				previousTask.avatar = nilUUID;
-				uploadTask(&previousTaskId, &previousTask);
-			}
-		}
-
-		// Upload new task info
-		if (lAllianceObject.myData.taskId != nilUUID) {
-			mTaskList[lAllianceObject.myData.taskId]->agentUUID = *this->getUUID();
-			mTaskList[lAllianceObject.myData.taskId]->avatar = STATE(AgentTeamLearning)->ownerId;
-			//Log.log(0, "AgentTeamLearning::negotiateTasks: Avatar %s broadcasting task %s ", Log.formatUUID(0, &STATE(AgentTeamLearning)->ownerId), Log.formatUUID(0, &lAllianceObject.myData.taskId));
-			uploadTask(&lAllianceObject.myData.taskId, mTaskList[lAllianceObject.myData.taskId]);	//send our task to the DBB
-		}
-		else if (lAllianceObject.myData.taskId == nilUUID){		
-			//Create nilTask to upload, just to have the succeeding avatar continue - we never read from this task
-			DataStream lds;
-			lds.reset();
-			lds.packUUID(this->getUUID());	// Sender id
-			this->sendMessageEx(this->hostCon, MSGEX(AgentTeamLearning_MSGS, MSG_SET_BROADCAST_READY), lds.stream(), lds.length(), &agentListeningForUs);
-			lds.unlock();
-		}
-
-		uploadTaskDataInfo();
-		_ftime64_s(&this->lastTaskUpdateSent);
-		this->isReadyToBroadcast = false;		//Set as true again in convGetTaskInfo
-		this->timeoutPeriod = (lAllianceObject.teammatesData.size() + 1)*TEAMMATE_CRASH_TIMEOUT;	//Wait for the whole list to time out (nearly), plus margin - worst case scenario
-	}
-
-}
-
-//-----------------------------------------------------------------------------
-// Process message
-
-
-int AgentTeamLearning::conProcessMessage(spConnection con, unsigned char message, char *data, unsigned int len) {
-	DataStream lds;
-
-
-	if (!AgentBase::conProcessMessage(con, message, data, len)) // message handled
-		return 0;
-
-	switch (message) {
-	case AgentTeamLearning_MSGS::MSG_CONFIGURE:
-	{
-		lds.setData(data, len);
-		this->configureParameters(&lds);
-		lds.unlock();
-	}
-	break;
-	case AgentTeamLearning_MSGS::MSG_REQUEST_ACQUIESCENCE:
-	{
-		UUID sender;
-		UUID nilTask;
-		lds.setData(data, len);
-		lds.unpackUUID(&sender);
-		lds.unpackData(sizeof(UUID));	//Discard thread (for now - do we need a conversation?)
-		lds.unpackUUID(&nilTask);
-
-		if (this->mTaskList.find(nilTask) != this->mTaskList.end()) {
-			mTaskList[nilTask]->avatar = nilUUID;
-			mTaskList[nilTask]->agentUUID = nilUUID;
-		}
-
-		Log.log(0, "AgentTeamLearning::conProcessMessage: Received acquiescence request from %s.", Log.formatUUID(0, &sender));
-		lAllianceObject.acquiesce(lAllianceObject.myData.taskId);
-		lds.unlock();
-	}
-	break;
-	case AgentTeamLearning_MSGS::MSG_REQUEST_MOTRESET:
-	{
-		lds.setData(data, len);
-		UUID sender;
-		UUID taskId;
-		lds.unpackUUID(&sender);
-		lds.unpackData(sizeof(UUID));	//Discard thread (for now - do we need a conversation?)
-		lds.unpackUUID(&taskId);
-		Log.log(0, "AgentTeamLearning::conProcessMessage: Received motivation reset request from %s.", Log.formatUUID(0, &sender));
-		lAllianceObject.motivationReset(taskId);
-		lds.unlock();
-	}
-	break;
-	case AgentTeamLearning_MSGS::MSG_SET_BROADCAST_READY:
-	{
-		lds.setData(data, len);
-		UUID sender;
-		lds.unpackUUID(&sender);
-		Log.log(0, "AgentTeamLearning::conProcessMessage: Received MSG_SET_BROADCAST_READY from %s.", Log.formatUUID(0, &sender));
-		this->isReadyToBroadcast = true;
-	//	negotiateTasks();
-		lds.unlock();
-	}
-	break;
-	default:
-		return 1; // unhandled message
-	}
-
-	return 0;
-}// end conProcessMessage
-
-//-----------------------------------------------------------------------------
-// Callbacks
-
-
-bool AgentTeamLearning::convGetTaskInfo(void * vpConv)
-{
-
-
-	DataStream lds;
-	spConversation conv = (spConversation)vpConv;
-
-	if (conv->response == NULL) { // timed out
-		Log.log(0, "AgentTeamLearning::convGetTaskInfo: timed out");
-		return 0; // end conversation
-	}
-
-	lds.setData(conv->response, conv->responseLen);
-	lds.unpackData(sizeof(UUID)); // discard thread
-	char response = lds.unpackChar();
-	if (response == DDBR_OK) { // succeeded
-		if (lds.unpackBool() != false) {	//True if we requested a list of tasks, false if we requested info about a single task
-			lds.unlock();
-			return 0; // what happened here?
-		}
-
-		UUID taskId;
-		TASK task;
-		lds.unpackUUID(&taskId);
-
-		task = (DDBTask *)lds.unpackData(sizeof(DDBTask));
-
-			free(mTaskList[taskId]);
-			this->mTaskList[taskId] = (DDBTask *)malloc(sizeof(DDBTask));
-
-			this->mTaskList[taskId]->landmarkUUID = task->landmarkUUID;
-			this->mTaskList[taskId]->agentUUID = task->agentUUID;
-			this->mTaskList[taskId]->avatar = task->avatar;
-			this->mTaskList[taskId]->type = task->type;
-			this->mTaskList[taskId]->completed = task->completed;
-
-		lds.unlock();
-
-//		Log.log(0, "AgentTeamLearning::convGetTaskInfo: 1 updated task with uuid %s, responsible avatar %s and responsible agent %s", Log.formatUUID(LOG_LEVEL_NORMAL, &taskId), Log.formatUUID(LOG_LEVEL_NORMAL, &mTaskList[taskId]->avatar), Log.formatUUID(LOG_LEVEL_NORMAL, &mTaskList[taskId]->agentUUID));
-		//Log.log(0, "AgentTeamLearning::convGetTaskInfo: Got task with UUID %s", Log.formatUUID(0, &taskId));
-		//Log.log(0, "AgentTeamLearning::convGetTaskInfo: Its assigned avatar is: %s", Log.formatUUID(0, &task->avatar));
-
-
-			if (taskId == lAllianceObject.myData.taskId) {
-				if (task->completed)
-					lAllianceObject.finishTask();
-			}
-
-
-		if (task->avatar == this->avatarToListenFor) {
-//			Log.log(0, "AgentTeamLearning::convGetTaskInfo: setting isReadyToBroadcast to true");
-
-			this->isReadyToBroadcast = true;
-		}
-	}
-	else {
-		lds.unlock();
-		// TODO try again?
-	}
-	//lAllianceObject.updateTaskProperties(mTaskList);
-
-
-
-	return 0;
-}
-bool AgentTeamLearning::convGetTaskDataInfo(void * vpConv)
-{
-	DataStream lds;
-	spConversation conv = (spConversation)vpConv;
-
-	if (conv->response == NULL) { // timed out
-		Log.log(0, "AgentTeamLearning::convGetTaskDataInfo: timed out");
-		return 0; // end conversation
-	}
-
-	lds.setData(conv->response, conv->responseLen);
-	lds.unpackData(sizeof(UUID)); // discard thread
-
-	char response = lds.unpackChar();
-	if (response == DDBR_OK) { // succeeded
-		if (lds.unpackBool() != false) {	//True if we requested a list of taskdatas, false if we requested info about a single taskdata set
-			Log.log(0, "AgentTeamLearning::convGetTaskDataInfo: EnumTaskData is true, but shouldn't be");
-			lds.unlock();
-			return 0; // what happened here?
-		}
-
-		UUID avatarId;
-		DDBTaskData taskData;
-
-		lds.unpackUUID(&avatarId);
-		lds.unpackTaskData(&taskData);
-		if (avatarId == STATE(AgentTeamLearning)->ownerId) {	//Our own data - should never be passed here, sorted out in ddbNotification
-			//lAllianceObject.myData = taskData;				//Do nothing - this avatar should be the one updating
-			Log.log(0, "AgentTeamLearning::convGetTaskDataInfo: own data, should not be able to see this...");
-		}
-		else {
-			lAllianceObject.teammatesData[avatarId] = taskData;
-		}
-		lds.unlock();
-	}
-	else {
-		lds.unlock();
-		// TODO try again?
-	}
-
-	this->negotiateTasks();
-
-
-
-
-
-
-	//Log.log(0, "AgentTeamLearning::convGetTaskDataInfo: 1 My agent id is %s, my task id is now %s:", Log.formatUUID(0,&lAllianceObject.myData.agentId),Log.formatUUID(0,&lAllianceObject.myData.taskId));
-
-
-	//lAllianceObject.updateTaskProperties(mTaskList);
-	//Log.log(0, "AgentTeamLearning::convGetTaskDataInfo: 2 My agent id is %s, my task id is now %s:", Log.formatUUID(0, &lAllianceObject.myData.agentId), Log.formatUUID(0, &lAllianceObject.myData.taskId));
-	//lAllianceObject.chooseTask(mTaskList);
-	//Log.log(0, "AgentTeamLearning::convGetTaskDataInfo: 3 My agent id is %s, my task id is now %s:", Log.formatUUID(0, &lAllianceObject.myData.agentId), Log.formatUUID(0, &lAllianceObject.myData.taskId));
-
-	//std::map<UUID, DDBTaskData, UUIDless>::iterator iter = lAllianceObject.teammatesData.find(lAllianceObject.myData.taskId);
-
-	//if (previousTaskId != lAllianceObject.myData.taskId || iter != lAllianceObject.teammatesData.end()){		//If task assignment changed, or the task is found amongst or teammates
-	//	mTaskList[lAllianceObject.myData.taskId]->agentUUID = *this->getUUID();
-	//	mTaskList[lAllianceObject.myData.taskId]->avatar = STATE(AgentTeamLearning)->ownerId;
-	//	uploadTask(&lAllianceObject.myData.taskId, mTaskList[lAllianceObject.myData.taskId]);
-	////	uploadTaskDataInfo();
-	//	previousTaskId = lAllianceObject.myData.taskId;
-	//	Log.log(0, "AgentTeamLearning::convGetTaskDataInfo: 4 My agent id is %s, my task id is now %s:", Log.formatUUID(0, &lAllianceObject.myData.agentId), Log.formatUUID(0, &lAllianceObject.myData.taskId));
-
-	//}
-	//else {
-	//	Log.log(0, "AgentTeamLearning::convGetTaskDataInfo: 5 My agent id is %s, my task id is now %s:", Log.formatUUID(0, &lAllianceObject.myData.agentId), Log.formatUUID(0, &lAllianceObject.myData.taskId));
-
-	////	uploadTaskDataInfo();
-	//}
-
-
-
-	return 0;
-}
-bool AgentTeamLearning::convGetTaskList(void * vpConv)
-{
-	DataStream lds;
-	spConversation conv = (spConversation)vpConv;
-
-	if (conv->response == NULL) { // timed out
-		Log.log(0, "AgentTeamLearning::convGetTaskList: timed out");
-		return 0; // end conversation
-	}
-
-	lds.setData(conv->response, conv->responseLen);
-	lds.unpackData(sizeof(UUID)); // discard thread
-
-	char response = lds.unpackChar();
-	if (response == DDBR_OK) { // succeeded
-		int i, count;
-
-		if (lds.unpackBool() != true) {	//True if we requested a list of tasks as opposed to just one
-			lds.unlock();
-			return 0; // what happened here?
-		}
-
-		count = lds.unpackInt32();
-		Log.log(LOG_LEVEL_VERBOSE, "AgentTeamLearning::convGetTaskList: received %d tasks", count);
-
-		UUID taskId;
-		TASK task = (DDBTask *)malloc(sizeof(DDBTask));
-
-		for (i = 0; i < count; i++) {
-			lds.unpackUUID(&taskId);
-			if (taskId != nilUUID) {		//Guard against nil uploads from negotiateTasks()
-				task = (DDBTask *)lds.unpackData(sizeof(DDBTask));
-				free(mTaskList[taskId]);
-				this->mTaskList[taskId] = (DDBTask *)malloc(sizeof(DDBTask));
-
-				this->mTaskList[taskId]->landmarkUUID = task->landmarkUUID;
-				this->mTaskList[taskId]->agentUUID = task->agentUUID;
-				this->mTaskList[taskId]->avatar = task->avatar;
-				this->mTaskList[taskId]->type = task->type;
-				this->mTaskList[taskId]->completed = task->completed;
-
-				lAllianceObject.addTask(taskId);	//Add new tasks to myData
-
-
-
-	/*			Log.log(0, "AgentTeamLearning::convGetTaskList: added task with uuid %s", Log.formatUUID(LOG_LEVEL_NORMAL, &taskId));
-
-				Log.log(0, "AgentTeamLearning::convGetTaskList: task contents: landmark UUID: %s,agent UUID: %s, avatar UUID: %s, completed: %s, ITEM_TYPES: %d", Log.formatUUID(LOG_LEVEL_NORMAL, &mTaskList[taskId]->landmarkUUID), Log.formatUUID(LOG_LEVEL_NORMAL, &mTaskList[taskId]->agentUUID), Log.formatUUID(LOG_LEVEL_NORMAL, &mTaskList[taskId]->avatar), mTaskList[taskId]->completed ? "true" : "false", mTaskList[taskId]->type);*/
-			}
-		}
-		lds.unlock();
-		STATE(AgentTeamLearning)->hasReceivedTaskList = true;
-		this->finishConfigureParameters();
-	}
-	else {
-		lds.unlock();
-		// TODO try again?
-	}
-
-
-
-	return 0;
-}
-
-bool AgentTeamLearning::convGetTaskDataList(void * vpConv)
-{
-	DataStream lds;
-	spConversation conv = (spConversation)vpConv;
-
-	if (conv->response == NULL) { // timed out
-		Log.log(0, "AgentTeamLearning::convGetTaskDataList: timed out");
-		return 0; // end conversation
-	}
-
-	lds.setData(conv->response, conv->responseLen);
-	lds.unpackData(sizeof(UUID)); // discard thread	
-
-	char response = lds.unpackChar();
-	if (response == DDBR_OK) { // succeeded
-		int i, count;
-
-		if (lds.unpackBool() != true) {	//True if we requested a list of taskdatas as opposed to just one
-			lds.unlock();
-			return 0; // what happened here?
-		}
-
-		count = lds.unpackInt32();
-		Log.log(LOG_LEVEL_VERBOSE, "AgentTeamLearning::convGetTaskDataList: received %d taskdatas", count);
-
-		UUID avatarId;
-		DDBTaskData taskData;
-
-
-		for (i = 0; i < count; i++) {
-			lds.unpackUUID(&avatarId);
-			Log.log(LOG_LEVEL_VERBOSE, "AgentTeamLearning::convGetTaskDataList:  avatarId is: %s", Log.formatUUID(0, &avatarId));
-			lds.unpackTaskData(&taskData);
-			if (avatarId == STATE(AgentTeamLearning)->ownerId) {	//Our own data (perhaps recovered from a crash?)
-				Log.log(LOG_LEVEL_VERBOSE, "AgentTeamLearning::convGetTaskDataList: unpacking step 4a");
-				lAllianceObject.myData = taskData;
-				STATE(AgentTeamLearning)->isMyDataFound = true;		//We received our previously stored data (if there was any)
-			}
-			else {
-	/*			Log.log(LOG_LEVEL_VERBOSE, "AgentTeamLearning::convGetTaskDataList: unpacking step 4b");
-				Log.log(LOG_LEVEL_VERBOSE, "AgentTeamLearning::convGetTaskDataList: avatarId is: %s", Log.formatUUID(0, &avatarId));
-				Log.log(0, "AgentTeamLearning::convGetTaskDataList taskId: %s", Log.formatUUID(0, &taskData.taskId));*/
-				std::map<UUID, float, UUIDless>::const_iterator tauIter;
-				for (tauIter = taskData.tau.begin(); tauIter != taskData.tau.end(); tauIter++) {
-					//Log.log(0, "AgentTeamLearning::convGetTaskDataList tauIter: %f", tauIter->second);
-				}
-				std::map<UUID, float, UUIDless>::const_iterator motIter;
-				for (motIter = taskData.motivation.begin(); motIter != taskData.motivation.end(); motIter++) {
-					//Log.log(0, "AgentTeamLearning::convGetTaskDataList motIter: %f", motIter->second);
-				}
-				std::map<UUID, float, UUIDless>::const_iterator impIter;
-				for (impIter = taskData.impatience.begin(); impIter != taskData.impatience.end(); impIter++) {
-					//Log.log(0, "AgentTeamLearning::convGetTaskDataList impIter: %f", impIter->second);
-				}
-				std::map<UUID, int, UUIDless>::const_iterator attIter;
-				for (attIter = taskData.attempts.begin(); attIter != taskData.attempts.end(); attIter++) {
-					//Log.log(0, "AgentTeamLearning::convGetTaskDataList attIter: %d", attIter->second);
-				}
-				//Log.log(0, "AgentTeamLearning::convGetTaskDataList psi: %d", taskData.psi);
-				//Log.log(0, "AgentTeamLearning::convGetTaskDataList tauStdDev: %f", taskData.tauStdDev);
-
-				lastTeammateDataSize++;
-				lAllianceObject.teammatesData[avatarId] = taskData;
-			}
-			//Log.log(LOG_LEVEL_VERBOSE, "AgentTeamLearning::convGetTaskDataList: unpacking step 5");
-		}
-		lds.unlock();
-		STATE(AgentTeamLearning)->hasReceivedTaskDataList = true;
-		this->finishConfigureParameters();
-	}
-	else {
-		lds.unlock();
-		// TODO try again?
-	}
-
-
-
-	return 0;
-}
-bool AgentTeamLearning::convReqAcquiescence(void * vpConv)
-{
-	return false;
-}
-bool AgentTeamLearning::convReqMotReset(void * vpConv)
-{
-	return false;
-}
-
-
-
 
 int AgentTeamLearning::ddbNotification(char *data, int len) {
 	DataStream lds, sds;
@@ -862,7 +496,20 @@ int AgentTeamLearning::ddbNotification(char *data, int len) {
 	lds.unpackUUID(&uuid);
 	evt = lds.unpackChar();
 	if (evt == DDBE_WATCH_TYPE) {
-		if (type == DDB_TASK) {
+		if (type == DDB_AGENT) {
+			// request list of agents
+			UUID thread = this->conversationInitiate(AgentTeamLearning_CBR_convGetAgentList, DDB_REQUEST_TIMEOUT);
+			if (thread == nilUUID) {
+				return 1;
+			}
+			sds.reset();
+			sds.packUUID(&nilUUID); // dummy id 
+			sds.packInt32(DDBAGENTINFO_RLIST);
+			sds.packUUID(&thread);
+			this->sendMessage(this->hostCon, MSG_DDB_RAGENTINFO, sds.stream(), sds.length());
+			sds.unlock();
+		}
+		else if (type == DDB_TASK) {
 			// request list of tasks
 			UUID thread = this->conversationInitiate(AgentTeamLearning_CBR_convGetTaskList, DDB_REQUEST_TIMEOUT);
 			if (thread == nilUUID) {
@@ -907,17 +554,17 @@ int AgentTeamLearning::ddbNotification(char *data, int len) {
 			sds.packBool(false);			   //true == send list of taskdatas, otherwise only info about a specific task
 			this->sendMessage(this->hostCon, MSG_DDB_TASKGETINFO, sds.stream(), sds.length());
 			sds.unlock();
-			lAllianceObject.addTask(uuid);	//Add new tasks to myData
+			this->lAllianceObject.addTask(uuid);	//Add new tasks to myData
 			Log.log(0, "AgentTeamLearning::ddbNotification: added task with uuid %s", Log.formatUUID(LOG_LEVEL_NORMAL, &uuid));
 		}
 		else if (evt == DDBE_UPDATE) {
 			//Log.log(0, "AgentTeamLearning::ddbNotification: task update with uuid %s", Log.formatUUID(LOG_LEVEL_NORMAL, &uuid));
 
-			std::map<UUID, DDBTaskData, UUIDless>::const_iterator tmIter = lAllianceObject.teammatesData.find(uuid);
+			std::map<UUID, DDBTaskData, UUIDless>::const_iterator tmIter = this->lAllianceObject.teammatesData.find(uuid);
 
-			if (uuid == lAllianceObject.myData.taskId && tmIter != lAllianceObject.teammatesData.end()) {		//If it's our own update, and if it's not in the teammatesData, do nothing
+			if (uuid == this->lAllianceObject.myData.taskId && tmIter != this->lAllianceObject.teammatesData.end()) {		//If it's our own update, and if it's not in the teammatesData, do nothing
 
-				//Log.log(0, "AgentTeamLearning::ddbNotification: task is our own, discarding.");
+																												//Log.log(0, "AgentTeamLearning::ddbNotification: task is our own, discarding.");
 			}
 			else {
 				// request task info
@@ -944,10 +591,11 @@ int AgentTeamLearning::ddbNotification(char *data, int len) {
 
 	if (type == DDB_TASKDATA) {
 		if (evt == DDBE_ADD || evt == DDBE_UPDATE) {
+	    //if (evt == DDBE_UPDATE) {
 
 			if (uuid != STATE(AgentTeamLearning)->ownerId) {		//If it's our own update, do nothing
 
-				// request taskdata info
+																	// request taskdata info
 				UUID thread = this->conversationInitiate(AgentTeamLearning_CBR_convGetTaskDataInfo, DDB_REQUEST_TIMEOUT, &uuid, sizeof(UUID));
 				if (thread == nilUUID) {
 					return 1;
@@ -962,7 +610,7 @@ int AgentTeamLearning::ddbNotification(char *data, int len) {
 			}
 			else
 				;
-				//Log.log(0, "AgentTeamLearning::ddbNotification: taskdata is our own, discarding.");
+			//Log.log(0, "AgentTeamLearning::ddbNotification: taskdata is our own, discarding.");
 		}
 		else if (evt == DDBE_REM) {
 			// TODO
@@ -973,17 +621,442 @@ int AgentTeamLearning::ddbNotification(char *data, int len) {
 	return 0;
 }
 
+//-----------------------------------------------------------------------------
+// Process message
+
+int AgentTeamLearning::conProcessMessage(spConnection con, unsigned char message, char *data, unsigned int len) {
+	DataStream lds;
 
 
+	if (!AgentBase::conProcessMessage(con, message, data, len)) // message handled
+		return 0;
 
+	switch (message) {
+	case AgentTeamLearning_MSGS::MSG_CONFIGURE:
+	{
+		lds.setData(data, len);
+		this->configureParameters(&lds);
+		lds.unlock();
+	}
+	break;
+	case AgentTeamLearning_MSGS::MSG_ROUND_INFO:
+	{
+		// This message contains the information about the next round
+		//   -New round number
+		//   -Round start time
+		//   -Agent order
 
+		// The round number and agent order will be updated in the step method, once the timeout time has passed
+		this->round_info_set = false;
 
+		// Record when we received this message
+		_ftime64_s(&this->round_info_receive_time);
 
+		lds.setData(data, len);
 
+		int round = lds.unpackInt32();  // Next round number
+		this->new_round_number = round;
+		this->round_start_time = *(_timeb *)lds.unpackData(sizeof(_timeb)); // Next round start time
 
+		// Unpack the new randomized list of agents
+		this->TLAgents.clear();
+		int pos;
+		UUID new_id;
+		std::vector<UUID>::iterator iter;
+		for (int i = 0; i < this->TLAgentData.size(); i++) {
+			lds.unpackUUID(&new_id);
+			this->TLAgents.push_back(new_id);
 
+			// Initialize to no response for the next round
+			this->TLAgentData[new_id].response = false;
 
+			// For logging
+			if (new_id == STATE(AgentBase)->uuid) 
+				pos = i + 1;
+			
+		}
+		lds.unlock();
+		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::conProcessMessage: Round %d: Received info for new round, our position is %d.", round, pos);
+	}
+	break;
+	case AgentTeamLearning_MSGS::MSG_REQUEST_ACQUIESCENCE:
+	{
+		UUID sender;
+		UUID nilTask;
+		lds.setData(data, len);
+		lds.unpackUUID(&sender);
+		lds.unpackData(sizeof(UUID));	//Discard thread (for now - do we need a conversation?)
+		lds.unpackUUID(&nilTask);
 
+		if (this->mTaskList.find(nilTask) != this->mTaskList.end()) {
+			mTaskList[nilTask]->avatar = nilUUID;
+			mTaskList[nilTask]->agentUUID = nilUUID;
+		}
+
+		Log.log(0, "AgentTeamLearning::conProcessMessage: Received acquiescence request from %s.", Log.formatUUID(0, &sender));
+		this->lAllianceObject.acquiesce(this->lAllianceObject.myData.taskId);
+		lds.unlock();
+	}
+	break;
+	case AgentTeamLearning_MSGS::MSG_REQUEST_MOTRESET:
+	{
+		lds.setData(data, len);
+		UUID sender;
+		UUID taskId;
+		lds.unpackUUID(&sender);
+		lds.unpackData(sizeof(UUID));	//Discard thread (for now - do we need a conversation?)
+		lds.unpackUUID(&taskId);
+		Log.log(0, "AgentTeamLearning::conProcessMessage: Received motivation reset request from %s.", Log.formatUUID(0, &sender));
+		this->lAllianceObject.motivationReset(taskId);
+		lds.unlock();
+	}
+	break;
+	default:
+		return 1; // unhandled message
+	}
+
+	return 0;
+}// end conProcessMessage
+
+//-----------------------------------------------------------------------------
+// Callbacks
+
+/* convGetAgentList
+*
+* Loops through all available agents, scanning for other team learning agents and
+* adds them to the member property TLAgentData.
+*
+* This agent is set as a DDB_AGENT watcher, which results in this callback beign visited when
+* a new agwnt is added to the DDB. Visitation of this callback is necessary for start, and is 
+* checked in finishConfigureParameters().
+*/
+bool AgentTeamLearning::convGetAgentList(void *vpConv) {
+	DataStream lds, sds;
+	spConversation conv = (spConversation)vpConv;
+
+	if (conv->response == NULL) { // timed out
+		Log.log(0, "AgentTeamLearning::convGetAgentList: timed out");
+		return 0; // end conversation
+	}
+
+	lds.setData(conv->response, conv->responseLen);
+	lds.unpackData(sizeof(UUID)); // discard thread
+
+	char response = lds.unpackChar();
+	if (response == DDBR_OK) { // succeeded
+
+		if (lds.unpackInt32() != DDBAGENTINFO_RLIST) {
+			lds.unlock();
+			return 0; // what happened here?
+		}
+
+		// The type UUID we're looking for
+		UUID teamLearningAgentId;
+		UuidFromString((RPC_WSTR)_T(AgentTeamLearning_UUID), &teamLearningAgentId);
+
+		// Get number of agents
+		int count;
+		count = lds.unpackInt32();
+		Log.log(LOG_LEVEL_VERBOSE, "AgentTeamLearning::convGetAgentList: recieved %d total agents.", count);
+
+		std::list<UUID> tempTLAgentList;
+
+		// Scan agents
+		UUID thread;
+		UUID agentId;
+		AgentType agentType;
+		UUID parent;
+		for (int i = 0; i < count; i++) {
+			lds.unpackUUID(&agentId);              // Id
+			lds.unpackString();                    // Type
+			lds.unpackUUID(&agentType.uuid);       // Id of their type
+			agentType.instance = lds.unpackChar(); // Instance
+			lds.unpackUUID(&parent);               // Parent agent Id
+
+			// Need team learning agents (including myself)
+			if (agentType.uuid == teamLearningAgentId) {
+				// Add them to the list
+				tempTLAgentList.push_back(agentId);
+
+				// Save their data
+				this->TLAgentData[agentId].id = agentId;
+				this->TLAgentData[agentId].parentId = parent;
+				this->TLAgentData[agentId].response = false;
+
+				Log.log(LOG_LEVEL_VERBOSE, "AgentTeamLearning::convGetAgentList: Found team learning agent %s.", Log.formatUUID(LOG_LEVEL_VERBOSE, &agentId));
+			}
+		}
+		lds.unlock();
+		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetAgentList: Found %d other team learning agents.", this->TLAgentData.size() - 1);
+
+		// Make the actual agent list a sorted list (so every agent starts with the same order),
+		tempTLAgentList.sort(UUIDless());
+		this->TLAgents.clear();
+		std::list<UUID>::iterator iter;
+		for (iter = tempTLAgentList.begin(); iter != tempTLAgentList.end(); ++iter) {
+			this->TLAgents.push_back(*iter);
+		}
+
+		// Set the next round start time
+		_ftime64_s(&this->round_start_time);
+		this->round_start_time.millitm += this->delta_learn_time;
+		STATE(AgentTeamLearning)->round_number++;
+		this->new_round_number++;
+		this->lAllianceObject.myData.round_number++;
+
+		STATE(AgentTeamLearning)->receivedAllTeamLearningAgents = true;
+		this->finishConfigureParameters();
+
+	}// end response Ok
+
+	return 0;
+}
+
+/* convGetTaskList
+*
+* Handles notifications from the DDB about new tasks. The task will be added to the mTaskLis
+* map, and the task will be added to the L-Alliance object as well.
+*
+* This agent is set as a DDB_TASK watcher, which results in this callback beign visited when
+* a new task is added to the DDB.
+*/
+bool AgentTeamLearning::convGetTaskList(void * vpConv)
+{
+	DataStream lds;
+	spConversation conv = (spConversation)vpConv;
+
+	if (conv->response == NULL) { // timed out
+		Log.log(0, "AgentTeamLearning::convGetTaskList: timed out");
+		return 0; // end conversation
+	}
+
+	lds.setData(conv->response, conv->responseLen);
+	lds.unpackData(sizeof(UUID)); // discard thread
+
+	char response = lds.unpackChar();
+	if (response == DDBR_OK) { // succeeded
+		int i, count;
+
+		if (lds.unpackBool() != true) {	//True if we requested a list of tasks as opposed to just one
+			lds.unlock();
+			return 0; // what happened here?
+		}
+
+		count = lds.unpackInt32();
+		Log.log(LOG_LEVEL_VERBOSE, "AgentTeamLearning::convGetTaskList: received %d tasks", count);
+
+		UUID taskId;
+		TASK task = (DDBTask *)malloc(sizeof(DDBTask));
+
+		for (i = 0; i < count; i++) {
+			lds.unpackUUID(&taskId);
+			// Guard against nil uploads
+			if (taskId != nilUUID) {
+				// Add the new task to our data
+				task = (DDBTask *)lds.unpackData(sizeof(DDBTask));
+				free(mTaskList[taskId]);
+				this->mTaskList[taskId] = (DDBTask *)malloc(sizeof(DDBTask));
+
+				this->mTaskList[taskId]->landmarkUUID = task->landmarkUUID;
+				this->mTaskList[taskId]->agentUUID = task->agentUUID;
+				this->mTaskList[taskId]->avatar = task->avatar;
+				this->mTaskList[taskId]->type = task->type;
+				this->mTaskList[taskId]->completed = task->completed;
+
+				// Add the task to L-Alliance
+				this->lAllianceObject.addTask(taskId);
+			}
+		}
+		lds.unlock();
+		STATE(AgentTeamLearning)->hasReceivedTaskList = true;
+		this->finishConfigureParameters();
+	}
+	else {
+		lds.unlock();
+		// TODO try again?
+	}
+
+	return 0;
+}
+
+/* convGetTaskDataList
+*
+* Handles notifications from the DDB about new L-Alliance task data entries (i.e. tau, motivation,
+* impatience, etc.).
+*
+* This agent is set as a DDB_TASKDATA watcher, which results in this callback beign visited when
+* new (L-Alliance) task data is added to the DDB.
+*/
+bool AgentTeamLearning::convGetTaskDataList(void * vpConv) {
+	DataStream lds;
+	spConversation conv = (spConversation)vpConv;
+
+	if (conv->response == NULL) { // timed out
+		Log.log(0, "AgentTeamLearning::convGetTaskDataList: timed out");
+		return 0; // end conversation
+	}
+
+	lds.setData(conv->response, conv->responseLen);
+	lds.unpackData(sizeof(UUID)); // discard thread	
+
+	char response = lds.unpackChar();
+	if (response == DDBR_OK) { // succeeded
+		int i, count;
+
+		if (lds.unpackBool() != true) {	//True if we requested a list of taskdatas as opposed to just one
+			lds.unlock();
+			return 0; // what happened here?
+		}
+
+		count = lds.unpackInt32();
+		Log.log(LOG_LEVEL_VERBOSE, "AgentTeamLearning::convGetTaskDataList: received %d taskdatas", count);
+
+		UUID avatarId;
+		DDBTaskData taskData;
+
+		for (i = 0; i < count; i++) {
+			lds.unpackUUID(&avatarId);
+			Log.log(LOG_LEVEL_VERBOSE, "AgentTeamLearning::convGetTaskDataList:  avatarId is: %s", Log.formatUUID(0, &avatarId));
+			lds.unpackTaskData(&taskData);
+			if (avatarId == STATE(AgentTeamLearning)->ownerId) {	//Our own data (perhaps recovered from a crash?)
+				this->lAllianceObject.myData = taskData;
+				STATE(AgentTeamLearning)->isMyDataFound = true;		//We received our previously stored data (if there was any)
+			}
+			else {
+				this->lAllianceObject.teammatesData[avatarId] = taskData;
+			}
+		}
+		lds.unlock();
+		STATE(AgentTeamLearning)->hasReceivedTaskDataList = true;
+		this->finishConfigureParameters();
+	}
+	else {
+		lds.unlock();
+		// TODO try again?
+	}
+
+	return 0;
+}
+
+/* convGetTaskInfo
+*
+* For receiving updates about tasks (assigned agent, assigned avatar, etc.).
+* Receives an updated DDBTask, and puts it in the corresponding entry of mTaskList.
+* 
+* Used when there is a DDB notification for DDB_TASK, and it is a DDBE_ADD or DDBE_UPDATE.
+*/
+bool AgentTeamLearning::convGetTaskInfo(void * vpConv) {
+	DataStream lds;
+	spConversation conv = (spConversation)vpConv;
+
+	if (conv->response == NULL) { // timed out
+		Log.log(0, "AgentTeamLearning::convGetTaskInfo: timed out");
+		return 0; // end conversation
+	}
+
+	lds.setData(conv->response, conv->responseLen);
+	lds.unpackData(sizeof(UUID)); // discard thread
+	char response = lds.unpackChar();
+	if (response == DDBR_OK) { // succeeded
+		if (lds.unpackBool() != false) {	//True if we requested a list of tasks, false if we requested info about a single task
+			lds.unlock();
+			return 0; // what happened here?
+		}
+
+		UUID taskId;
+		TASK task;
+		lds.unpackUUID(&taskId);
+
+		task = (DDBTask *)lds.unpackData(sizeof(DDBTask));
+		free(mTaskList[taskId]);
+		this->mTaskList[taskId] = (DDBTask *)malloc(sizeof(DDBTask));
+
+		this->mTaskList[taskId]->landmarkUUID = task->landmarkUUID;
+		this->mTaskList[taskId]->agentUUID = task->agentUUID;
+		this->mTaskList[taskId]->avatar = task->avatar;
+		this->mTaskList[taskId]->type = task->type;
+		this->mTaskList[taskId]->completed = task->completed;
+
+		lds.unlock();
+
+		// Has our task been completed?
+		if (taskId == this->lAllianceObject.myData.taskId && task->completed) {
+			this->lAllianceObject.finishTask();
+		}
+
+	}
+	else {
+		lds.unlock();
+		// TODO try again?
+	}
+
+	return 0;
+}
+
+/* convGetTaskDataInfo
+*
+* For receiving updates about L-Alliance tasks data (i.e. tau, motivation,
+* impatience, etc.) for other agents' tasks.
+*
+* Used when there is a DDB notification for DDB_TASKDATA, and it is a DDBE_ADD or DDBE_UPDATE.
+*/
+bool AgentTeamLearning::convGetTaskDataInfo(void * vpConv) {
+	DataStream lds;
+	spConversation conv = (spConversation)vpConv;
+
+	if (conv->response == NULL) { // timed out
+		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetTaskDataInfo: timed out");
+		return 0; // end conversation
+	}
+
+	lds.setData(conv->response, conv->responseLen);
+	lds.unpackData(sizeof(UUID)); // discard thread
+
+	char response = lds.unpackChar();
+	if (response == DDBR_OK) { // succeeded
+		if (lds.unpackBool() != false) {	// True if we requested a list of taskdatas, false if we requested info about a single taskdata set
+			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetTaskDataInfo: EnumTaskData is true, but shouldn't be.");
+			lds.unlock();
+			return 0; // what happened here?
+		}
+
+		UUID avatarId;
+		DDBTaskData taskData;
+		lds.unpackUUID(&avatarId);
+		lds.unpackTaskData(&taskData);
+		// Only add data about other agent's tasks, ours is handled in ddbNotification
+		if (avatarId != STATE(AgentTeamLearning)->ownerId) {
+
+			if (taskData.round_number == STATE(AgentTeamLearning)->round_number) {
+				// Valid data
+				lAllianceObject.teammatesData[avatarId] = taskData;
+
+				// Mark that we have received a response from this agent
+				this->TLAgentData[taskData.agentId].response = true;
+				_ftime64_s(&this->last_response_time);
+			}
+			else {
+				// Invalid data, corrupt or from an old round
+				Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetTaskDataInfo: Round %d: Received invalid round numer (%d != %d) from %s", STATE(AgentTeamLearning)->round_number, taskData.round_number, STATE(AgentTeamLearning)->round_number, Log.formatUUID(0, &taskData.agentId));
+			}
+			
+		}
+		lds.unlock();
+	} else {
+		lds.unlock();
+		// TODO try again?
+	}
+
+	return 0;
+}
+
+// TODO - probably remove these
+bool AgentTeamLearning::convReqAcquiescence(void * vpConv) {
+	return false;
+}
+bool AgentTeamLearning::convReqMotReset(void * vpConv) {
+	return false;
+}
 
 //-----------------------------------------------------------------------------
 // State functions
