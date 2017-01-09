@@ -9,8 +9,11 @@
 
 #include "LAlliance.h"
 
-#define TEAMMATE_NOCHANGE_COUNT	5		//How many stable iterations (with no change in teammate numbers) required before task choosing begins 
-#define TEAMMATE_CRASH_TIMEOUT	3000		//Time (in ms) to wait before assuming that the preceding teammate in the list has failed
+typedef struct TLAgentDataStruct{
+	UUID id;
+	UUID parentId;
+	bool response;
+};
 
 class AgentTeamLearning : public AgentBase {
 
@@ -30,12 +33,14 @@ public:
 		bool hasReceivedTaskList;
 		bool hasReceivedTaskDataList;
 		bool isSetupComplete;
+		bool receivedAllTeamLearningAgents;
 
 		int updateId;
 
 		bool isMyDataFound;
 
-
+		// V2 team learning comms
+		int round_number;  // Counter for the current task allocation round
 	};
 
 	// Random number generator
@@ -50,17 +55,19 @@ protected:
 	taskList  mTaskList;
 	UUID	  previousTaskId;
 
+	// V2 for team learning comms
+	std::map<UUID, TLAgentDataStruct, UUIDless> TLAgentData;
+	std::vector<UUID> TLAgents;
+	_timeb round_start_time;          // Start time of the current round of learning/task allocation [ms]
+	long long round_timout;           // Maximum time for an agent to respond in a round [ms]
+	long long delta_learn_time;       // Time between rounds of learning/task allocation
+	_timeb last_response_time;        // Time of the last from another agent performing task allocation
 
-	int lastTeammateDataSize;
-	int itNoTeammateChange;	//Count how many iterations since last teammateData size change
-	bool isReadyToBroadcast;
-	bool broadCastUnlocked;
-	bool broadCastPending;
-	bool hasStabilityOccurred;
-	UUID avatarToListenFor;	//The avatar that is ahead of us in the task update list
-	UUID agentListeningForUs;	//The -agent- that is after us in the task update list	(NOTE: Agent, not avatar)
-	_timeb lastTaskUpdateSent;	//last time we sent a task update to the DDB
-	long long timeoutPeriod;
+	_timeb round_info_receive_time;
+	int new_round_number;
+	std::vector<UUID> new_round_order;
+	bool round_info_set;
+
 	
 //-----------------------------------------------------------------------------
 // Functions	
@@ -73,21 +80,17 @@ public:
 	virtual int start( char *missionFile );		// start agent
 	virtual int stop();			// stop agent
 	virtual int step();			// run one step
-
-
+	int checkRoundStatus();
+	int initiateNextRound();
 	int sendRequest(UUID *agentId, int message, UUID *id = NULL);
-
 	void logWrapper(int log_level, char * message);
-
-	void negotiateTasks();
 
 private:
 
 	int configureParameters( DataStream *ds );
 	int finishConfigureParameters();
-	int uploadTask(UUID *taskId, DDBTask * task);
+	int uploadTask(UUID &task_id, UUID &agent_id, UUID &avatar_id, bool completed);
 	int uploadTaskDataInfo();
-
 
 	virtual int ddbNotification(char * data, int len);
 
@@ -102,21 +105,22 @@ public:
 	// Enumerate callback references
 	enum CallbackRef {
 		AgentTeamLearning_CBR_convGetTaskInfo = AgentBase_CBR_HIGH,
-		AgentTeamLearning_CBR_convGetTaskDataInfo,
+		AgentTeamLearning_CBR_convGetAgentList,
 		AgentTeamLearning_CBR_convGetTaskList,
 		AgentTeamLearning_CBR_convGetTaskDataList,
+		AgentTeamLearning_CBR_convGetTaskDataInfo,
 		AgentTeamLearning_CBR_convReqAcquiescence,
 		AgentTeamLearning_CBR_convReqMotReset,
 	};
 
 	// Define callback functions (make sure they match CallbackRef above and are added to this->callback during agent creation)
-	bool convGetTaskInfo(void *vpConv);
-	bool convGetTaskDataInfo(void *vpConv);
+	bool convGetAgentList(void *vpConv);
 	bool convGetTaskList(void *vpConv);
 	bool convGetTaskDataList(void *vpConv);
+	bool convGetTaskInfo(void *vpConv);
+	bool convGetTaskDataInfo(void *vpConv);
 	bool convReqAcquiescence(void *vpConv);
 	bool convReqMotReset(void *vpConv);
-
 
 protected:
 	virtual int	  freeze( UUID *ticket );

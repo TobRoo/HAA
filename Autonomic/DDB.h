@@ -526,8 +526,9 @@ struct DDBTaskData {
 	std::map<UUID, int, UUIDless> attempts;        // Number of attempts at each task
 	std::map<UUID, float, UUIDless> mean;          // Mean task time
 	std::map<UUID, float, UUIDless> stddev;        // Standard deviation of task time
-	unsigned int psi;                    // Time on task
-	_timeb updateTime;                   // Time of most recent update to DDB
+	int psi;                                       // Time on task
+	_timeb updateTime;                             // Time of most recent update to DDB
+	int round_number;                              // Task allocation round
 };
 
 typedef std::pair<char *, size_t> storagePair;

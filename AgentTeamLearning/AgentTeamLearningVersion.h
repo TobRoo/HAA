@@ -18,18 +18,18 @@ namespace AgentTeamLearning_MSGS {
 	// !! NOTE !! Make sure the order matches betwen MSGS and MSG_SIZE
 
 	enum MSGS {
-		MSG_CONFIGURE = MSG_FIRST,	// configure [UUID owner]
-		MSG_REQUEST_ACQUIESCENCE,	// recAcq [UUID thread]
-		MSG_REQUEST_MOTRESET,	// recAcq [UUID task]
-		MSG_SET_BROADCAST_READY,	//	[UUID sender]
-		MSG_LAST					// last message id
+		MSG_CONFIGURE = MSG_FIRST,	   // configure [UUID owner]
+		MSG_REQUEST_ACQUIESCENCE,	   // recAcq [UUID thread]
+		MSG_REQUEST_MOTRESET,	       // recAcq [UUID task]
+		MSG_ROUND_INFO,                // Information for the next round of learning/task allocation [int round_number, _timeb round_start_time, UUID agentId_1, UUID agentId_2, ...]
+		MSG_LAST					   // last message id
 	};
 	
 	static const unsigned int MSG_SIZE[] = { // array of message size by MSGID - MSG_FIRST
 		sizeof(UUID),//sizeof(UUID),					// MSG_CONFIGURE
-		sizeof(UUID) + sizeof(UUID) + sizeof(UUID),					//MSG_REQUEST_ACQUIESCENCE
-		sizeof(UUID) + sizeof(UUID) + sizeof(UUID),					//MSG_REQUEST_MOTRESET
-		sizeof(UUID),									//MSG_SET_BROADCAST_READY
+		sizeof(UUID) + sizeof(UUID) + sizeof(UUID),		//MSG_REQUEST_ACQUIESCENCE
+		sizeof(UUID) + sizeof(UUID) + sizeof(UUID),		//MSG_REQUEST_MOTRESET
+		-2,                                             // MSG_ROUND_INFO
 	};
 
 }
