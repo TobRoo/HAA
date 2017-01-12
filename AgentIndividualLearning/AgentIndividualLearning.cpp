@@ -105,7 +105,7 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
     this->empty_reward_value_ = -0.01f;
 
     // Action parameters
-    this->backupFractionalSpeed = 0.5f;
+    this->backupFractionalSpeed = -0.5f;
     this->num_actions_ = 5;
     //---------------------------------------------------------------
 
@@ -305,7 +305,7 @@ int AgentIndividualLearning::start(char *missionFile) {
 // Stop
 
 int AgentIndividualLearning::stop() {
-
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::step: YEEEEEEEEEEEEEEEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH");
     if (!this->frozen) {
         // TODO
     }// end if
@@ -319,6 +319,7 @@ int AgentIndividualLearning::stop() {
 
 int AgentIndividualLearning::step() {
     if (STATE(AgentBase)->stopFlag) {
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::step: YEEEEEEEEEEEEEEEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH");
         uploadLearningData();	//Stores individual learningdata in DDB for next simulation run
     }
 
@@ -515,7 +516,7 @@ int AgentIndividualLearning::formAction() {
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: No matching action, %d", action);
 	}// end form action if
 
-	Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::formAction: Averag action quality: %.3f", this->q_avg);
+	Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::formAction: Average action quality: %.3f", this->q_avg);
 
 	 // When the action is not valid retain the type, but zero the movement value
 	 // (so that it can still be used for learning)
@@ -1334,6 +1335,12 @@ int AgentIndividualLearning::conProcessMessage(spConnection con, unsigned char m
 			this->sendMessage(this->hostCon, MSG_RESPONSE, lds_qvals.stream(), lds_qvals.length(), &sender);
 			lds_qvals.unlock();
 			
+		}
+		break;
+		case MSG_MISSION_DONE:
+		{
+			Log.log(0, " AgentIndividualLearning::conProcessMessage: mission done, uploading learning data for next run.");
+			this->uploadLearningData();
 		}
 		break;
         default:

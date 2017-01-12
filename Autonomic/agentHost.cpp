@@ -10,6 +10,10 @@
 #include <fstream>
 #include <iostream>
 
+
+#include "..\AgentIndividualLearning\AgentIndividualLearningVersion.h"
+#include "..\AgentTeamLearning\AgentTeamLearningVersion.h"
+
 // TEMP
 #include "time.h"
 
@@ -33,7 +37,7 @@ int UUIDLock_Throw( UUIDLock *lock, UUID *tumbler, UUID *key ) {
 
 //-----------------------------------------------------------------------------
 // Constructor	
-AgentHost::AgentHost( char *libraryPath, int logLevel, char *logDirectory, char playbackMode, char *playbackFile ) : AgentBase( NULL, NULL, logLevel, logDirectory, playbackMode, playbackFile ) {
+AgentHost::AgentHost( char *libraryPath, int logLevel, char *logDirectory, char playbackMode, char *playbackFile, int runNumber ) : AgentBase( NULL, NULL, logLevel, logDirectory, playbackMode, playbackFile ) {
 
 	// allocate state
 	ALLOCATE_STATE( AgentHost, AgentBase )
@@ -93,6 +97,7 @@ AgentHost::AgentHost( char *libraryPath, int logLevel, char *logDirectory, char 
 
 	this->cbbaQueued = nilUUID;
 	
+	STATE(AgentHost)->runNumber = runNumber;
 
 	// Prepare callbacks
 	this->callback[AgentHost_CBR_cbCleanExitCheck] = NEW_MEMBER_CB(AgentHost,cbCleanExitCheck);
@@ -10683,7 +10688,7 @@ int AgentHost::DataDump( bool fulldump, bool getPose, char *label ) {
 	// dump DDB statistics, landmarks, maps, and particle filters
 	dStore->DataDump( &Data, fulldump, logDirectory );
 
-	this->LearningDataDump();	//ONLY FOR TESTING; REMOVE WHEN DONE
+	//this->LearningDataDump();	//ONLY FOR TESTING; REMOVE WHEN DONE
 
 	if ( getPose ) {
 		// ask ExecutiveSimulation for true avatar poses
@@ -10774,24 +10779,33 @@ int AgentHost::DataDump_AvatarPose( DataStream *ds ) {
 int AgentHost::LearningDataDump()
 {
 	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: 1");
-	if (!this->gatherData)		//Only dump learning data from one host
-		return 0;
 
+	WCHAR tempLearningDataFile[512];
+	wsprintf(tempLearningDataFile, _T("learningData%d.tmp"), STATE(AgentHost)->runNumber);
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: 1.1");
+	std::ifstream    tempLearningData(tempLearningDataFile);
+	bool fileExists = tempLearningData.good();
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: 1.2");
+	if (fileExists) {		//Only dump learning data if there is no file with the current run number in the bin folder
+		tempLearningData.close();
+		return 0;
+	}
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: 1.3");
 	DataStream taskDataDS;
 	DataStream taskDS;
 
 
 	this->dStore->GetTaskData(&nilUUID, &taskDataDS, &nilUUID, true);
 	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: 2");
+	taskDataDS.rewind();
 	taskDataDS.unpackData(sizeof(UUID)); // discard thread
 	char taskDataOk = taskDataDS.unpackChar();	//DDBR_OK
 	bool enumTaskData = taskDataDS.unpackBool();	//EnumTaskData
 	int numTaskDatas = taskDataDS.unpackInt32();
 	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: taskDataOk is %d, enumTaskData is %d, numTaskDatas is %d", taskDataOk, enumTaskData, numTaskDatas);
 
-
-
 	this->dStore->GetTask(&nilUUID, &taskDS, &nilUUID, true);
+	taskDS.rewind();
 	taskDS.unpackData(sizeof(UUID)); // discard thread
 	char taskOk = taskDS.unpackChar();	//DDBR_OK
 	bool enumTask = taskDS.unpackBool();	//EnumTasks
@@ -10799,15 +10813,12 @@ int AgentHost::LearningDataDump()
 	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: 3");
 	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: taskOk is %d, enumTask is %d, numTasks is %d, ", taskOk, enumTask, numTasks);
 
-
-
-
-
 	mapDDBQLearningData QLData = this->dStore->GetQLearningData();
 
 	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump:about to write learning data...");
-
-	//WriteLearningData(&taskDataDS, &taskDS, &QLData);
+	taskDataDS.rewind();
+	taskDS.rewind();
+	WriteLearningData(&taskDataDS, &taskDS, &QLData);
 
 	taskDataDS.unlock();
 	taskDS.unlock();
@@ -10858,38 +10869,54 @@ int AgentHost::WriteLearningData(DataStream *taskDataDS, DataStream *taskDS, map
 
 	UUID avatarId;
 	DDBTaskData taskData;
-	char instance;	//Used for identifying avatars (specified in mission file)
+	int instance;	//Used for identifying avatars (specified in mission file)
 
 
-	//Store learning data in .tmp file in bin dir for next run, and in .txt file in logDir\runNumberN for archiving
+	//Store learning data in .tmp file in bin dir for next run, and in .csv file in logDir\runNumberN for archiving
 
 	WCHAR learningArchiveFile[512];
 	wsprintf(learningArchiveFile, _T("%s\\learningData.csv"), logDirectory);
 	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 6");
-	std::ofstream    tempLearningData("learningData.tmp");
+	WCHAR tempLearningDataFile[512];
+	wsprintf(tempLearningDataFile, _T("learningData%d.tmp"), STATE(AgentHost)->runNumber);
+
+	std::ofstream    tempLearningData(tempLearningDataFile);
 	std::ofstream    archiveLearningData(learningArchiveFile);
 
 
 	RPC_WSTR stringUUID;
+	int landmark_type;
 	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 7");
 	for (int i = 0; i < numTaskDatas; i++) {
 		 taskDataDS->unpackUUID(&avatarId);
 		 taskDataDS->unpackTaskData(&taskData);
-		 mapDDBAvatar::iterator iterAvatar = this->dStore->DDBAvatars.find(avatarId);
+		 Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 7: avatarId id %s", Log.formatUUID(0,&avatarId));
+		 //mapDDBAvatar::iterator iterAvatar = this->dStore->DDBAvatars.find(avatarId);
+
+		 mapDDBAgent::iterator iterAvatar = this->dStore->DDBAgents.find(avatarId);
+		 //if (iterAvatar == this->dStore->DDBAvatars.end())
+			// Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 7: reached end of DDBAvatars");
+		 ////UuidToString(&iterAvatar->second->agentTypeId, &stringUUID);
+		 //instance = iterAvatar->second->agentTypeInstance;
+
+		 if (iterAvatar == this->dStore->DDBAgents.end())
+			 Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 7: reached end of DDBAgents");
 		 //UuidToString(&iterAvatar->second->agentTypeId, &stringUUID);
-		 instance = iterAvatar->second->agentTypeInstance;
+		 instance = iterAvatar->second->agentInstance;
+		 Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 7: Instance is %d", instance);
 		 tempLearningData << "[TLData]\n";
 		 tempLearningData << "id=" << instance << "\n";
 		 for (auto& tauIter : taskData.tau) {
-			 tempLearningData << "landmark_type=" << allTasks[tauIter.first]->type << "\n";
+			 Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 7: landmark_type is %d", (int)allTasks[tauIter.first]->type);
+			 Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 7: tau is %f", tauIter.second);
+			 tempLearningData << "landmark_type=" << (int)allTasks[tauIter.first]->type << "\n";
 			 tempLearningData << "tau=" << tauIter.second << "\n";
 		 }
+		 Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 7: end of tau loop");
 		 //taskData.taskId
 	}
 	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData:8");
 	//Store all individual Q-learning data
-
-
 
 	for (auto& QLIter : *QLData) {
 		tempLearningData << "[QLData]\n";
@@ -10906,7 +10933,7 @@ int AgentHost::WriteLearningData(DataStream *taskDataDS, DataStream *taskDS, map
 	}
 
 	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 9");
-
+	tempLearningData.close();
 	return 0;
 }
 
@@ -11315,6 +11342,29 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		}
 		break;
 	case MSG_MISSION_DONE:
+
+		UUID aTLTypeId;
+		UuidFromString((RPC_WSTR)_T(AgentTeamLearning_UUID), &aTLTypeId);
+		UUID aITTypeId;
+		UuidFromString((RPC_WSTR)_T(AgentIndividualLearning_UUID), &aITTypeId);
+
+		//Go through all agents and find the learning agents
+		for (auto& iterAgent : this->dStore->DDBAgents) {
+
+			//Check if learning agent id matches the agent id
+			if (iterAgent.second->agentTypeId == aITTypeId || iterAgent.second->agentTypeId == aTLTypeId) {
+
+				// Order agent to upload learning data for next run
+
+				UUID agentUUID = iterAgent.first;
+				this->sendMessage(con, MSG_MISSION_DONE, &agentUUID);
+			}
+			;
+		}
+
+
+
+
 		this->globalStateTransaction( OAC_MISSION_DONE, data, len );
 		break;
 	case OAC_MISSION_DONE:

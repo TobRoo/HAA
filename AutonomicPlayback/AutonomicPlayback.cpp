@@ -288,7 +288,9 @@ int _tmain(int argc, _TCHAR* argv[])
 
 		SetCurrentDirectory( baseDirectory );
 		
-		pHOST = new AgentHost( ".\\library\\", LOG_LEVEL_ALL, logDirectory, PLAYBACKMODE_PLAYBACK, playbackFile );
+		int runNumber = 1;	//Temporary fix, need to get actual runNumber - this is currently not stored anywhere for playback
+
+		pHOST = new AgentHost( ".\\library\\", LOG_LEVEL_ALL, logDirectory, PLAYBACKMODE_PLAYBACK, playbackFile, runNumber );
 
 		pHOST->configure();
 

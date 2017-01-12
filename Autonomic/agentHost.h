@@ -310,6 +310,8 @@ public:
 
 		spConnection connection;	// connection to host, if it exists
 
+		int runNumber;			//Simulation run number in simulation series, increments from 1
+
 	};
 	
 	typedef map<UUID, AgentHost::State *, UUIDless> mapAgentHostState;
@@ -331,7 +333,7 @@ public:
 	};
 
 public:
-	AgentHost( char *libraryPath, int logLevel, char *logDirectory, char playbackMode, char *playbackFile );
+	AgentHost( char *libraryPath, int logLevel, char *logDirectory, char playbackMode, char *playbackFile, int runNumber );
 	~AgentHost();
 
 	virtual int configure( char *configPath = NULL ); // initial configuration
@@ -709,8 +711,7 @@ private:
 	Logger Data; // data logger
 	int DataDump( bool fulldump, bool getPose = true, char *label = NULL );
 	int DataDump_AvatarPose( DataStream *ds );
-	int LearningDataDump();
-	int WriteLearningData(DataStream * taskDataDS, DataStream * taskDS, mapDDBQLearningData *QLData);
+
 
 	map<UUID,STATISTICS_MSGS,UUIDless> statisticsMsgs; // messages received from agent
 	map<UUID,STATISTICS_ATOMIC_MSG,UUIDless> statisticsAtomicMsg; // atomic message stats
@@ -730,6 +731,10 @@ public:
 
 	// TESTING
 	int testAgentBidding();
+
+	//Learning data gathering
+	int LearningDataDump();
+	int WriteLearningData(DataStream * taskDataDS, DataStream * taskDS, mapDDBQLearningData *QLData);
 
 protected:
 

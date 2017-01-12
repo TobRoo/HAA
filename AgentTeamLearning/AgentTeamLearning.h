@@ -34,6 +34,9 @@ public:
 		bool hasReceivedTaskDataList;
 		bool isSetupComplete;
 		bool receivedAllTeamLearningAgents;
+		bool hasReceivedRunNumber;
+
+		int runNumber;
 
 		int updateId;
 
@@ -89,6 +92,8 @@ private:
 
 	int configureParameters( DataStream *ds );
 	int finishConfigureParameters();
+	int parseLearningData();
+
 	int uploadTask(UUID &task_id, UUID &agent_id, UUID &avatar_id, bool completed);
 	int uploadTaskDataInfo();
 

@@ -226,6 +226,8 @@ enum MSGS {
 
 	MSG_DONE_SENSOR_READING,	// finished processing sensor reading [UUID processingAgent, UUID sensor, _timeb tb, char success]
 
+	MSG_RRUNNUMBER,				//Request simulation run number from host [UUID sender]
+
 	MSG_COMMON		// highest shared message id, used as a starting point for agent specific messages
 };
 
@@ -440,4 +442,6 @@ static const unsigned int MSG_SIZE[] = { // array of message size by message id,
 	-3,					// MSG__DATADUMP_MANUAL
 	
 	sizeof(UUID)*2 + sizeof(_timeb) + 1, // MSG_DONE_SENSOR_READING
+	
+	sizeof(UUID),		//MSG_RRUNNUMBER
 };

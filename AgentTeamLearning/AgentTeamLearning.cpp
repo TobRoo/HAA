@@ -137,9 +137,35 @@ int AgentTeamLearning::configureParameters(DataStream *ds) {
 	this->sendMessage(this->hostCon, MSG_DDB_WATCH_TYPE, lds.stream(), lds.length());
 	lds.unlock();
 
+	// request run number info
+	UUID thread = this->conversationInitiate(AgentTeamLearning_CBR_convGetRunNumber, DDB_REQUEST_TIMEOUT);
+	if (thread == nilUUID) {
+		return 1;
+	}
+	sds.reset();
+	sds.packUUID(&uuid);			// Task id
+	sds.packUUID(&thread);
+	sds.packBool(false);			   //true == send list of taskdatas, otherwise only info about a specific task
+	this->sendMessage(this->hostCon, MSG_DDB_TASKGETINFO, sds.stream(), sds.length());
+	sds.unlock();
+	this->lAllianceObject.addTask(uuid);	//Add new tasks to myData
+	Log.log(0, "AgentTeamLearning::ddbNotification: added task with uuid %s", Log.formatUUID(LOG_LEVEL_NORMAL, &uuid));
+	
+	
+	
+	
+	
+	
+	
+	lds.reset();
+	lds.packUUID(&STATE(AgentBase)->uuid);
+	this->sendMessage(this->hostCon, MSG_RRUNNUMBER, lds.stream(), lds.length());
+	lds.unlock();
+
+
 	this->backup(); // initialSetup
 	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::configureParameters: done.");
-	// finishConfigureParameters will be called once task, taskdata and agent info is received
+	// finishConfigureParameters will be called once task, taskdata, agent info and run number are received
 
 	return 0;
 }// end configureParameters
@@ -150,11 +176,16 @@ int	AgentTeamLearning::finishConfigureParameters() {
 	if (STATE(AgentTeamLearning)->hasReceivedTaskList == true 
 		&& STATE(AgentTeamLearning)->hasReceivedTaskDataList == true 
 		&& STATE(AgentTeamLearning)->parametersSet == false
-		&& STATE(AgentTeamLearning)->receivedAllTeamLearningAgents == true) {
+		&& STATE(AgentTeamLearning)->receivedAllTeamLearningAgents == true
+		&& STATE(AgentTeamLearning)->hasReceivedRunNumber == true){
 
 		STATE(AgentTeamLearning)->isSetupComplete = true;
 		this->previousTaskId = nilUUID;
 		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::finishConfigureParameters");
+
+		//Read in data from previous run (if any)
+		this->parseLearningData();
+
 		STATE(AgentTeamLearning)->parametersSet = true;
 
 		if (STATE(AgentTeamLearning)->startDelayed) {
@@ -165,6 +196,24 @@ int	AgentTeamLearning::finishConfigureParameters() {
 	}
 	return 0;
 } // end finishConfigureParameters
+
+int AgentTeamLearning::parseLearningData()
+{
+	//WCHAR learningDataFile[512];
+	//wsprintf(learningDataFile, _T("learningData%d.tmp"), STATE(AgentHost)->runNumber);
+	//Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: 1.1");
+	//std::ifstream    tempLearningData(tempLearningDataFile);
+	//bool fileExists = tempLearningData.good();
+	//Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: 1.2");
+	//if (fileExists) {		//Only dump learning data if there is no file with the current run number in the bin folder
+	//	tempLearningData.close();
+	//	return 0;
+	//}
+
+
+
+	return 0;
+}
 
 
 //-----------------------------------------------------------------------------
@@ -710,6 +759,13 @@ int AgentTeamLearning::conProcessMessage(spConnection con, unsigned char message
 		this->lAllianceObject.motivationReset(taskId);
 		lds.unlock();
 	}
+	case MSG_MISSION_DONE:
+	{
+		Log.log(0, " AgentIndividualLearning::conProcessMessage: mission done, uploading learning data.");
+		this->uploadTaskDataInfo();
+	}
+	break;
+
 	break;
 	default:
 		return 1; // unhandled message

@@ -178,7 +178,7 @@ int _tmain(int argc, _TCHAR* argv[]) {
 
 			sprintf_s(logDir, "%ws", logDirectory);
 
-			pHOST = new AgentHost("library\\", LOG_LEVEL_ALL, logDir, PLAYBACKMODE_DEFAULT, NULL);
+			pHOST = new AgentHost("library\\", LOG_LEVEL_ALL, logDir, PLAYBACKMODE_DEFAULT, NULL, runNumber);
 
 			if (argc >= 2) {
 				pHOST->configure(configPath);
@@ -308,17 +308,19 @@ int _tmain(int argc, _TCHAR* argv[]) {
 			#endif
 
 			pHOST->stop();
-
+			pHOST->LearningDataDump();
 
 			#if defined(TRACE)
 			System::Diagnostics::Trace::WriteLine("--- _tmain(): Stopping 1 ---");
 			#endif
 
 
-			if (pHOST->gatherData) {			//This is the host (singular - only one per experiment - currently hostExclusive) - handle saving/loading learning data here
-				
-				
-			}
+			//if (pHOST->gatherData) {			//This is the host (singular - only one per experiment - currently hostExclusive) - handle saving/loading learning data here
+			//	
+			//	
+			//}
+
+
 
 
 			delete pHOST;
