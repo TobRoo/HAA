@@ -50,7 +50,7 @@ AgentTeamLearning::AgentTeamLearning(spAddressPort ap, UUID *ticket, int logLeve
 	this->round_info_set = true;
 	this->delta_learn_time = 3000; // [ms]
 	this->round_timout = 500;  // [ms]
-
+	
 	// Prepare callbacks
 	this->callback[AgentTeamLearning_CBR_convGetAgentList] = NEW_MEMBER_CB(AgentTeamLearning, convGetAgentList);
 	this->callback[AgentTeamLearning_CBR_convGetTaskList] = NEW_MEMBER_CB(AgentTeamLearning, convGetTaskList);
@@ -59,7 +59,7 @@ AgentTeamLearning::AgentTeamLearning(spAddressPort ap, UUID *ticket, int logLeve
 	this->callback[AgentTeamLearning_CBR_convGetTaskDataInfo] = NEW_MEMBER_CB(AgentTeamLearning, convGetTaskDataInfo);
 	this->callback[AgentTeamLearning_CBR_convReqAcquiescence] = NEW_MEMBER_CB(AgentTeamLearning, convReqAcquiescence);
 	this->callback[AgentTeamLearning_CBR_convReqMotReset] = NEW_MEMBER_CB(AgentTeamLearning, convReqMotReset);
-
+	this->callback[AgentTeamLearning_CBR_convGetRunNumber] = NEW_MEMBER_CB(AgentTeamLearning, convGetRunNumber);
 }// end constructor
 
 //-----------------------------------------------------------------------------
@@ -142,27 +142,12 @@ int AgentTeamLearning::configureParameters(DataStream *ds) {
 	if (thread == nilUUID) {
 		return 1;
 	}
-	sds.reset();
-	sds.packUUID(&uuid);			// Task id
-	sds.packUUID(&thread);
-	sds.packBool(false);			   //true == send list of taskdatas, otherwise only info about a specific task
-	this->sendMessage(this->hostCon, MSG_DDB_TASKGETINFO, sds.stream(), sds.length());
-	sds.unlock();
-	this->lAllianceObject.addTask(uuid);	//Add new tasks to myData
-	Log.log(0, "AgentTeamLearning::ddbNotification: added task with uuid %s", Log.formatUUID(LOG_LEVEL_NORMAL, &uuid));
-	
-	
-	
-	
-	
-	
-	
 	lds.reset();
+	lds.packUUID(&thread);
 	lds.packUUID(&STATE(AgentBase)->uuid);
 	this->sendMessage(this->hostCon, MSG_RRUNNUMBER, lds.stream(), lds.length());
 	lds.unlock();
-
-
+	
 	this->backup(); // initialSetup
 	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::configureParameters: done.");
 	// finishConfigureParameters will be called once task, taskdata, agent info and run number are received
@@ -1093,7 +1078,7 @@ bool AgentTeamLearning::convGetTaskDataInfo(void * vpConv) {
 			}
 			else {
 				// Invalid data, corrupt or from an old round
-				Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetTaskDataInfo: Round %d: Received invalid round numer (%d != %d) from %s", STATE(AgentTeamLearning)->round_number, taskData.round_number, STATE(AgentTeamLearning)->round_number, Log.formatUUID(0, &taskData.agentId));
+				Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetTaskDataInfo: Round %d: Received invalid round number (%d != %d) from %s", STATE(AgentTeamLearning)->round_number, taskData.round_number, STATE(AgentTeamLearning)->round_number, Log.formatUUID(0, &taskData.agentId));
 			}
 			
 		}
@@ -1111,6 +1096,11 @@ bool AgentTeamLearning::convReqAcquiescence(void * vpConv) {
 	return false;
 }
 bool AgentTeamLearning::convReqMotReset(void * vpConv) {
+	return false;
+}
+
+bool AgentTeamLearning::convGetRunNumber(void * vpConv)
+{
 	return false;
 }
 

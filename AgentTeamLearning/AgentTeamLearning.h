@@ -116,6 +116,7 @@ public:
 		AgentTeamLearning_CBR_convGetTaskDataInfo,
 		AgentTeamLearning_CBR_convReqAcquiescence,
 		AgentTeamLearning_CBR_convReqMotReset,
+		AgentTeamLearning_CBR_convGetRunNumber,
 	};
 
 	// Define callback functions (make sure they match CallbackRef above and are added to this->callback during agent creation)
@@ -126,6 +127,7 @@ public:
 	bool convGetTaskDataInfo(void *vpConv);
 	bool convReqAcquiescence(void *vpConv);
 	bool convReqMotReset(void *vpConv);
+	bool convGetRunNumber(void *vpConv);
 
 protected:
 	virtual int	  freeze( UUID *ticket );
