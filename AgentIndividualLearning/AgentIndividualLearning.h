@@ -105,6 +105,8 @@ public:
         bool missionRegionReceived;
 		bool adviceAgentSpawned;
 
+		int avatarInstance;
+
     };
 
 //-----------------------------------------------------------------------------

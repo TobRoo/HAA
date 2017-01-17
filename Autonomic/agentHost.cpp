@@ -11327,22 +11327,22 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 	if ( !AgentBase::conProcessMessage( con, message, data, len ) ) // message handled
 		return 0;
 
-	switch ( message ) {
+	switch (message) {
 	case OAC_MISSION_START:
-		{
-			char *misFile;
-			lds.setData( data, len );
-			misFile = lds.unpackString();
-			strcpy_s( STATE(AgentBase)->missionFile, sizeof(STATE(AgentBase)->missionFile), misFile );
-			this->parseMissionFile( misFile );
-			lds.unlock();
+	{
+		char *misFile;
+		lds.setData(data, len);
+		misFile = lds.unpackString();
+		strcpy_s(STATE(AgentBase)->missionFile, sizeof(STATE(AgentBase)->missionFile), misFile);
+		this->parseMissionFile(misFile);
+		lds.unlock();
 
-			Data.log( 0, "MISSION_START %s", misFile );
+		Data.log(0, "MISSION_START %s", misFile);
 
-		}
-		break;
+	}
+	break;
 	case MSG_MISSION_DONE:
-
+	{
 		UUID aTLTypeId;
 		UuidFromString((RPC_WSTR)_T(AgentTeamLearning_UUID), &aTLTypeId);
 		UUID aITTypeId;
@@ -11359,13 +11359,9 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 				UUID agentUUID = iterAgent.first;
 				this->sendMessage(con, MSG_MISSION_DONE, &agentUUID);
 			}
-			;
 		}
-
-
-
-
-		this->globalStateTransaction( OAC_MISSION_DONE, data, len );
+		this->globalStateTransaction(OAC_MISSION_DONE, data, len);
+	}
 		break;
 	case OAC_MISSION_DONE:
 		Log.log( 0, "AgentHost::conProcessMessage: OAC_MISSION_DONE, mission done!" );
@@ -12366,6 +12362,25 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		}
 		break;
 
+	case MSG_RRUNNUMBER:
+		{
+			Log.log(0, "AgentHost::conProcessMessage: MSG_RRUNNUMBER ");
+			UUID thread;
+			UUID sender;
+			lds.setData(data, len);
+			lds.unpackUUID(&thread);
+			//lds.unpackUUID(&sender);
+			lds.unlock();
+
+			//Send reply with run number to requesting agent
+			lds.reset();
+			lds.packUUID(&thread); // thread
+			lds.packInt32(STATE(AgentHost)->runNumber);
+			this->sendAgentMessage(&con->uuid, MSG_RESPONSE, lds.stream(), lds.length());
+			lds.unlock();
+
+		}
+		break;
 	// AgentHost messages
 	case AgentHost_MSGS::MSG_RSUPERVISOR_REFRESH:
 		this->sendHostLabelAll( con );

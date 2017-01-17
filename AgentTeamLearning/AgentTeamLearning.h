@@ -35,6 +35,8 @@ public:
 		bool isSetupComplete;
 		bool receivedAllTeamLearningAgents;
 		bool hasReceivedRunNumber;
+		int avatarInstance;
+
 
 		int runNumber;
 

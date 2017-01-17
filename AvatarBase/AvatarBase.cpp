@@ -2037,6 +2037,7 @@ bool AvatarBase::convRequestAgentIndividualLearning(void *vpConv) {
 		lds.packFloat32(STATE(AvatarBase)->minLinear);
 		lds.packFloat32(STATE(AvatarBase)->minRotation);
 		lds.packInt32(STATE(AvatarBase)->capacity);
+		lds.packInt32(STATE(AvatarBase)->state.agentType.instance);		//TODO: Change to char to match the stored instance value (only one character is parsed)
 		this->sendMessageEx(this->hostCon, MSGEX(AgentIndividualLearning_MSGS, MSG_CONFIGURE), lds.stream(), lds.length(), &STATE(AvatarBase)->agentIndividualLearning);
 		lds.unlock();
 
@@ -2089,6 +2090,7 @@ bool AvatarBase::convRequestAgentTeamLearning(void *vpConv) {
 
 		lds.reset();
 		lds.packUUID(&STATE(AgentBase)->uuid);
+		lds.packInt32(STATE(AvatarBase)->state.agentType.instance); //TODO: Change to char to match the stored instance value (only one character is parsed)
 		this->sendMessageEx(this->hostCon, MSGEX(AgentTeamLearning_MSGS, MSG_CONFIGURE), lds.stream(), lds.length(), &STATE(AvatarBase)->agentTeamLearning);
 		lds.unlock();
 

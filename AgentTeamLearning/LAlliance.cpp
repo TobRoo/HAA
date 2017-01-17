@@ -136,7 +136,7 @@ int LAlliance::chooseTask(const taskList &tasks) {
     // Go through each incomplete task, and assign it to category 1 or 2
     // Category 1: This avatar is expected to be the best at this task
     // Category 2: Another avatar is expected to be the best at this task
-	int available_count = 1;
+	int available_count = 0;													//TODO: Is there a reason it is set to 1 initially? Should be 0?
     std::map<UUID, TASK, UUIDless>::const_iterator taskIter;
     for (taskIter = tasks.begin(); taskIter != tasks.end(); taskIter++) {
 

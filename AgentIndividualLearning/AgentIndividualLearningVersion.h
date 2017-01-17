@@ -16,7 +16,7 @@ namespace AgentIndividualLearning_MSGS {
 	// !! NOTE !! Make sure the order matches betwen MSGS and MSG_SIZE
 
 	enum MSGS {
-		MSG_CONFIGURE = MSG_FIRST, // configure [UUID owner, UUID map, UUID mission region, UUID pf, float maxLinear, float maxRotation, float minLinear, flaot minRotation]
+		MSG_CONFIGURE = MSG_FIRST, // configure [UUID owner, UUID map, UUID mission region, UUID pf, float maxLinear, float maxRotation, float minLinear, flaot minRotation, int capacity, int instance]
 		MSG_REQUEST_ADVICE,        // Requesting advice from AgentAdviceExchange [UUID owner, UUID convo, float q[0], float q[1], ..., unsigned int state[0], unsigned int state[1], ...]
 		MSG_REQUEST_Q_VALUES,      // Requesting Q-values from Q-learning [UUID owner, UUID convo, float q[0], float q[1], ..., unsigned int state[0], unsigned int state[1], ...]
 		MSG_LAST			       // last message id

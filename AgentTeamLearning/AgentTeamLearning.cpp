@@ -10,6 +10,10 @@
 
 #include <ctime>
 
+#include <fstream>
+#include <iostream>
+#include <string>
+
 using namespace AvatarBase_Defs;
 
 #ifdef _DEBUG
@@ -42,6 +46,8 @@ AgentTeamLearning::AgentTeamLearning(spAddressPort ap, UUID *ticket, int logLeve
 	STATE(AgentTeamLearning)->updateId = -1;
 
 	STATE(AgentTeamLearning)->isMyDataFound = false;
+	STATE(AgentTeamLearning)->hasReceivedRunNumber = false;
+	STATE(AgentTeamLearning)->runNumber = 0;
 
 	// V2 team learning stuff
 	STATE(AgentTeamLearning)->round_number = 0;
@@ -109,6 +115,7 @@ int AgentTeamLearning::configureParameters(DataStream *ds) {
 
 	//Get owner id
 	ds->unpackUUID(&STATE(AgentTeamLearning)->ownerId);
+	STATE(AgentTeamLearning)->avatarInstance = ds->unpackInt32();
 	this->lAllianceObject.id = STATE(AgentTeamLearning)->ownerId;
 	this->lAllianceObject.myData.agentId = *this->getUUID();
 	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::configureParameters: ownerId %s", Log.formatUUID(LOG_LEVEL_NORMAL, &STATE(AgentTeamLearning)->ownerId));
@@ -144,7 +151,7 @@ int AgentTeamLearning::configureParameters(DataStream *ds) {
 	}
 	lds.reset();
 	lds.packUUID(&thread);
-	lds.packUUID(&STATE(AgentBase)->uuid);
+	//lds.packUUID(&STATE(AgentBase)->uuid);
 	this->sendMessage(this->hostCon, MSG_RRUNNUMBER, lds.stream(), lds.length());
 	lds.unlock();
 	
@@ -156,6 +163,14 @@ int AgentTeamLearning::configureParameters(DataStream *ds) {
 }// end configureParameters
 
 int	AgentTeamLearning::finishConfigureParameters() {
+
+	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::finishConfigureParameters: hasReceivedTaskList: %d, hasReceivedTaskDataList: %d, parametersSet: %d, receivedAllTeamLearningAgents: %d, hasReceivedRunNumber: %d",
+		STATE(AgentTeamLearning)->hasReceivedTaskList,
+		STATE(AgentTeamLearning)->hasReceivedTaskDataList,
+		STATE(AgentTeamLearning)->parametersSet,
+		STATE(AgentTeamLearning)->receivedAllTeamLearningAgents,
+		STATE(AgentTeamLearning)->hasReceivedRunNumber
+	);
 
 	//Only proceed to start if we have other agenbts, tasks, and taskdata, and have not yet started (prevents double start)
 	if (STATE(AgentTeamLearning)->hasReceivedTaskList == true 
@@ -184,19 +199,41 @@ int	AgentTeamLearning::finishConfigureParameters() {
 
 int AgentTeamLearning::parseLearningData()
 {
-	//WCHAR learningDataFile[512];
-	//wsprintf(learningDataFile, _T("learningData%d.tmp"), STATE(AgentHost)->runNumber);
-	//Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: 1.1");
-	//std::ifstream    tempLearningData(tempLearningDataFile);
-	//bool fileExists = tempLearningData.good();
-	//Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: 1.2");
-	//if (fileExists) {		//Only dump learning data if there is no file with the current run number in the bin folder
-	//	tempLearningData.close();
-	//	return 0;
-	//}
+	WCHAR learningDataFile[512];
+	wsprintf(learningDataFile, _T("learningData%d.tmp"), STATE(AgentTeamLearning)->runNumber - 1);
+	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: 1.1");
+	std::ifstream    learningData(learningDataFile);
+	bool fileExists = learningData.good();
+	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: 1.2");
+
+	if (!fileExists) {		
+		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: Unable to open learning data file.");
+		return 0;
+	}
+
+	for (std::string line; std::getline(learningData, line); ) {
+		if (line.find("[TLData]") != std::string::npos) {	//First find the team learning data blocks
+			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: Found team learning data section.");
+			std::getline(learningData, line);
+			if (line.find("id=") != std::string::npos) {	//Find id line
+				if (line.find_first_of("0123456789") != std::string::npos) {
+					int id = line[line.find_first_of("0123456789")] - '0';
+					Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: Found id is: %d", id);
+					Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: My id is: %d",STATE(AgentTeamLearning)->avatarInstance );
+					if (id == STATE(AgentTeamLearning)->avatarInstance) {	//Matching ids, continue parsing
+						Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: matching ids, continuing parsing process...");
 
 
 
+					}
+				}
+
+			}
+		}
+	}
+	
+
+	learningData.close();
 	return 0;
 }
 
@@ -247,7 +284,7 @@ int AgentTeamLearning::start(char *missionFile) {
 
 
 	//Log.log(0, "AgentTeamLearning::start completed.");
-
+	Log.log(LOG_LEVEL_NORMAL, "My instance is: %d", STATE(AgentTeamLearning)->avatarInstance);
 	STATE(AgentBase)->started = true;
 	return 0;
 }// end start
@@ -278,7 +315,7 @@ int AgentTeamLearning::step() {
 	bool update_round_info = (currentTime.time * 1000 + currentTime.millitm) > (this->round_info_receive_time.time * 1000 + this->round_info_receive_time.millitm + this->round_timout);
 
 	if (STATE(AgentTeamLearning)->round_number > 0) {
-		// Round info is updated here after one timeout, to allow messaged to come in, and cutting off any
+		// Round info is updated here after one timeout, to allow messages to come in, and cutting off any
 		// that are too old (since they are rejected based on their round number)
 		if (update_round_info && !this->round_info_set) {
 			STATE(AgentTeamLearning)->round_number = this->new_round_number;
@@ -384,7 +421,7 @@ int AgentTeamLearning::checkRoundStatus() {
 int AgentTeamLearning::initiateNextRound() { 
 	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::initiateNextRound: Round %d: Sending info for the next round.", STATE(AgentTeamLearning)->round_number);
 
-	// Increment out own round counters (others will increment when they receive the message)
+	// Increment our own round counters (others will increment when they receive the message)
 	STATE(AgentTeamLearning)->round_number++;
 	this->lAllianceObject.myData.round_number = STATE(AgentTeamLearning)->round_number;
 
@@ -454,6 +491,7 @@ int AgentTeamLearning::uploadTask(UUID &task_id, UUID &agent_id, UUID &avatar_id
 * to the DDB.
 */
 int AgentTeamLearning::uploadTaskDataInfo() {
+	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::uploadTaskDataInfo: Uploading task data info.");
 	DataStream lds;
 	lds.reset();
 	_ftime64_s(&this->lAllianceObject.myData.updateTime);  // Update time
@@ -744,13 +782,12 @@ int AgentTeamLearning::conProcessMessage(spConnection con, unsigned char message
 		this->lAllianceObject.motivationReset(taskId);
 		lds.unlock();
 	}
+	break;
 	case MSG_MISSION_DONE:
 	{
-		Log.log(0, " AgentIndividualLearning::conProcessMessage: mission done, uploading learning data.");
+		Log.log(0, " AgentTeamLearning::conProcessMessage: mission done, uploading learning data.");
 		this->uploadTaskDataInfo();
 	}
-	break;
-
 	break;
 	default:
 		return 1; // unhandled message
@@ -1101,6 +1138,19 @@ bool AgentTeamLearning::convReqMotReset(void * vpConv) {
 
 bool AgentTeamLearning::convGetRunNumber(void * vpConv)
 {
+	DataStream lds;
+	spConversation conv = (spConversation)vpConv;
+
+	if (conv->response == NULL) { // timed out
+		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRunNumber: timed out");
+		return 0; // end conversation
+	}
+
+	lds.setData(conv->response, conv->responseLen);
+	lds.unpackData(sizeof(UUID)); // discard thread
+	STATE(AgentTeamLearning)->runNumber = lds.unpackInt32();
+	Log.log(0, "My run number is: %d", STATE(AgentTeamLearning)->runNumber);
+	STATE(AgentTeamLearning)->hasReceivedRunNumber = true;
 	return false;
 }
 

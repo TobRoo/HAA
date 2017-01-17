@@ -205,6 +205,7 @@ int AgentIndividualLearning::configureParameters(DataStream *ds) {
     STATE(AgentIndividualLearning)->minLinear = ds->unpackFloat32();
     STATE(AgentIndividualLearning)->minRotation = ds->unpackFloat32();
 	this->avatar.capacity = (ITEM_TYPES)ds->unpackInt32();
+	STATE(AgentIndividualLearning)->avatarInstance = ds->unpackInt32();
 
 	// Set the reward activation distance
 	// (must move at least at a 45 degree angle relative to target or goal)
@@ -305,7 +306,7 @@ int AgentIndividualLearning::start(char *missionFile) {
 // Stop
 
 int AgentIndividualLearning::stop() {
-	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::step: YEEEEEEEEEEEEEEEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH");
+	//Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::step: YEEEEEEEEEEEEEEEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH");
     if (!this->frozen) {
         // TODO
     }// end if
@@ -318,10 +319,10 @@ int AgentIndividualLearning::stop() {
 // Step
 
 int AgentIndividualLearning::step() {
-    if (STATE(AgentBase)->stopFlag) {
-		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::step: YEEEEEEEEEEEEEEEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH");
-        uploadLearningData();	//Stores individual learningdata in DDB for next simulation run
-    }
+  //  if (STATE(AgentBase)->stopFlag) {
+		//Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::step: YEEEEEEEEEEEEEEEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH");
+  //      uploadLearningData();	//Stores individual learningdata in DDB for next simulation run
+  //  }
 
     return AgentBase::step();
 }// end step
