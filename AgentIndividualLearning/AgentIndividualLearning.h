@@ -183,6 +183,9 @@ protected:
 	// Random number generator
 	RandomGenerator randomGenerator;
 
+	// TODO: REMOVE AFTER TESTING
+	int tempCounterDERP;
+
 //-----------------------------------------------------------------------------
 // Functions
 

@@ -141,6 +141,8 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
 	this->callback[AgentIndividualLearning_CBR_convRequestAgentAdviceExchange] = NEW_MEMBER_CB(AgentIndividualLearning, convRequestAgentAdviceExchange);
 	this->callback[AgentIndividualLearning_CBR_convRequestAdvice] = NEW_MEMBER_CB(AgentIndividualLearning, convRequestAdvice);
 
+	tempCounterDERP = 0;
+
 }// end constructor
 
 //-----------------------------------------------------------------------------
@@ -306,7 +308,6 @@ int AgentIndividualLearning::start(char *missionFile) {
 // Stop
 
 int AgentIndividualLearning::stop() {
-	//Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::step: YEEEEEEEEEEEEEEEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH");
     if (!this->frozen) {
         // TODO
     }// end if
@@ -319,11 +320,14 @@ int AgentIndividualLearning::stop() {
 // Step
 
 int AgentIndividualLearning::step() {
+	this->tempCounterDERP++;
   //  if (STATE(AgentBase)->stopFlag) {
-		//Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::step: YEEEEEEEEEEEEEEEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH");
   //      uploadLearningData();	//Stores individual learningdata in DDB for next simulation run
   //  }
-
+    if (tempCounterDERP == 30) {
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::step: REACHED DERP COUNT!");
+        uploadLearningData();	//Stores individual learningdata in DDB for next simulation run
+    }
     return AgentBase::step();
 }// end step
 
@@ -1067,9 +1071,13 @@ int AgentIndividualLearning::uploadQLearningData()
 
     for (auto qIter : this->q_learning_.q_table_) {
         lds.packFloat32(qIter);						//Pack all values in q-table
+		if (qIter > 0.0f)
+			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Uploading qVal: %f", qIter);
     }
     for (auto expIter : this->q_learning_.exp_table_) {
         lds.packInt32(expIter);						//Pack all values in exp-table
+		if (expIter > 0)
+			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Uploading expVal: %f", expIter);
     }
 
     this->sendMessage(this->hostCon, MSG_DDB_QLEARNINGDATA, lds.stream(), lds.length());

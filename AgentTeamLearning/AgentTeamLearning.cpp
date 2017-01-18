@@ -199,42 +199,144 @@ int	AgentTeamLearning::finishConfigureParameters() {
 
 int AgentTeamLearning::parseLearningData()
 {
-	WCHAR learningDataFile[512];
-	wsprintf(learningDataFile, _T("learningData%d.tmp"), STATE(AgentTeamLearning)->runNumber - 1);
-	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: 1.1");
-	std::ifstream    learningData(learningDataFile);
-	bool fileExists = learningData.good();
-	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: 1.2");
 
-	if (!fileExists) {		
-		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: Unable to open learning data file.");
-		return 0;
+	char learningDataFile[512];
+	sprintf(learningDataFile, "learningData%d.tmp", STATE(AgentTeamLearning)->runNumber - 1);
+	taskList tempTaskList = this->mTaskList;
+	std::map<UUID, float, UUIDless> tauList = this->lAllianceObject.myData.tau;
+
+	//std::stringstream strStream;
+	//WCHAR learningDataFile[512];
+	//wsprintf(learningDataFile, _T("learningData%d.tmp"), STATE(AgentTeamLearning)->runNumber - 1);
+	//Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: 1.1");
+	//std::ifstream    learningData(learningDataFile);
+	//bool fileExists = learningData.good();
+	//Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: 1.2");
+
+	//if (!fileExists) {		
+	//	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: Unable to open learning data file.");
+	//	return 0;
+	//}
+
+	FILE *fp;
+	int i;
+	char keyBuf[64];
+	char ch;
+	ITEM_TYPES landmark_type;
+	float tauVal;
+
+
+
+	if (fopen_s(&fp, learningDataFile, "r")) {
+		Log.log(0, "AgentTeamLearning::parseLearningData: failed to open %s", learningDataFile);
+		return 1; // couldn't open file
 	}
 
-	for (std::string line; std::getline(learningData, line); ) {
-		if (line.find("[TLData]") != std::string::npos) {	//First find the team learning data blocks
-			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: Found team learning data section.");
-			std::getline(learningData, line);
-			if (line.find("id=") != std::string::npos) {	//Find id line
-				if (line.find_first_of("0123456789") != std::string::npos) {
-					int id = line[line.find_first_of("0123456789")] - '0';
-					Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: Found id is: %d", id);
-					Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: My id is: %d",STATE(AgentTeamLearning)->avatarInstance );
-					if (id == STATE(AgentTeamLearning)->avatarInstance) {	//Matching ids, continue parsing
-						Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: matching ids, continuing parsing process...");
+	Log.log(0, "AgentTeamLearning::parseLearningData: parsing %s", learningDataFile);
+	i = 0;
+	while (1) {
+		ch = fgetc(fp);
 
+		if (ch == EOF) {
+			break;
+		}
+		else if (ch == '\n') {
+			keyBuf[i] = '\0';
+
+			if (i == 0)
+				continue; // blank line
+
+			if (!strncmp(keyBuf, "[TLData]", 64)) {
+				Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: Found team learning data section.");
+				int id;
+				if (fscanf_s(fp, "id=%d\n", &id) != 1) { 
+					Log.log(0, "AgentTeamLearning::parseLearningData: badly formatted id");
+					break;
+				}
+				while (fscanf_s(fp, "landmark_type=%d\n", &landmark_type) == 1) {
+					fscanf_s(fp, "tau=%f\n", &tauVal);
+					Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: type: %d, tau: %f", landmark_type, tauVal);
+					if (id == STATE(AgentTeamLearning)->avatarInstance) {				//If the data belongs to this agent, store it
+						for (auto& taskIter : tempTaskList) {							//Go through all tasks 
+							if (taskIter.second->type == landmark_type) {				//Find one with the same landmark type
+								lAllianceObject.myData.tau.at(taskIter.first) = tauVal;	//Set the stored tau value for the task
+								tempTaskList.erase(taskIter.first);						//Remove the task from the temporary task list to avoid dual assignments
+							}
+						/*	if (taskIter == tempTaskList.end())
+								Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData:reached end of task list, the task config has changed between runs.");*/
+						}
+						
 
 
 					}
+
+
+
+
+
 				}
 
+
+
+
+				if (id == STATE(AgentTeamLearning)->avatarInstance) { //The data belongs to this agent, no need to parse further...
+					Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: parsing complete, stopping parsing process...");
+					break;
+				}
 			}
+			else if (!strncmp(keyBuf, "[QLData]", 64)) {
+				;
+			}
+			else { // unknown key
+				fclose(fp);
+				Log.log(0, "AgentTeamLearning::parseLearningData: unknown key: %s", keyBuf);
+				return 1;
+			}
+
+			i = 0;
+		}
+		else {
+			keyBuf[i] = ch;
+			i++;
 		}
 	}
-	
 
-	learningData.close();
+	fclose(fp);
 	return 0;
+
+
+	//for (std::string line; std::getline(learningData, line); ) {
+	//	if (line.find("[TLData]") != std::string::npos) {	//First find the team learning data blocks
+	//		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: Found team learning data section.");
+	//		std::getline(learningData, line);
+	//		if (line.find("id=") != std::string::npos) {	//Find id line
+	//			if (line.find_first_of("0123456789") != std::string::npos) {
+	//				int id = line[line.find_first_of("0123456789")] - '0';
+	//				Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: Found id is: %d", id);
+	//				Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: My id is: %d",STATE(AgentTeamLearning)->avatarInstance );
+	//				if (id == STATE(AgentTeamLearning)->avatarInstance) {	//Matching ids, continue parsing
+	//					Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: matching ids, continuing parsing process...");
+
+	//					std::getline(learningData, line);
+	//					if (line.find("landmark_type=") == std::string::npos) {	//Check formatting and content
+	//						Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: Badly formatted data");
+	//						return 1;
+	//					}
+	//					line.
+
+
+
+	//					return 0;	//Done parsing info for this agent
+	//				}
+	//			}
+
+	//		}
+	//	}
+	//}
+	//
+
+	//learningData.close();
+	//return 0;
 }
 
 

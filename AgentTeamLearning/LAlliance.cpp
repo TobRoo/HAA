@@ -396,6 +396,8 @@ int LAlliance::updateTau() {
 
 	// Log the update
 	char message[100];
+	sprintf(message, "updateTau: beta: %.2f", beta);
+	parentAgent->logWrapper(LOG_LEVEL_VERBOSE, message);
 	sprintf(message, "updateTau: Old tau: %.2f, New tau: %.2f", prev_tau, current_tau);
 	parentAgent->logWrapper(LOG_LEVEL_VERBOSE, message);
 	sprintf(message, "updateTau: Old mean: %.2f, New mean: %.2f", prev_mean, current_mean);

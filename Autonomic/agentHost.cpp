@@ -10802,7 +10802,7 @@ int AgentHost::LearningDataDump()
 	char taskDataOk = taskDataDS.unpackChar();	//DDBR_OK
 	bool enumTaskData = taskDataDS.unpackBool();	//EnumTaskData
 	int numTaskDatas = taskDataDS.unpackInt32();
-	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: taskDataOk is %d, enumTaskData is %d, numTaskDatas is %d", taskDataOk, enumTaskData, numTaskDatas);
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: taskDataOk is %d, enumTaskData is %d, numTaskDatas is %d", taskDataOk, enumTaskData, numTaskDatas);
 
 	this->dStore->GetTask(&nilUUID, &taskDS, &nilUUID, true);
 	taskDS.rewind();
@@ -10811,9 +10811,15 @@ int AgentHost::LearningDataDump()
 	bool enumTask = taskDS.unpackBool();	//EnumTasks
 	int numTasks = taskDS.unpackInt32();
 	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: 3");
-	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: taskOk is %d, enumTask is %d, numTasks is %d, ", taskOk, enumTask, numTasks);
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: taskOk is %d, enumTask is %d, numTasks is %d, ", taskOk, enumTask, numTasks);
 
 	mapDDBQLearningData QLData = this->dStore->GetQLearningData();
+
+	for (auto& qlIter : QLData) {
+		for (auto qTIter: qlIter.second.qTable)
+			Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: instance %d, qTable entry: %f", qlIter.first-'0', qTIter);
+	}
+
 
 	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump:about to write learning data...");
 	taskDataDS.rewind();
@@ -11811,8 +11817,8 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 			lds.unpackUUID( &thread );
 			enumLandmarks = lds.unpackBool();
 			lds.unlock();
-			if(enumLandmarks)
-				Log.log(0, "Received request for landmark list.");
+			/*if(enumLandmarks)
+				Log.log(0, "Received request for landmark list.");*/
 			this->ddbGetLandmark( &uuid, con, &thread, enumLandmarks );
 		}
 		break;
@@ -12268,7 +12274,7 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 	break;
 	case MSG_DDB_QLEARNINGDATA:
 	{
-		Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_QLEARNINGDATA ");
+		//Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_QLEARNINGDATA ");
 
 		UUID ownerId;
 		unsigned char instance;	//Type of avatar, stored in the mission file

@@ -82,3 +82,4 @@ ipch/
 *.log
 *.db
 *.psess
+/bin/*.tmp
