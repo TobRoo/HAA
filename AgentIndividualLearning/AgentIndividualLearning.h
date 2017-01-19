@@ -106,6 +106,8 @@ public:
 		bool adviceAgentSpawned;
 
 		int avatarInstance;
+		int runNumber;
+		bool hasReceivedRunNumber;
 
     };
 
@@ -184,7 +186,7 @@ protected:
 	RandomGenerator randomGenerator;
 
 	// TODO: REMOVE AFTER TESTING
-	int tempCounterDERP;
+	int tempCounter;
 
 //-----------------------------------------------------------------------------
 // Functions
@@ -245,6 +247,7 @@ public:
         AgentIndividualLearning_CBR_convCollectLandmark,
 		AgentIndividualLearning_CBR_convRequestAgentAdviceExchange,
 		AgentIndividualLearning_CBR_convRequestAdvice,
+		AgentIndividualLearning_CBR_convGetRunNumber,
     };
 
     // Define callback functions (make sure they match CallbackRef above and are added to this->callback during agent creation)
@@ -263,6 +266,8 @@ public:
     bool convCollectLandmark(void * vpConv);
 	bool convRequestAgentAdviceExchange(void *vpConv);
 	bool convRequestAdvice(void *vpConv);
+
+	bool convGetRunNumber(void * vpConv);
 
 protected:
     virtual int	  freeze( UUID *ticket );

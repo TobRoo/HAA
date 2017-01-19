@@ -71,6 +71,7 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
 	STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned = false;
     STATE(AgentIndividualLearning)->action.action = AvatarBase_Defs::AA_WAIT;
     STATE(AgentIndividualLearning)->action.val = 0.0;
+	STATE(AgentIndividualLearning)->runNumber = 0;
 
     // initialize avatar and target info
     this->task.landmarkUUID = nilUUID;
@@ -125,7 +126,7 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
     //Set cargo flags
     this->hasCargo = false;
     this->hasDelivered = false;
-
+	
     // Prepare callbacks
     this->callback[AgentIndividualLearning_CBR_convAction] = NEW_MEMBER_CB(AgentIndividualLearning, convAction);
     this->callback[AgentIndividualLearning_CBR_convRequestAvatarLoc] = NEW_MEMBER_CB(AgentIndividualLearning, convRequestAvatarLoc);
@@ -140,8 +141,8 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
     this->callback[AgentIndividualLearning_CBR_convCollectLandmark] = NEW_MEMBER_CB(AgentIndividualLearning, convCollectLandmark);
 	this->callback[AgentIndividualLearning_CBR_convRequestAgentAdviceExchange] = NEW_MEMBER_CB(AgentIndividualLearning, convRequestAgentAdviceExchange);
 	this->callback[AgentIndividualLearning_CBR_convRequestAdvice] = NEW_MEMBER_CB(AgentIndividualLearning, convRequestAdvice);
-
-	tempCounterDERP = 0;
+	this->callback[AgentIndividualLearning_CBR_convGetRunNumber] = NEW_MEMBER_CB(AgentIndividualLearning, convGetRunNumber);
+	tempCounter = 0;
 
 }// end constructor
 
@@ -227,28 +228,47 @@ int AgentIndividualLearning::configureParameters(DataStream *ds) {
     this->sendMessage(this->hostCon, MSG_DDB_RREGION, this->ds.stream(), this->ds.length());
     this->ds.unlock();
 
+	// request run number info
+	thread = this->conversationInitiate(AgentIndividualLearning_CBR_convGetRunNumber, DDB_REQUEST_TIMEOUT);
+	if (thread == nilUUID) {
+		return 1;
+	}
+	this->ds.reset();
+	this->ds.packUUID(&thread);
+	//lds.packUUID(&STATE(AgentBase)->uuid);
+	this->sendMessage(this->hostCon, MSG_RRUNNUMBER, this->ds.stream(), this->ds.length());
+	this->ds.unlock();
+
 	//Request advice exchange agent
 	this->spawnAgentAdviceExchange();
 
     this->backup();
-
-    // finishConfigureParameters will be called once the mission region info is received
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::configureParameters: done.");
+    // finishConfigureParameters will be called once the mission region info and run number are received
 
     return 0;
 }// end configureParameters
 
 int	AgentIndividualLearning::finishConfigureParameters() {
 
-    STATE(AgentIndividualLearning)->parametersSet = true;
+	//Only proceed to start if we have the run number and have not yet started (prevents double start)
+	if (STATE(AgentIndividualLearning)->parametersSet == false && STATE(AgentIndividualLearning)->hasReceivedRunNumber == true) {
+
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::finishConfigureParameters");
+
+		//Read in data from previous run (if any)
+		this->parseLearningData();
+
+		STATE(AgentIndividualLearning)->parametersSet = true;
 
 
-    if (STATE(AgentIndividualLearning)->startDelayed) {
-        STATE(AgentIndividualLearning)->startDelayed = false;
-        this->start(STATE(AgentBase)->missionFile);
-    }// end if
+		if (STATE(AgentIndividualLearning)->startDelayed) {
+			STATE(AgentIndividualLearning)->startDelayed = false;
+			this->start(STATE(AgentBase)->missionFile);
+		}// end if
 
-    this->backup();
-
+		this->backup();
+	}
     return 0;
 }// end finishConfigureParameters
 
@@ -320,12 +340,12 @@ int AgentIndividualLearning::stop() {
 // Step
 
 int AgentIndividualLearning::step() {
-	this->tempCounterDERP++;
+	this->tempCounter++;
   //  if (STATE(AgentBase)->stopFlag) {
   //      uploadLearningData();	//Stores individual learningdata in DDB for next simulation run
   //  }
-    if (tempCounterDERP == 30) {
-		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::step: REACHED DERP COUNT!");
+    if (tempCounter == 200) {
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::step: REACHED UPLOAD TEST COUNT!");
         uploadLearningData();	//Stores individual learningdata in DDB for next simulation run
     }
     return AgentBase::step();
@@ -1061,10 +1081,10 @@ int AgentIndividualLearning::uploadLearningData()
 int AgentIndividualLearning::uploadQLearningData()
 {
     DataStream lds;
-
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Avatar id: %s, Instance: %d, Total actions: %d, Useful actions: %d, table size: %d", Log.formatUUID(0,&STATE(AgentIndividualLearning)->ownerId), STATE(AgentIndividualLearning)->avatarInstance, this->totalActions, usefulActions, this->q_learning_.table_size_);
     lds.reset();
     lds.packUUID(&STATE(AgentIndividualLearning)->ownerId);	//Avatar id
-    lds.packChar(STATE(AgentBase)->agentType.instance);		//Pack the agent type instance - remember to set as different for each avatar in the config! (different avatar types will have different learning data)
+    lds.packChar(STATE(AgentIndividualLearning)->avatarInstance);		//Pack the agent type instance - remember to set as different for each avatar in the config! (different avatar types will have different learning data)
     lds.packInt64(this->totalActions);
     lds.packInt64(this->usefulActions);
     lds.packInt32(this->q_learning_.table_size_);	//Size of value tables to store
@@ -1077,29 +1097,99 @@ int AgentIndividualLearning::uploadQLearningData()
     for (auto expIter : this->q_learning_.exp_table_) {
         lds.packInt32(expIter);						//Pack all values in exp-table
 		if (expIter > 0)
-			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Uploading expVal: %f", expIter);
+			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Uploading expVal: %d", expIter);
     }
 
     this->sendMessage(this->hostCon, MSG_DDB_QLEARNINGDATA, lds.stream(), lds.length());
     lds.unlock();
-
-
-
     return 0;
 }
-
 int AgentIndividualLearning::parseLearningData()
 {
-	std::ifstream inData("learningData.tmp");
-	if (!inData.good())
-		return 0;	//No previous data, first run
+	char learningDataFile[512];
+	sprintf(learningDataFile, "learningData%d.tmp", STATE(AgentIndividualLearning)->runNumber - 1);
 
 
+	FILE *fp;
+	int i;
+	char keyBuf[64];
+	char ch;
+	ITEM_TYPES landmark_type;
+	float tauVal;
 
+	if (fopen_s(&fp, learningDataFile, "r")) {
+		Log.log(0, "AgentIndividualLearning::parseLearningData: failed to open %s", learningDataFile);
+		return 1; // couldn't open file
+	}
+	Log.log(0, "AgentIndividualLearning::parseLearningData: parsing %s", learningDataFile);
+	i = 0;
+	while (1) {
+		ch = fgetc(fp);
 
-    return 0;
+		if (ch == EOF) {
+			break;
+		}
+		else if (ch == '\n') {
+			keyBuf[i] = '\0';
+
+			if (i == 0)
+				continue; // blank line
+
+			if (!strncmp(keyBuf, "[TLData]", 64)) {
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::parseLearningData: Found team learning data section.");
+				if (fscanf_s(fp, "id=%d\n") != 1) {
+					Log.log(0, "AgentIndividualLearning::parseLearningData: badly formatted id");
+					break;
+				}
+				while (fscanf_s(fp, "landmark_type=%d\n", &landmark_type) == 1) {
+					fscanf_s(fp, "tau=%f\n", &tauVal);
+					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::parseLearningData: type: %d, tau: %f", landmark_type, tauVal);
+				}
+
+			}
+			else if (!strncmp(keyBuf, "[QLData]", 64)) {
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::parseLearningData: Found Q-learning data section.");
+				int id;
+				if (fscanf_s(fp, "id=%d\n", &id) != 1) {
+					Log.log(0, "AgentIndividualLearning::parseLearningData: badly formatted id");
+					break;
+				}
+				if (fscanf_s(fp, "qTable=\n") != 1) {
+					Log.log(0, "AgentIndividualLearning::parseLearningData: badly formatted qTable");
+					break;
+				}
+				float qVal;
+				int count = 0;
+				while (fscanf_s(fp, "%f\n", qVal) == 1) {
+					this->q_learning_.q_table_[count] = qVal;
+					count++;
+				}
+				if (fscanf_s(fp, "expTable=\n") != 1) {
+					Log.log(0, "AgentIndividualLearning::parseLearningData: badly formatted qTable");
+					break;
+				}
+				float expVal;
+				count = 0;
+				while (fscanf_s(fp, "%d\n", expVal) == 1) {
+					this->q_learning_.exp_table_[count] = expVal;
+					count++;
+				}
+			}
+			else { // unknown key
+				fclose(fp);
+				Log.log(0, "AgentIndividualLearning::parseLearningData: unknown key: %s", keyBuf);
+				return 1;
+			}
+			i = 0;
+		}
+		else {
+			keyBuf[i] = ch;
+			i++;
+		}
+	}
+	fclose(fp);
+	return 0;
 }
-
 
 /* sendAction
 *
@@ -2092,6 +2182,24 @@ bool AgentIndividualLearning::convRequestAdvice(void *vpConv) {
 	this->formAction();
 
 	return 0;
+}
+
+bool AgentIndividualLearning::convGetRunNumber(void * vpConv)
+{
+	DataStream lds;
+	spConversation conv = (spConversation)vpConv;
+
+	if (conv->response == NULL) { // timed out
+		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRunNumber: timed out");
+		return 0; // end conversation
+	}
+
+	lds.setData(conv->response, conv->responseLen);
+	lds.unpackData(sizeof(UUID)); // discard thread
+	STATE(AgentIndividualLearning)->runNumber = lds.unpackInt32();
+	Log.log(0, "My run number is: %d", STATE(AgentIndividualLearning)->runNumber);
+	STATE(AgentIndividualLearning)->hasReceivedRunNumber = true;
+	return false;
 }
 
 

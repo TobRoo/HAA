@@ -10814,10 +10814,13 @@ int AgentHost::LearningDataDump()
 	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: taskOk is %d, enumTask is %d, numTasks is %d, ", taskOk, enumTask, numTasks);
 
 	mapDDBQLearningData QLData = this->dStore->GetQLearningData();
-
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: size of QLData is %d, ", QLData.size());
 	for (auto& qlIter : QLData) {
-		for (auto qTIter: qlIter.second.qTable)
-			Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: instance %d, qTable entry: %f", qlIter.first-'0', qTIter);
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: Instance: %d, Total actions: %d, Useful actions: %d, table size: %d", qlIter.first, qlIter.second.totalActions, qlIter.second.usefulActions, qlIter.second.qTable.size());
+
+		for (auto qTIter : qlIter.second.qTable)
+			;
+//			Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: instance %d, qTable entry: %f", qlIter.first-'0', qTIter);
 	}
 
 
@@ -10919,23 +10922,28 @@ int AgentHost::WriteLearningData(DataStream *taskDataDS, DataStream *taskDS, map
 			 tempLearningData << "tau=" << tauIter.second << "\n";
 		 }
 		 Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 7: end of tau loop");
+		 tempLearningData << "\n";
 		 //taskData.taskId
 	}
 	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData:8");
 	//Store all individual Q-learning data
 
 	for (auto& QLIter : *QLData) {
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData:8.1");
 		tempLearningData << "[QLData]\n";
 		instance = QLIter.first;
 		tempLearningData << "id=" << instance <<"\n";
 		tempLearningData << "qTable=" << "\n";
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData:8.2");
 		for (auto& qtIter : QLIter.second.qTable) {
-			tempLearningData << qtIter << ";";
+			tempLearningData << qtIter << "\n";
 		}
 		tempLearningData << "\nexpTable=" << "\n";
 		for (auto& exptIter : QLIter.second.expTable) {
-			tempLearningData << exptIter << ";";
+			tempLearningData << exptIter << "\n";
 		}
+		tempLearningData << "\n";
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData:8.3");
 	}
 
 	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 9");
@@ -12277,7 +12285,7 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		//Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_QLEARNINGDATA ");
 
 		UUID ownerId;
-		unsigned char instance;	//Type of avatar, stored in the mission file
+		char instance;	//Type of avatar, stored in the mission file
 		long long totalActions;
 		long long usefulActions;
 		int tableSize;

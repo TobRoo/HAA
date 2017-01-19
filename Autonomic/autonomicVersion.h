@@ -213,7 +213,7 @@ enum MSGS {
 	MSG_DDB_REMTASKDATA,	 // remove taskdata from DDB [ UUID uuid]
 	MSG_DDB_TASKDATAGETINFO, // request taskdata info [UUID uuid, UUID thread, bool enumTaskData] (if enum is true, send all task data)
 	MSG_DDB_TASKDATASETINFO, // set taskdata info [UUID uuid, DDBTaskData data]
-	MSG_DDB_QLEARNINGDATA,	 // upload individual learning data for next simulation run [UUID ownerId, UUID agentType.uuid, int table_size, float [table_size]qtable, float [table_size]exptable]
+	MSG_DDB_QLEARNINGDATA,	 // upload individual learning data for next simulation run [UUID ownerId, char agentType.instance, long long totalActions, long long usefulActions, int table_size, float [table_size]qtable, float [table_size]exptable]
 
     MSG_DDB_RHOSTGROUPSIZE, // request host group size [UUID thread]
 							// RESPONSE: send group size [UUID thread, char response, int size]

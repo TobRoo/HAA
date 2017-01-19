@@ -4977,6 +4977,7 @@ int DDBStore::GetTaskData(UUID *id, DataStream *ds, UUID *thread, bool enumTaskD
 
 bool DDBStore::AddQLearningData(char instance, long long totalActions, long long usefulActions, int tableSize, std::vector<float>* qTable, std::vector<unsigned int>* expTable)
 {
+	Log->log(0, "DDBStore::AddQlearningData:: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
 
 	// check to see if it already exists
 	if (this->DDBQLearningDatas.find(instance) != this->DDBQLearningDatas.end()) {
