@@ -75,7 +75,8 @@ int LAlliance::addTask(UUID id) {
     // Initialize tau as the half the max task time, and draw from a distribution
 	// since identical taus will cause problems in the impatience calculation.
 	myData.tau.insert(std::pair<UUID, int>(id, parentAgent->randomGenerator.NormalDistribution(0.5f*maxTaskTime, 2)));
-
+	myData.stddev.insert(std::pair<UUID, float>(id, 1));
+	myData.mean.insert(std::pair<UUID, float>(id, myData.tau.at(id)));
     return 0;
 }
 
@@ -149,8 +150,8 @@ int LAlliance::chooseTask(const taskList &tasks) {
             available = !taskIter->second->completed;
         }
         else if (teammatesData.find(taskIter->second->avatar) != teammatesData.end()) {//Check, otherwise the map will be inserted with incorrect values
-            if (teammatesData[taskIter->second->avatar].psi < (teammatesData[taskIter->second->avatar].tau[taskIter->first]
-                                                               + teammatesData[taskIter->second->avatar].stddev[taskIter->first])) {
+            if (teammatesData[taskIter->second->avatar].psi < (teammatesData[taskIter->second->avatar].tau.at(taskIter->first)
+                                                               + teammatesData[taskIter->second->avatar].stddev.at(taskIter->first))) {
                 // An avatar is assigned, but it has not been engaged long enough to acquiesce
                 available = false;
             }
