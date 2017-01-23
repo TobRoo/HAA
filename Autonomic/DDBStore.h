@@ -27,6 +27,7 @@ public:
 	mapDDBTask		DDBTasks;	// map of all tasks by UUID
 	mapDDBTaskData	DDBTaskDatas;	//map of all task performance data by UUID of the owning agent (better plural form?)
 	mapDDBQLearningData DDBQLearningDatas;	//map of all Q-learning data stored at the end of a run, to be loaded in the next run
+	mapDDBAdviceData	DDBAdviceDatas;		//map of all advice data stored at the end of a run, to be loaded in the next run
 
 	UUID nilUUID;
 
@@ -141,6 +142,8 @@ public:
 	UUID GetTaskDataId(UUID * id);
 
 	bool AddQLearningData(char instance, long long totalActions, long long usefulActions, int tableSize, std::vector<float> *qTable, std::vector<unsigned int> *expTable);
+	bool AddAdviceData(char instance, float cq, float bq);
+	mapDDBAdviceData GetAdviceData();
 	mapDDBQLearningData GetQLearningData();
 
 	int DataDump( Logger *Data, bool fulldump, char *logDirectory ); // dump data and statistics

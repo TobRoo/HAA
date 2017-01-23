@@ -5000,3 +5000,31 @@ mapDDBQLearningData DDBStore::GetQLearningData()
 {
 	return this->DDBQLearningDatas;
 }
+
+
+//Adviser data storage, for storing data between simulation runs
+
+
+bool DDBStore::AddAdviceData(char instance, float cq, float bq)
+{
+	Log->log(0, "DDBStore::AddAdviceData:: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+
+	// check to see if it already exists
+	if (this->DDBAdviceDatas.find(instance) != this->DDBAdviceDatas.end()) {
+		return true; // already exists
+	}
+
+	AdviceStorage newAdviceStorage;
+	newAdviceStorage.cq = cq;
+	newAdviceStorage.bq = bq;
+
+	// insert into DDBQLearningDatas
+	this->DDBAdviceDatas[instance] = newAdviceStorage;
+
+	return false;
+}
+
+mapDDBAdviceData DDBStore::GetAdviceData()
+{
+	return this->DDBAdviceDatas;
+}

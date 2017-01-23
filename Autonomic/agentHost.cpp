@@ -10669,6 +10669,19 @@ int AgentHost::ddbAddQLearningData(char typeId, long long totalActions, long lon
 	return 0;
 }
 
+int AgentHost::ddbAddAdviceData(char instance, float cq, float bq)
+{
+	this->ds.reset();
+	this->ds.packUUID(this->getUUID());
+	this->ds.packChar(instance);
+	this->ds.packFloat32(cq);
+	this->ds.packFloat32(bq);
+
+	this->globalStateTransaction(OAC_DDB_ADDADVICEDATA, this->ds.stream(), this->ds.length());
+	this->ds.unlock();
+	return 0;
+}
+
 
 
 
@@ -10780,16 +10793,8 @@ int AgentHost::LearningDataDump()
 {
 	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: 1");
 
-	WCHAR tempLearningDataFile[512];
-	wsprintf(tempLearningDataFile, _T("learningData%d.tmp"), STATE(AgentHost)->runNumber);
-	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: 1.1");
-	std::ifstream    tempLearningData(tempLearningDataFile);
-	bool fileExists = tempLearningData.good();
-	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: 1.2");
-	if (fileExists) {		//Only dump learning data if there is no file with the current run number in the bin folder
-		tempLearningData.close();
-		return 0;
-	}
+
+
 	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: 1.3");
 	DataStream taskDataDS;
 	DataStream taskDS;
@@ -10818,16 +10823,40 @@ int AgentHost::LearningDataDump()
 	for (auto& qlIter : QLData) {
 		Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: Instance: %d, Total actions: %d, Useful actions: %d, table size: %d", qlIter.first, qlIter.second.totalActions, qlIter.second.usefulActions, qlIter.second.qTable.size());
 
-		for (auto qTIter : qlIter.second.qTable)
-			;
-//			Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: instance %d, qTable entry: %f", qlIter.first-'0', qTIter);
+//		for (auto qTIter : qlIter.second.qTable)
+//			;
+////			Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: instance %d, qTable entry: %f", qlIter.first-'0', qTIter);
 	}
 
+	mapDDBAdviceData adviceData = this->dStore->GetAdviceData();
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: size of adviceData is %d, ", adviceData.size());
+	for (auto& advIter : adviceData) {
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: Instance: %d, cq: %f, bq: %f", advIter.first, advIter.second.cq, advIter.second.bq);
+
+		//		for (auto qTIter : qlIter.second.qTable)
+		//			;
+		////			Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: instance %d, qTable entry: %f", qlIter.first-'0', qTIter);
+	}
 
 	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump:about to write learning data...");
 	taskDataDS.rewind();
 	taskDS.rewind();
-	WriteLearningData(&taskDataDS, &taskDS, &QLData);
+
+
+
+
+	WritePerformanceData(&QLData);
+
+
+	WCHAR tempLearningDataFile[512];
+	wsprintf(tempLearningDataFile, _T("learningData%d.tmp"), STATE(AgentHost)->runNumber);
+	std::ifstream    tempLearningData(tempLearningDataFile);
+	bool fileExists = tempLearningData.good();
+	if (fileExists) {		//Only dump learning data if there is no file with the current run number in the bin folder
+		return 0;
+	}
+	tempLearningData.close();
+	WriteLearningData(&taskDataDS, &taskDS, &QLData, &adviceData);
 
 	taskDataDS.unlock();
 	taskDS.unlock();
@@ -10835,10 +10864,8 @@ int AgentHost::LearningDataDump()
 	return 0;
 }
 
-int AgentHost::WriteLearningData(DataStream *taskDataDS, DataStream *taskDS, mapDDBQLearningData *QLData) {
+int AgentHost::WriteLearningData(DataStream *taskDataDS, DataStream *taskDS, mapDDBQLearningData *QLData, mapDDBAdviceData *adviceData) {
 	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 1");
-
-
 
 	taskDataDS->unpackData(sizeof(UUID)); // discard thread
 	char taskDataOk = taskDataDS->unpackChar();	//DDBR_OK
@@ -10854,7 +10881,6 @@ int AgentHost::WriteLearningData(DataStream *taskDataDS, DataStream *taskDS, map
 		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: DDBR_OK is false, aborting dump: taskDataOk is %c, taskOk is %c", taskDataOk, taskOk);
 		return 1;
 	}
-
 
 	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 2");
 
@@ -10881,16 +10907,16 @@ int AgentHost::WriteLearningData(DataStream *taskDataDS, DataStream *taskDS, map
 	int instance;	//Used for identifying avatars (specified in mission file)
 
 
-	//Store learning data in .tmp file in bin dir for next run, and in .csv file in logDir\runNumberN for archiving
+	//Store learning data in .tmp file in bin dir for next run
 
-	WCHAR learningArchiveFile[512];
+	/*WCHAR learningArchiveFile[512];
 	wsprintf(learningArchiveFile, _T("%s\\learningData.csv"), logDirectory);
-	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 6");
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 6");*/
 	WCHAR tempLearningDataFile[512];
 	wsprintf(tempLearningDataFile, _T("learningData%d.tmp"), STATE(AgentHost)->runNumber);
 
 	std::ofstream    tempLearningData(tempLearningDataFile);
-	std::ofstream    archiveLearningData(learningArchiveFile);
+	//std::ofstream    archiveLearningData(learningArchiveFile);
 
 
 	RPC_WSTR stringUUID;
@@ -10926,15 +10952,34 @@ int AgentHost::WriteLearningData(DataStream *taskDataDS, DataStream *taskDS, map
 		 //taskData.taskId
 	}
 	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData:8");
+
+	//Store all advice data
+
+	for (auto& advIter : *adviceData) {
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData:8.1");
+		tempLearningData << "[AdviserData]\n";
+		instance = advIter.first;
+		tempLearningData << "id=" << instance << "\n";
+		tempLearningData << "cq" << "\n";
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData:8.2");
+		tempLearningData << advIter.second.cq << "\n";
+		tempLearningData << "bq" << "\n";
+		tempLearningData << advIter.second.bq << "\n";
+		tempLearningData << "\n";
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData:8.3");
+	}
+
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 9");
+
 	//Store all individual Q-learning data
 
 	for (auto& QLIter : *QLData) {
-		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData:8.1");
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData:9.1");
 		tempLearningData << "[QLData]\n";
 		instance = QLIter.first;
 		tempLearningData << "id=" << instance <<"\n";
 		tempLearningData << "qTable=" << "\n";
-		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData:8.2");
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData:9.2");
 		for (auto& qtIter : QLIter.second.qTable) {
 			tempLearningData << qtIter << "\n";
 		}
@@ -10943,11 +10988,54 @@ int AgentHost::WriteLearningData(DataStream *taskDataDS, DataStream *taskDS, map
 			tempLearningData << exptIter << "\n";
 		}
 		tempLearningData << "\n";
-		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData:8.3");
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData:9.3");
 	}
 
-	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 9");
 	tempLearningData.close();
+
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 10");
+
+
+	return 0;
+}
+
+int AgentHost::WritePerformanceData(mapDDBQLearningData * QLData)
+{
+	if (this->gatherData) {		//Collect performance data and save in .csv file
+
+		long long totalActions = 0;
+		long long usefulActions = 0;
+		time_t timeNow = time(0);		//Get current time (for timestamping data)
+		tm* utcTime = gmtime(&timeNow);
+
+		for (auto& qlIter : *QLData) {	//Gather all action data
+			totalActions = totalActions + qlIter.second.totalActions;
+			usefulActions = usefulActions + qlIter.second.usefulActions;
+		}
+
+		std::ifstream testIfExists;
+		std::ofstream outputData;
+
+		testIfExists.open("performanceData.csv");
+		if (!testIfExists.good()) {  //File does not exist, write headers
+			Log.log(LOG_LEVEL_NORMAL, "AgentHost::WritePerformanceData: no performance records found, writing headers...");
+			testIfExists.close();
+			outputData.open("performanceData.csv", std::ios::app);
+			outputData << "Time," << "runNumber," << " totalActions," << "usefulActions" << "\n";
+			outputData.close();
+		}
+		else {					 //File exists, do not write headers
+			testIfExists.close();
+		}
+
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WritePerformanceData: appending data...");
+
+		outputData.open("performanceData.csv", std::ios::app);
+		outputData << asctime(utcTime) << "," << STATE(AgentHost)->runNumber << "," << totalActions << "," << usefulActions << "\n";
+		outputData.close();
+	}
+
+
 	return 0;
 }
 
@@ -12313,6 +12401,27 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		this->ddbAddQLearningData(instance, totalActions, usefulActions, tableSize, &qTable, &expTable);
 	}
 	break;
+	case MSG_DDB_ADVICEDATA:
+	{
+		Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_ADVICEDATA ");
+
+		UUID avatarId;
+		char instance;	//Type of avatar, stored in the mission file
+		float cq;
+		float bq;
+
+		lds.setData(data, len);
+		lds.unpackUUID(&avatarId);		//Avatar id (owner of the data set)
+		instance = lds.unpackChar();
+		cq = lds.unpackFloat32();
+		bq = lds.unpackFloat32();
+		lds.unlock();
+		this->ddbAddAdviceData(instance, cq, bq);
+	}
+	break;
+
+
+
 	case MSG_DDB_RHOSTGROUPSIZE:
 	{
 		lds.setData(data, len);
@@ -13622,6 +13731,28 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		lds.unlock();
 	}
 		break;
+	case OAC_DDB_ADDADVICEDATA:
+	{
+
+		Log.log(0, "AgentHost::conProcessMessage: OAC_DDB_ADDADVICEDATA");
+
+		UUID sender;
+		char instance;
+		float cq;
+		float bq;
+
+
+		lds.setData(data, len);
+		lds.unpackUUID(&sender);
+		instance = lds.unpackChar();
+		cq = lds.unpackFloat32();
+		bq = lds.unpackFloat32();
+
+		this->dStore->AddAdviceData(instance, cq, bq);
+
+		lds.unlock();
+	}
+	break;
 	default:
 		return 1; // unhandled message
 	}

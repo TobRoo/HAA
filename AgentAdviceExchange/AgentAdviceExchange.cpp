@@ -126,6 +126,9 @@ int AgentAdviceExchange::configureParameters(DataStream *ds) {
 	ds->unpackUUID(&STATE(AgentAdviceExchange)->ownerId);
 	STATE(AgentAdviceExchange)->avatarCapacity = (ITEM_TYPES)ds->unpackInt32();
 	ds->unpackUUID(&STATE(AgentAdviceExchange)->avatarId);
+	STATE(AgentAdviceExchange)->avatarInstance = ds->unpackInt32();
+	STATE(AgentAdviceExchange)->runNumber = ds->unpackInt32();
+
 
 	Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::configureParameters: ownerId %s", Log.formatUUID(LOG_LEVEL_NORMAL, &STATE(AgentAdviceExchange)->ownerId));
 
@@ -330,30 +333,33 @@ int AgentAdviceExchange::preEpochUpdate() {
 		return 0;
 	}
 
-	// Get my cq and bq from the DDB
-	// TODO (fake values for now)
-	this->cq = (float)this->randomGenerator.Uniform01();
-	this->bq = (float)this->randomGenerator.Uniform01();
+	// Get my cq and bq from stored data
+	Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::preEpochUpdate: Parsing adviser performance metrics from previous run...");
+	this->parseAdviserData();
 
-	// Get the cq and bq values of each adviser from the DDB
-	Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::preEpochUpdate: Requesting adviser performance metrics from the DDB.");
-	std::map<UUID, adviserDataStruct, UUIDless>::iterator iter;
-	for (iter = this->adviserData.begin(); iter != this->adviserData.end(); iter++) {
-		// TODO (fake values for now)
-		iter->second.cq = (float)this->randomGenerator.Uniform01();
-		iter->second.bq = (float)this->randomGenerator.Uniform01();
-	}
-	Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::preEpochUpdate: Adviser performance metrics received.");
+	//// TODO (fake values for now)
+	//this->cq = (float)this->randomGenerator.Uniform01();
+	//this->bq = (float)this->randomGenerator.Uniform01();
+
+	//// Get the cq and bq values of each adviser from the DDB
+
+	//std::map<UUID, adviserDataStruct, UUIDless>::iterator iter;
+	//for (iter = this->adviserData.begin(); iter != this->adviserData.end(); iter++) {
+	//	// TODO (fake values for now)
+	//	iter->second.cq = (float)this->randomGenerator.Uniform01();
+	//	iter->second.bq = (float)this->randomGenerator.Uniform01();
+	//}
+	//Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::preEpochUpdate: Adviser performance metrics received.");
 
 	// Select the adviser for this epoch
 	Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::preEpochUpdate: My cq: %.2f.", this->cq);
 	float best_cq = 0.0f;
-	for (iter = this->adviserData.begin(); iter != this->adviserData.end(); iter++) {
+	for (auto& iter : this->adviserData) {
 		// Their cq must be better 
-		if ((iter->second.cq > this->cq) && (iter->second.cq > best_cq)) {
+		if ((iter.second.cq > this->cq) && (iter.second.cq > best_cq)) {
 			// Select them as the adviser
-			this->adviser = iter->first;
-			best_cq = iter->second.cq;
+			this->adviser = iter.first;
+			best_cq = iter.second.cq;
 		}
 	}
 
@@ -382,9 +388,134 @@ int AgentAdviceExchange::postEpochUpdate() {
 
 	// Send cq and bq to the DDB
     Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::postEpochUpdateB: Sending cq and bq to DDB.");
+
+	this->uploadAdviceData();
+
 	// TODO
 	// SAVE(STATE(AgentBase)->uuid, this->cq, this->bq)
 
+	return 0;
+}
+
+int AgentAdviceExchange::parseAdviserData()
+{
+	char learningDataFile[512];
+	sprintf(learningDataFile, "learningData%d.tmp", STATE(AgentAdviceExchange)->runNumber - 1);
+
+
+	FILE *fp;
+	int i;
+	char keyBuf[64];
+	char ch;
+
+	if (fopen_s(&fp, learningDataFile, "r")) {
+		Log.log(0, "AgentAdviceExchange::parseAdviserData: failed to open %s", learningDataFile);
+		return 1; // couldn't open file
+	}
+	Log.log(0, "AgentAdviceExchange::parseAdviserData: parsing %s", learningDataFile);
+	i = 0;
+	while (1) {
+		ch = fgetc(fp);
+
+		if (ch == EOF) {
+			break;
+		}
+		else if (ch == '\n') {
+			keyBuf[i] = '\0';
+
+			if (i == 0)
+				continue; // blank line
+
+			if (!strncmp(keyBuf, "[TLData]", 64)) {
+				Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::parseLearningData: Found team learning data section.");
+				if (fscanf_s(fp, "id=%d\n") != 1) {
+					Log.log(0, "AgentAdviceExchange::parseLearningData: badly formatted id");
+					break;
+				}
+				while (fscanf_s(fp, "landmark_type=%d\n") == 1) {
+					fscanf_s(fp, "tau=%f\n");
+					//Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::parseLearningData: type: %d, tau: %f", landmark_type, tauVal);
+				}
+			}
+			else if (!strncmp(keyBuf, "[AdviserData]", 64)) {
+				int id;
+				float cq;
+				float bq;
+				if (fscanf_s(fp, "id=%d\n", id) != 1) {
+					Log.log(0, "AgentAdviceExchange::parseLearningData: badly formatted id");
+					break;
+				}
+				if (fscanf_s(fp, "cq=\n", cq) != 1) {
+					Log.log(0, "AgentAdviceExchange::parseLearningData: badly formatted cq");
+					break;
+				}
+				if (fscanf_s(fp, "bq=\n", bq) != 1) {
+					Log.log(0, "AgentAdviceExchange::parseLearningData: badly formatted bq");
+					break;
+				}
+				if (id == STATE(AgentAdviceExchange)->avatarInstance) { // Data belongs to this agent
+					this->cq = cq;
+					this->bq = bq;
+				}
+				else { //Data belongs to another advice exchange agent
+					for (auto& advIter : this->adviserData) {
+						if (advIter.second.avatarInstance == id) {	//Found the correct agent
+							advIter.second.bq = bq;
+							advIter.second.bq = cq;
+						}
+					}
+				}
+			}
+			else if (!strncmp(keyBuf, "[QLData]", 64)) {
+				if (fscanf_s(fp, "id=%d\n") != 1) {
+					Log.log(0, "AgentAdviceExchange::parseLearningData: badly formatted id");
+					break;
+				}
+				if (fscanf_s(fp, "qTable=\n") != 1) {
+					Log.log(0, "AgentAdviceExchange::parseLearningData: badly formatted qTable");
+					break;
+				}
+				while (fscanf_s(fp, "%f\n") == 1) {
+				}
+				if (fscanf_s(fp, "expTable=\n") != 1) {
+					Log.log(0, "AgentAdviceExchange::parseLearningData: badly formatted qTable");
+					break;
+				}
+				while (fscanf_s(fp, "%d\n") == 1) {
+				}
+			}
+			else { // unknown key
+				fclose(fp);
+				Log.log(0, "AgentAdviceExchange::parseAdviserData: unknown key: %s", keyBuf);
+				return 1;
+			}
+			i = 0;
+		}
+		else {
+			keyBuf[i] = ch;
+			i++;
+		}
+	}
+	fclose(fp);
+	return 0;
+
+
+
+	return 0;
+}
+
+int AgentAdviceExchange::uploadAdviceData()
+{
+	DataStream lds;
+	Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::uploadAdviceData:Avatar id: %s, bq: %f, cq: %f", Log.formatUUID(0, &STATE(AgentAdviceExchange)->avatarId), STATE(AgentAdviceExchange)->avatarInstance, this->cq, this->bq);
+	lds.reset();
+	lds.packUUID(&STATE(AgentAdviceExchange)->avatarId);	//Avatar id
+	lds.packChar(STATE(AgentAdviceExchange)->avatarInstance);		//Pack the agent type instance - remember to set as different for each avatar in the config! (different avatar types will have different learning data)
+	lds.packFloat32(this->cq);
+	lds.packFloat32(this->bq);
+
+	this->sendMessage(this->hostCon, MSG_DDB_ADVICEDATA, lds.stream(), lds.length());
+	lds.unlock();
 	return 0;
 }
 
@@ -505,6 +636,7 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 		//sds.packUUID(&thread);
 		sds.packUUID( this->getUUID() );
 		sds.packInt32(STATE(AgentAdviceExchange)->avatarCapacity);
+		sds.packInt32(STATE(AgentAdviceExchange)->avatarInstance);
 		Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage: Sending capacity query reply to %s", Log.formatUUID(0,&sender) );
 		this->sendMessageEx(this->hostCon, MSGEX(AgentAdviceExchange_MSGS, MSG_CAPACITY_REPLY), sds.stream(), sds.length(), &sender);
 		sds.unlock();
@@ -517,18 +649,20 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 		DataStream sds;
 		UUID sender;
 		ITEM_TYPES capacity;
+		int instance;
 		//UUID thread;
 
 		lds.setData(data, len);
 		lds.unpackUUID(&sender);
 		capacity = (ITEM_TYPES)lds.unpackInt32();
+		instance = lds.unpackInt32();
 		lds.unlock();
 		this->advExAgentCountReceived++;
 		Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage. advExAgentCountReceived is %d.", advExAgentCountReceived);
 		if (capacity != STATE(AgentAdviceExchange)->avatarCapacity) {
 			Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage. Number of advisers: %d", adviserData.size());
 			auto advIter = adviserData.find(sender);
-			this->adviserData.erase(advIter);				//Delete any advisrs from our list that are not of the same type
+			this->adviserData.erase(advIter);				//Delete any advisers from our list that are not of the same type
 			Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage. Removing agent %s from adviser list, not same capacity.", Log.formatUUID(0,&sender));
 			Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage. Number of advisers: %d", adviserData.size());
 
@@ -536,6 +670,7 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 		else {
 			auto advIter = adviserData.find(sender);							// Adviser is of same type (same capacity)
 			this->adviserData[advIter->first].hasReplied = true;				// Adviser has responded
+			this->adviserData[advIter->first].avatarInstance = instance;				
 		}
 
 		if (advExAgentCountReceived == advExAgentCount)		//We have received capacity info from all agents in our list - finish configuration and start the agent

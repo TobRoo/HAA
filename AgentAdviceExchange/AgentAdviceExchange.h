@@ -21,6 +21,7 @@
 
 typedef struct adviserDataStruct {
 	UUID parentId;              // Id of (parent) Individual Learning agent
+	int avatarInstance;			// Instance of associated avatar
 	UUID queryConv;             // Thread used to ask this adviser for advice
 	std::vector<float> advice;  // vector of advised quality values
 	float cq;                   // Current average quality
@@ -47,6 +48,9 @@ public:
 		bool setupComplete;
 		ITEM_TYPES avatarCapacity; //Carrying capacity of the parent avatar; 1 = light items, 2 = heavy items (0 = NON_COLLECTABLE, cannot carry items)
 		int epoch;  // Epoch counter
+
+		int avatarInstance;
+		int runNumber;
 	};
 
 //-----------------------------------------------------------------------------
@@ -104,6 +108,9 @@ public:
 
 	int preEpochUpdate();     // Performs the necessary updates before a new epoch begins
 	int postEpochUpdate();   // Performs the necessary updates after an epoch is finished
+
+	int parseAdviserData();
+	int uploadAdviceData();
 
 private:
 

@@ -1147,6 +1147,20 @@ int AgentIndividualLearning::parseLearningData()
 				}
 
 			}
+			else if (!strncmp(keyBuf, "[AdviserData]", 64)) {
+				if (fscanf_s(fp, "id=%d\n") != 1) {
+					Log.log(0, "AgentIndividualLearning::parseLearningData: badly formatted id");
+					break;
+				}
+				if (fscanf_s(fp, "cq=\n") != 1) {
+					Log.log(0, "AgentIndividualLearning::parseLearningData: badly formatted cq");
+					break;
+				}
+				if (fscanf_s(fp, "bq=\n") != 1) {
+					Log.log(0, "AgentIndividualLearning::parseLearningData: badly formatted bq");
+					break;
+				}
+			}
 			else if (!strncmp(keyBuf, "[QLData]", 64)) {
 				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::parseLearningData: Found Q-learning data section.");
 				int id;
@@ -2126,6 +2140,10 @@ bool AgentIndividualLearning::convRequestAgentAdviceExchange(void *vpConv) {
 		lds.packUUID(&STATE(AgentBase)->uuid);
 		lds.packInt32(this->avatar.capacity);
 		lds.packUUID(&STATE(AgentIndividualLearning)->ownerId);
+		lds.packInt32(STATE(AgentIndividualLearning)->avatarInstance);
+		lds.packInt32(STATE(AgentIndividualLearning)->runNumber);
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAgentAdviceExchange: sending run nubmer: %d", STATE(AgentIndividualLearning)->runNumber);
+
 		this->sendMessageEx(this->hostCon, MSGEX(AgentAdviceExchange_MSGS, MSG_CONFIGURE), lds.stream(), lds.length(), &STATE(AgentIndividualLearning)->agentAdviceExchange);
 		lds.unlock();
 

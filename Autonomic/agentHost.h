@@ -704,7 +704,7 @@ private:
 	int ddbTaskDataSetInfo(UUID *avatarId, DDBTaskData *taskData);
 	int ddbGetTaskData(UUID * id, spConnection con, UUID * thread, bool enumTaskData);
 	int ddbAddQLearningData(char typeId, long long totalActions, long long usefulActions, int tableSize, std::vector<float>* qTable, std::vector<unsigned int>* expTable);
-
+	int ddbAddAdviceData(char instance, float cq, float bq);
 
 
 	// Data gathering
@@ -734,7 +734,8 @@ public:
 
 	//Learning data gathering
 	int LearningDataDump();
-	int WriteLearningData(DataStream * taskDataDS, DataStream * taskDS, mapDDBQLearningData *QLData);
+	int WriteLearningData(DataStream * taskDataDS, DataStream * taskDS, mapDDBQLearningData *QLData, mapDDBAdviceData *adviceData);
+	int WritePerformanceData(mapDDBQLearningData *QLData);
 
 protected:
 

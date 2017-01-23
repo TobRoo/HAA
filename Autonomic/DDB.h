@@ -535,9 +535,6 @@ typedef std::pair<char *, size_t> storagePair;
 
 typedef std::map<UUID, storagePair, UUIDless> mapDDBTaskData;
 
-
-
-
 //Individual Q-Learning data (only stored at the end of a run, to be used in the next run)
  
 struct QLStorage {
@@ -549,6 +546,14 @@ struct QLStorage {
 
 typedef std::map<char, QLStorage> mapDDBQLearningData;
 
+//Advice data (only stored at the end of a run, to be used in the next run)
+
+struct AdviceStorage {
+	float cq;
+	float bq;
+};
+
+typedef std::map<char, AdviceStorage> mapDDBAdviceData;
 
 
 
