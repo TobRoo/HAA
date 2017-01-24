@@ -9,10 +9,12 @@
 
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 
 
 #include "..\AgentIndividualLearning\AgentIndividualLearningVersion.h"
 #include "..\AgentTeamLearning\AgentTeamLearningVersion.h"
+#include "..\AgentAdviceExchange\AgentAdviceExchangeVersion.h"
 
 // TEMP
 #include "time.h"
@@ -11031,7 +11033,10 @@ int AgentHost::WritePerformanceData(mapDDBQLearningData * QLData)
 		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WritePerformanceData: appending data...");
 
 		outputData.open("performanceData.csv", std::ios::app);
-		outputData << asctime(utcTime) << "," << STATE(AgentHost)->runNumber << "," << totalActions << "," << usefulActions << "\n";
+		//outputData << asctime(utcTime) << "," << STATE(AgentHost)->runNumber << "," << totalActions << "," << usefulActions << "\n";
+		outputData << utcTime->tm_year + 1900 << "-" << setw(2) << setfill('0') << utcTime->tm_mon + 1 << "-" << utcTime->tm_mday;
+		outputData << " " << utcTime->tm_hour << ":" << utcTime->tm_min << ":" << utcTime->tm_sec << ",";
+		outputData << STATE(AgentHost)->runNumber << "," << totalActions << "," << usefulActions << "\n";
 		outputData.close();
 	}
 
@@ -11449,14 +11454,16 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		UuidFromString((RPC_WSTR)_T(AgentTeamLearning_UUID), &aTLTypeId);
 		UUID aITTypeId;
 		UuidFromString((RPC_WSTR)_T(AgentIndividualLearning_UUID), &aITTypeId);
+		UUID aAETypeId;
+		UuidFromString((RPC_WSTR)_T(AgentAdviceExchange_UUID), &aAETypeId);
 
-		//Go through all agents and find the learning agents
+		//Go through all agents and find the learning agents and advice agents
 		for (auto& iterAgent : this->dStore->DDBAgents) {
 
-			//Check if learning agent id matches the agent id
-			if (iterAgent.second->agentTypeId == aITTypeId || iterAgent.second->agentTypeId == aTLTypeId) {
-
-				// Order agent to upload learning data for next run
+			//Check if learning or advice agent id matches the agent id
+			if (iterAgent.second->agentTypeId == aITTypeId || iterAgent.second->agentTypeId == aTLTypeId || iterAgent.second->agentTypeId == aAETypeId) {
+				Log.log(0, "AgentHost::conProcessMessage: MSG_MISSION_DONE, messaging agents...!");
+				// Order agent to upload learning or advice data for next run
 
 				UUID agentUUID = iterAgent.first;
 				this->sendMessage(con, MSG_MISSION_DONE, &agentUUID);

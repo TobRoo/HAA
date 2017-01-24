@@ -40,7 +40,7 @@ AgentAdviceExchange::AgentAdviceExchange(spAddressPort ap, UUID *ticket, int log
 	STATE(AgentAdviceExchange)->startDelayed = false;
 	STATE(AgentAdviceExchange)->updateId = -1;
 	STATE(AgentAdviceExchange)->setupComplete = false;
-	STATE(AgentAdviceExchange)->epoch = 1;  // SET TO 1 FOR DEVELOPMENT, SHOULD BE 0
+	STATE(AgentAdviceExchange)->epoch = 0;  // SET TO 1 FOR DEVELOPMENT, SHOULD BE 0
 
 	//---------------------------------------------------------------
 	// TODO Data that must be loaded in
@@ -73,6 +73,8 @@ AgentAdviceExchange::AgentAdviceExchange(spAddressPort ap, UUID *ticket, int log
 	this->callback[AgentAdviceExchange_CBR_convGetAgentList] = NEW_MEMBER_CB(AgentAdviceExchange, convGetAgentList);
 	this->callback[AgentAdviceExchange_CBR_convGetAgentInfo] = NEW_MEMBER_CB(AgentAdviceExchange, convGetAgentInfo);
 	this->callback[AgentAdviceExchange_CBR_convAdviceQuery] = NEW_MEMBER_CB(AgentAdviceExchange, convAdviceQuery);
+
+	this->tempCounter = 0;
 }// end constructor
 
 //-----------------------------------------------------------------------------
@@ -208,7 +210,14 @@ int AgentAdviceExchange::stop() {
 
 int AgentAdviceExchange::step() {
 	//Log.log(0, "AgentAdviceExchange::step()");
-
+	this->tempCounter++;
+	//  if (STATE(AgentBase)->stopFlag) {
+	//      uploadLearningData();	//Stores individual learningdata in DDB for next simulation run
+	//  }
+	if (tempCounter == 200) {
+		Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::step: REACHED UPLOAD TEST COUNT!");
+		uploadAdviceData();	//Stores individual learningdata in DDB for next simulation run
+	}
 	return AgentBase::step();
 }// end step
 
@@ -675,6 +684,12 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 
 		if (advExAgentCountReceived == advExAgentCount)		//We have received capacity info from all agents in our list - finish configuration and start the agent
 			this->finishConfigureParameters();
+	}
+	break;
+	case MSG_MISSION_DONE:
+	{
+		Log.log(0, " AgentAdviceExchange::conProcessMessage: mission done, uploading advice data for next run.");
+		this->postEpochUpdate();
 	}
 	break;
 	default:

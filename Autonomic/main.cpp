@@ -17,6 +17,21 @@
 #include "mapRandom.h"
 #include <sstream>
 
+////Def for muting all AgentPlayback and log messages for actual simulation runs
+//#define EXPERIMENT_RUN
+//
+//#ifdef EXPERIMENT_RUN
+//#define PLAYBACKMODE_DEFAULT PLAYBACKMODE_OFF
+//#define LOG_MODE_COUT LOG_MODE_OFF
+//#define LOG_MODE_FILE LOG_MODE_OFF
+//#define LOG_MODE_EDIT LOG_MODE_OFF
+//#define LOG_LEVEL_NORMAL	LOG_LEVEL_NONE
+//#define LOG_LEVEL_VERBOSE	LOG_LEVEL_NONE
+//#define LOG_LEVEL_ALL		LOG_LEVEL_NONE
+//#endif
+
+
+
 
 #define MODE_HOST 0
 

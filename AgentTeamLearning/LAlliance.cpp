@@ -68,14 +68,14 @@ int LAlliance::addTask(UUID id) {
     }
 
     // Add the task to the DDBTaskData struct
-    myData.motivation.insert(std::pair<UUID,float>(id, 0));
-    myData.impatience.insert(std::pair<UUID, float>(id, 0));
+    myData.motivation.insert(std::pair<UUID,float>(id, 0.0f));
+    myData.impatience.insert(std::pair<UUID, float>(id, 0.0f));
     myData.attempts.insert(std::pair<UUID, int>(id, 0));
 
     // Initialize tau as the half the max task time, and draw from a distribution
 	// since identical taus will cause problems in the impatience calculation.
 	myData.tau.insert(std::pair<UUID, int>(id, parentAgent->randomGenerator.NormalDistribution(0.5f*maxTaskTime, 2)));
-	myData.stddev.insert(std::pair<UUID, float>(id, 1));
+	myData.stddev.insert(std::pair<UUID, float>(id, 1.0f));
 	myData.mean.insert(std::pair<UUID, float>(id, myData.tau.at(id)));
     return 0;
 }
@@ -168,12 +168,12 @@ int LAlliance::chooseTask(const taskList &tasks) {
                 for (avatarIter = teammatesData.begin(); avatarIter != teammatesData.end(); avatarIter++) {
 
                     // Check if another avatar is expected to be faster
-                    if (avatarIter->second.tau[taskIter->first] < myData.tau[taskIter->first]) {
+                    if (avatarIter->second.tau.at(taskIter->first) < myData.tau.at(taskIter->first)) {
                         fastest = false;
                     }
 
                     // Check if another avatar is more motivated
-                    if (avatarIter->second.motivation[taskIter->first] > myData.motivation[taskIter->first]) {
+                    if (avatarIter->second.motivation.at(taskIter->first) > myData.motivation.at(taskIter->first)) {
                         mostMotivated = false;
                     }
 
@@ -183,10 +183,10 @@ int LAlliance::chooseTask(const taskList &tasks) {
             if (mostMotivated) {
                 if (fastest) {
                     // Expected to be the best, so assign to category 1
-                    category1[taskIter->first] = myData.tau[taskIter->first];
+                    category1[taskIter->first] = myData.tau.at(taskIter->first);
                 } else {
                     // Another avatar is expected to be better, so assign to category 2
-                    category2[taskIter->first] = myData.tau[taskIter->first];
+                    category2[taskIter->first] = myData.tau.at(taskIter->first);
                 }
 
             }
@@ -238,13 +238,13 @@ int LAlliance::chooseTask(const taskList &tasks) {
 
     if (taskAssignment != nilUUID) {
         //parentAgent->logWrapper(" chooseTask: We dont reach here...");
-        if (myData.attempts[taskAssignment] == 0) {
+        if (myData.attempts.at(taskAssignment) == 0) {
             // This is the first attempt, zero other avatar's motivation
             requestMotivationReset(taskAssignment);
         }
     }
     // Increment the task attempts
-    myData.attempts[taskAssignment]++;
+    myData.attempts.at(taskAssignment)++;
 
     if (taskAssignment != nilUUID && tasks.at(taskAssignment)->avatar != nilUUID) {
         // Another avatar was assigned, and they must acquiesce
@@ -373,6 +373,13 @@ int LAlliance::updateTau() {
     // Extract the old value
     float prev_tau = myData.tau[myData.taskId];
 
+
+	char message[100];
+	sprintf(message, "updateTau: n is: %d, psi is: %d, prev_tau is %f", n, myData.psi, prev_tau);
+	parentAgent->logWrapper(LOG_LEVEL_VERBOSE, message);
+
+
+
     // Compute the new value
     float beta = (float)exp(n / stochasticUpdateTheta4)/(stochasticUpdateTheta3
                                                          + (float)exp(n / stochasticUpdateTheta4));
@@ -395,10 +402,17 @@ int LAlliance::updateTau() {
     myData.mean[myData.taskId] = current_mean;
     myData.stddev[myData.taskId] = current_stddev;
 
-	// Log the update
-	char message[100];
+
+
+	sprintf(message, "updateTau: First factor: %.2f", (stochasticUpdateTheta2 / n));
+	parentAgent->logWrapper(LOG_LEVEL_VERBOSE, message);
+	sprintf(message, "updateTau: Second factor: %.2f", (myData.psi - prev_tau));
+	parentAgent->logWrapper(LOG_LEVEL_VERBOSE, message);
 	sprintf(message, "updateTau: beta: %.2f", beta);
 	parentAgent->logWrapper(LOG_LEVEL_VERBOSE, message);
+
+	// Log the update
+	//char message[100];
 	sprintf(message, "updateTau: Old tau: %.2f, New tau: %.2f", prev_tau, current_tau);
 	parentAgent->logWrapper(LOG_LEVEL_VERBOSE, message);
 	sprintf(message, "updateTau: Old mean: %.2f, New mean: %.2f", prev_mean, current_mean);

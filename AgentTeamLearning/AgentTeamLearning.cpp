@@ -199,10 +199,13 @@ int	AgentTeamLearning::finishConfigureParameters() {
 
 int AgentTeamLearning::parseLearningData()
 {
+	if (STATE(AgentTeamLearning)->runNumber == 1)
+		return 0;	//No data to parse on first run
+
+
 	char learningDataFile[512];
 	sprintf(learningDataFile, "learningData%d.tmp", STATE(AgentTeamLearning)->runNumber - 1);
 	taskList tempTaskList = this->mTaskList;
-	std::map<UUID, float, UUIDless> tauList = this->lAllianceObject.myData.tau;
 
 	FILE *fp;
 	int i;
@@ -374,7 +377,7 @@ int AgentTeamLearning::step() {
 /* checkRoundStatus
 *
 * Main method for determining when this agent should perform their task allocation. The ordered list of agents
-* for this round is scanned to determine how many agents are ahead in line that still need to respond, which 
+* for this round is scanned to determine how many agents are ahead in line that still need to respond, 
 * which determines the maximum wait time. The response of each agent is marked in convGetTaskDataInfo.
 *
 * When this agent is the last in the list for the current round, they are responsible for initiating the next
@@ -429,6 +432,11 @@ int AgentTeamLearning::checkRoundStatus() {
 			uploadTask(prev_task_id, nilUUID, nilUUID, false);
 		}
 		else {
+			this->mTaskList[new_task_id]->agentUUID = *this->getUUID();
+			this->mTaskList[new_task_id]->avatar = STATE(AgentTeamLearning)->ownerId;
+
+
+			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Round %d: Uploaded task is: %s, uploaded agent id is %s, uploaded avatar id is: %s, and the uploaded task status is: %d", STATE(AgentTeamLearning)->round_number, Log.formatUUID(0, &new_task_id), Log.formatUUID(0, &this->mTaskList[new_task_id]->agentUUID), Log.formatUUID(0, &this->mTaskList[new_task_id]->avatar), this->mTaskList[new_task_id]->completed);
 			this->uploadTask(new_task_id, this->mTaskList[new_task_id]->agentUUID, this->mTaskList[new_task_id]->avatar, this->mTaskList[new_task_id]->completed);
 		}
 

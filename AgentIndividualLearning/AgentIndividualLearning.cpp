@@ -89,7 +89,7 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
     this->prevStateVector.resize(this->num_state_vrbls_, 0);
 
     //Load in learning data from previous runs (if such data exist)
-    this->parseLearningData();
+   // this->parseLearningData();
 
 	//Advice exchange parameters
 	STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned = false;
@@ -1106,6 +1106,9 @@ int AgentIndividualLearning::uploadQLearningData()
 }
 int AgentIndividualLearning::parseLearningData()
 {
+	if (STATE(AgentIndividualLearning)->runNumber == 1)
+		return 0;	//No data to parse on first run
+
 	char learningDataFile[512];
 	sprintf(learningDataFile, "learningData%d.tmp", STATE(AgentIndividualLearning)->runNumber - 1);
 
@@ -1373,7 +1376,7 @@ int AgentIndividualLearning::ddbNotification(char *data, int len) {
     }
     else if (type == DDB_TASK) {
         if (evt == DDBE_ADD || evt == DDBE_UPDATE) {
-
+			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::ddbNotification: Task update.");
             // request task info
             UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convGetTaskInfo, DDB_REQUEST_TIMEOUT, &uuid, sizeof(UUID));
             if (thread == nilUUID) {
@@ -1938,7 +1941,7 @@ bool AgentIndividualLearning::convMissionRegion(void *vpConv) {
 bool AgentIndividualLearning::convGetTaskInfo(void * vpConv) {
     DataStream lds;
     spConversation conv = (spConversation)vpConv;
-
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Task info received.");
     if (conv->response == NULL) { // timed out
         Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: timed out");
         return 0; // end conversation
@@ -1956,6 +1959,8 @@ bool AgentIndividualLearning::convGetTaskInfo(void * vpConv) {
         UUID taskIdIn;
         lds.unpackUUID(&taskIdIn);
         DDBTask newTask = *(DDBTask *)lds.unpackData(sizeof(DDBTask));
+
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Received info about task %s assigned to %s, my current task is: %s.", Log.formatUUID(0, &taskIdIn), Log.formatUUID(0, &newTask.agentUUID), Log.formatUUID(0, &this->taskId));
 
 		// Make sure the task is assigned to this avatar
         if (newTask.avatar == STATE(AgentIndividualLearning)->ownerId) {	

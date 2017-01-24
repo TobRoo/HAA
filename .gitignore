@@ -83,3 +83,4 @@ ipch/
 *.db
 *.psess
 /bin/*.tmp
+*.csv
