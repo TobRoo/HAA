@@ -324,6 +324,7 @@ int LAlliance::updateMotivation(const taskList &tasks) {
 
 int LAlliance::finishTask() {
     // Update the tau value
+	parentAgent->logWrapper(LOG_LEVEL_VERBOSE, "LAlliance::finishTask: Updating tau values.");
     updateTau();
 
     // Reset tracking metrics and assignment
@@ -345,6 +346,7 @@ int LAlliance::finishTask() {
 
 int LAlliance::acquiesce(UUID id) {
     // Update the tau value
+	parentAgent->logWrapper(LOG_LEVEL_VERBOSE, "LAlliance::acquiesce: Updating tau values.");
     updateTau();
 
     // Reset tracking metrics and assignment

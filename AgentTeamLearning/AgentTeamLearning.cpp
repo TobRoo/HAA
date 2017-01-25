@@ -384,7 +384,7 @@ int AgentTeamLearning::step() {
 * round (i.e. distributing a new randomized round order) by calling initiateNextRound.
 */
 int AgentTeamLearning::checkRoundStatus() {
-
+	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Checking...");
 	// Only proceed if we have not participated in this round yet
 	if (this->TLAgentData[STATE(AgentBase)->uuid].response)
 		return 0;
@@ -523,7 +523,7 @@ int AgentTeamLearning::uploadTask(UUID &task_id, UUID &agent_id, UUID &avatar_id
 	lds.packUUID(&task_id);    // Task id
 	lds.packUUID(&agent_id);   // Agent id
 	lds.packUUID(&avatar_id);  // Avatar id
-	lds.packBool(&completed);  // Completion flag
+	lds.packBool(completed);  // Completion flag
 	this->sendMessage(this->hostCon, MSG_DDB_TASKSETINFO, lds.stream(), lds.length());
 	lds.unlock();
 
@@ -986,6 +986,7 @@ bool AgentTeamLearning::convGetTaskList(void * vpConv)
 				this->mTaskList[taskId]->type = task->type;
 				this->mTaskList[taskId]->completed = task->completed;
 
+				Log.log(0, "AgentTeamLearning::convGetTaskList: task id: %s, landmarkId: %s, agentId: %s, avatarId: %s, type: %d, completed: %d", Log.formatUUID(0, &taskId), Log.formatUUID(0, &task->landmarkUUID), Log.formatUUID(0, &task->agentUUID), Log.formatUUID(0, &task->avatar), (int)task->type, task->completed);
 				// Add the task to L-Alliance
 				this->lAllianceObject.addTask(taskId);
 			}
@@ -1102,8 +1103,10 @@ bool AgentTeamLearning::convGetTaskInfo(void * vpConv) {
 
 		lds.unlock();
 
+		Log.log(0, "AgentTeamLearning::convGetTaskInfo: task id: %s, landmarkId: %s, agentId: %s, avatarId: %s, type: %d, completed: %d", Log.formatUUID(0, &taskId), Log.formatUUID(0, &task->landmarkUUID), Log.formatUUID(0, &task->agentUUID), Log.formatUUID(0,&task->avatar), (int)task->type, task->completed);
 		// Has our task been completed?
 		if (taskId == this->lAllianceObject.myData.taskId && task->completed) {
+			Log.log(0, "AgentTeamLearning::convGetTaskInfo: task completed???????????");
 			this->lAllianceObject.finishTask();
 		}
 
