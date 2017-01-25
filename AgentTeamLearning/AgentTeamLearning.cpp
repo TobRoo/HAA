@@ -49,6 +49,7 @@ AgentTeamLearning::AgentTeamLearning(spAddressPort ap, UUID *ticket, int logLeve
 	STATE(AgentTeamLearning)->hasReceivedRunNumber = false;
 	STATE(AgentTeamLearning)->runNumber = 0;
 
+
 	// V2 team learning stuff
 	STATE(AgentTeamLearning)->round_number = 0;
 	this->new_round_number = 0;
@@ -56,6 +57,7 @@ AgentTeamLearning::AgentTeamLearning(spAddressPort ap, UUID *ticket, int logLeve
 	this->round_info_set = true;
 	this->delta_learn_time = 3000; // [ms]
 	this->round_timout = 500;  // [ms]
+	this->last_agent = false;
 	
 	// Prepare callbacks
 	this->callback[AgentTeamLearning_CBR_convGetAgentList] = NEW_MEMBER_CB(AgentTeamLearning, convGetAgentList);
@@ -358,9 +360,10 @@ int AgentTeamLearning::step() {
 		// Round info is updated here after one timeout, to allow messages to come in, and cutting off any
 		// that are too old (since they are rejected based on their round number)
 		if (update_round_info && !this->round_info_set) {
+			Log.log(LOG_LEVEL_NORMAL, " AgentTeamLearning::step: update_round_info && !this->round_info_set");
 			STATE(AgentTeamLearning)->round_number = this->new_round_number;
 			this->lAllianceObject.myData.round_number = this->new_round_number;
-			this->TLAgents = this->new_round_order;
+			//this->TLAgents = this->new_round_order;
 			this->round_info_set = true;
 		}
 
@@ -384,13 +387,12 @@ int AgentTeamLearning::step() {
 * round (i.e. distributing a new randomized round order) by calling initiateNextRound.
 */
 int AgentTeamLearning::checkRoundStatus() {
-	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Checking...");
 	// Only proceed if we have not participated in this round yet
 	if (this->TLAgentData[STATE(AgentBase)->uuid].response)
 		return 0;
 	
 	int n = 0;                 // Count of how many agents ahead of us left to participate
-	bool last_agent = false;   // Flag for if we are the last agent in the round (and need to initiate the next round)
+	this->last_agent = false;   // Flag for if we are the last agent in the round (and need to initiate the next round)
 	
 	// Find the number of agents ahead that still need to participate
 	std::vector<UUID>::iterator iter;
@@ -398,7 +400,7 @@ int AgentTeamLearning::checkRoundStatus() {
 	for (iter = this->TLAgents.begin(); iter != this->TLAgents.end(); ++iter) {
 		// Stop counting once we've found ourself
 		if (*iter == STATE(AgentBase)->uuid) {
-			last_agent = (count == this->TLAgents.size());
+			this->last_agent = (count == this->TLAgents.size());
 			break;
 		}
 
@@ -1106,7 +1108,6 @@ bool AgentTeamLearning::convGetTaskInfo(void * vpConv) {
 		Log.log(0, "AgentTeamLearning::convGetTaskInfo: task id: %s, landmarkId: %s, agentId: %s, avatarId: %s, type: %d, completed: %d", Log.formatUUID(0, &taskId), Log.formatUUID(0, &task->landmarkUUID), Log.formatUUID(0, &task->agentUUID), Log.formatUUID(0,&task->avatar), (int)task->type, task->completed);
 		// Has our task been completed?
 		if (taskId == this->lAllianceObject.myData.taskId && task->completed) {
-			Log.log(0, "AgentTeamLearning::convGetTaskInfo: task completed???????????");
 			this->lAllianceObject.finishTask();
 		}
 

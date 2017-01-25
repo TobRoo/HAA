@@ -72,6 +72,7 @@ protected:
 	int new_round_number;
 	std::vector<UUID> new_round_order;
 	bool round_info_set;
+	bool last_agent;
 
 	
 //-----------------------------------------------------------------------------
