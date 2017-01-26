@@ -69,6 +69,8 @@ AgentAdviceExchange::AgentAdviceExchange(spAddressPort ap, UUID *ticket, int log
 	//No other advice exchange agents known at startup
 	advExAgentCount = 0;
 
+	this->configuredParameters = false;
+
 	// Prepare callbacks
 	this->callback[AgentAdviceExchange_CBR_convGetAgentList] = NEW_MEMBER_CB(AgentAdviceExchange, convGetAgentList);
 	this->callback[AgentAdviceExchange_CBR_convGetAgentInfo] = NEW_MEMBER_CB(AgentAdviceExchange, convGetAgentInfo);
@@ -120,6 +122,8 @@ int AgentAdviceExchange::configure() {
 }// end configure
 
 int AgentAdviceExchange::configureParameters(DataStream *ds) {
+	this->configuredParameters = true;
+
 	UUID uuid;
 
 	DataStream lds;
@@ -633,6 +637,10 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 	case AgentAdviceExchange_MSGS::MSG_REQUEST_CAPACITY:
 	{
 		Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage: Received capacity query.");
+		if (!this->configuredParameters) {
+			Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage: Received capacity query, parameters not yet configured:: break.");
+			break;
+		}
 		DataStream sds;
 		UUID sender;
 		UUID thread;
@@ -646,7 +654,7 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 		sds.packUUID( this->getUUID() );
 		sds.packInt32(STATE(AgentAdviceExchange)->avatarCapacity);
 		sds.packInt32(STATE(AgentAdviceExchange)->avatarInstance);
-		Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage: Sending capacity query reply to %s", Log.formatUUID(0,&sender) );
+		Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage: Sending capacity query reply: capacity: %d, instance: %d, to %s", STATE(AgentAdviceExchange)->avatarCapacity, STATE(AgentAdviceExchange)->avatarInstance, Log.formatUUID(0,&sender) );
 		this->sendMessageEx(this->hostCon, MSGEX(AgentAdviceExchange_MSGS, MSG_CAPACITY_REPLY), sds.stream(), sds.length(), &sender);
 		sds.unlock();
 	}
@@ -767,6 +775,7 @@ bool AgentAdviceExchange::convGetAgentList(void *vpConv) {
 				sds.packUUID(this->getUUID()); // Sender id
 				//sds.packUUID(&thread);
 				this->sendMessageEx(this->hostCon, MSGEX(AgentAdviceExchange_MSGS, MSG_REQUEST_CAPACITY), sds.stream(), sds.length(), &agentId);
+				sds.unlock();
 			}
 		}
 		Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::convGetAgentList: Found %d advisers.", this->adviserData.size());

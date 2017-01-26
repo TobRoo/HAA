@@ -88,6 +88,8 @@ protected:
 	int condC_count;
 	int ask_count;
 
+	bool configuredParameters;
+
 	// Random number generator
 	RandomGenerator randomGenerator;
 

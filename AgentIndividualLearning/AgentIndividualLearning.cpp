@@ -1376,7 +1376,7 @@ int AgentIndividualLearning::ddbNotification(char *data, int len) {
     }
     else if (type == DDB_TASK) {
         if (evt == DDBE_ADD || evt == DDBE_UPDATE) {
-			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::ddbNotification: Task update.");
+			//Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::ddbNotification: Task update.");
             // request task info
             UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convGetTaskInfo, DDB_REQUEST_TIMEOUT, &uuid, sizeof(UUID));
             if (thread == nilUUID) {
@@ -1941,7 +1941,7 @@ bool AgentIndividualLearning::convMissionRegion(void *vpConv) {
 bool AgentIndividualLearning::convGetTaskInfo(void * vpConv) {
     DataStream lds;
     spConversation conv = (spConversation)vpConv;
-	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Task info received.");
+	//Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Task info received.");
     if (conv->response == NULL) { // timed out
         Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: timed out");
         return 0; // end conversation
