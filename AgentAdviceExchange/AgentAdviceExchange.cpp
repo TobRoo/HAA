@@ -218,7 +218,7 @@ int AgentAdviceExchange::step() {
 	//  if (STATE(AgentBase)->stopFlag) {
 	//      uploadLearningData();	//Stores individual learningdata in DDB for next simulation run
 	//  }
-	if (tempCounter == 200) {
+	if (tempCounter == 500) {
 		Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::step: REACHED UPLOAD TEST COUNT!");
 		uploadAdviceData();	//Stores individual learningdata in DDB for next simulation run
 	}
@@ -691,7 +691,9 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 		}
 
 		if (advExAgentCountReceived == advExAgentCount)		//We have received capacity info from all agents in our list - finish configuration and start the agent
-			this->finishConfigureParameters();
+			if(STATE(AgentAdviceExchange)->parametersSet == false)
+				this->finishConfigureParameters();
+		advExAgentCountReceived = 0;
 	}
 	break;
 	case MSG_MISSION_DONE:

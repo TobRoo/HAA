@@ -375,8 +375,8 @@ int AgentTeamLearning::step() {
 	}
 
 
-	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::step: currentTime: %I64d, timeout at: %I64d, diff: %I64d,", (currentTime.time * 1000 + currentTime.millitm) , (this->last_response_time.time * 1000 + this->last_response_time.millitm + n*this->round_timout), (this->last_response_time.time * 1000 + this->last_response_time.millitm + n*this->round_timout) - (currentTime.time * 1000 + currentTime.millitm));
-	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::step: currentTime: %I64d, round start at: %I64d, diff: %I64d,", (currentTime.time * 1000 + currentTime.millitm), (this->round_start_time.time * 1000 + this->round_start_time.millitm), (this->round_start_time.time * 1000 + this->round_start_time.millitm) - (currentTime.time * 1000 + currentTime.millitm));
+	//Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::step: currentTime: %I64d, timeout at: %I64d, diff: %I64d,", (currentTime.time * 1000 + currentTime.millitm) , (this->last_response_time.time * 1000 + this->last_response_time.millitm + n*this->round_timout), (this->last_response_time.time * 1000 + this->last_response_time.millitm + n*this->round_timout) - (currentTime.time * 1000 + currentTime.millitm));
+	//Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::step: currentTime: %I64d, round start at: %I64d, diff: %I64d,", (currentTime.time * 1000 + currentTime.millitm), (this->round_start_time.time * 1000 + this->round_start_time.millitm), (this->round_start_time.time * 1000 + this->round_start_time.millitm) - (currentTime.time * 1000 + currentTime.millitm));
 
 	bool round_started = (currentTime.time * 1000 + currentTime.millitm) > (this->round_start_time.time * 1000 + this->round_start_time.millitm);
 	bool update_round_info = (currentTime.time * 1000 + currentTime.millitm) > (this->round_info_receive_time.time * 1000 + this->round_info_receive_time.millitm + this->round_timout);
@@ -435,7 +435,7 @@ int AgentTeamLearning::checkRoundStatus() {
 
 		count++;
 	}
-	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Waiting for %d agents ahead of us.", n);
+//	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Waiting for %d agents ahead of us.", n);
 
 	// Perform task allocation, only when we are next in line or previous agents have timed out
 	_timeb currentTime;
@@ -464,7 +464,7 @@ int AgentTeamLearning::checkRoundStatus() {
 			this->mTaskList[new_task_id]->avatar = STATE(AgentTeamLearning)->ownerId;
 
 
-			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Round %d: Uploaded task is: %s, uploaded agent id is %s, uploaded avatar id is: %s, and the uploaded task status is: %d", STATE(AgentTeamLearning)->round_number, Log.formatUUID(0, &new_task_id), Log.formatUUID(0, &this->mTaskList[new_task_id]->agentUUID), Log.formatUUID(0, &this->mTaskList[new_task_id]->avatar), this->mTaskList[new_task_id]->completed);
+//			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Round %d: Uploaded task is: %s, uploaded agent id is %s, uploaded avatar id is: %s, and the uploaded task status is: %d", STATE(AgentTeamLearning)->round_number, Log.formatUUID(0, &new_task_id), Log.formatUUID(0, &this->mTaskList[new_task_id]->agentUUID), Log.formatUUID(0, &this->mTaskList[new_task_id]->avatar), this->mTaskList[new_task_id]->completed);
 			this->uploadTask(new_task_id, this->mTaskList[new_task_id]->agentUUID, this->mTaskList[new_task_id]->avatar, this->mTaskList[new_task_id]->completed);
 		}
 

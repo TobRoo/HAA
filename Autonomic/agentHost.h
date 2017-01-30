@@ -7,7 +7,8 @@ using namespace std;
 
 #include <vector>
 
-#define PLAYBACKMODE_DEFAULT PLAYBACKMODE_RECORD
+//#define PLAYBACKMODE_DEFAULT PLAYBACKMODE_RECORD
+#define PLAYBACKMODE_DEFAULT PLAYBACKMODE_OFF
 
 #define OAC_GLOBAL					"6263b830-1de8-41a6-bc3d-1d22dfd750c3" // OAC queue for global state
 

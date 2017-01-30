@@ -876,11 +876,12 @@ int AvatarSimulation::conProcessMessage( spConnection con, unsigned char message
 
 	case AvatarSimulation_MSGS::MSG_DEPOSIT_LANDMARK:
 		{
+
 			unsigned char code;
 			lds.setData( data, len );
 			code = lds.unpackUChar();
 			lds.unlock();
-
+			Log.log(LOG_LEVEL_VERBOSE, "AvatarSimulation::conProcessMessage: MSG_DEPOSIT_LANDMARK received concerning landmark %d", code );
 			// update avatar capacity
 			lds.reset();
 			lds.packUUID( &STATE(AvatarBase)->avatarUUID );

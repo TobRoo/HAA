@@ -344,7 +344,7 @@ int AgentIndividualLearning::step() {
   //  if (STATE(AgentBase)->stopFlag) {
   //      uploadLearningData();	//Stores individual learningdata in DDB for next simulation run
   //  }
-    if (tempCounter == 200) {
+    if (tempCounter == 500) {
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::step: REACHED UPLOAD TEST COUNT!");
         uploadLearningData();	//Stores individual learningdata in DDB for next simulation run
     }
@@ -499,8 +499,8 @@ int AgentIndividualLearning::formAction() {
 			}
 		}
 		else {
+			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: trying to drop off cargo...");
 			//We have cargo, drop off
-			this->backup(); // landmark delivered
 
 							// drop off
 			lds.reset();
@@ -534,6 +534,7 @@ int AgentIndividualLearning::formAction() {
 				}
 			}
 		}
+		this->backup(); // landmark delivered
 		STATE(AgentIndividualLearning)->action.action = INTERACT;//AvatarBase_Defs::AA_WAIT;
 		STATE(AgentIndividualLearning)->action.val = 0.0;
 	}
@@ -1478,19 +1479,20 @@ int AgentIndividualLearning::conProcessMessage(spConnection con, unsigned char m
 bool AgentIndividualLearning::convAction(void *vpConv) {
     spConversation conv = (spConversation)vpConv;
     UUID thread;
+	DataStream lds;
 
     if (conv->response == NULL) {
         Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convAction: Request timed out");
         return 0; // end conversation
     }
 
-    this->ds.setData(conv->response, conv->responseLen);
-    this->ds.unpackUUID(&thread); // thread
+	lds.setData(conv->response, conv->responseLen);
+	lds.unpackUUID(&thread); // thread
     char result = this->ds.unpackChar();
     _timeb tb;
-    tb = *(_timeb *)this->ds.unpackData(sizeof(_timeb));
-    int reason = this->ds.unpackInt32();
-    this->ds.unlock();
+    tb = *(_timeb *)lds.unpackData(sizeof(_timeb));
+    int reason = lds.unpackInt32();
+	lds.unlock();
 
     if (result == AAR_SUCCESS) {
         Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convAction: Action successful, getting new action");
@@ -1960,7 +1962,7 @@ bool AgentIndividualLearning::convGetTaskInfo(void * vpConv) {
         lds.unpackUUID(&taskIdIn);
         DDBTask newTask = *(DDBTask *)lds.unpackData(sizeof(DDBTask));
 
-		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Received info about task %s assigned to %s, my current task is: %s.", Log.formatUUID(0, &taskIdIn), Log.formatUUID(0, &newTask.agentUUID), Log.formatUUID(0, &this->taskId));
+	//	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Received info about task %s assigned to %s, my current task is: %s.", Log.formatUUID(0, &taskIdIn), Log.formatUUID(0, &newTask.agentUUID), Log.formatUUID(0, &this->taskId));
 
 		// Make sure the task is assigned to this avatar
         if (newTask.avatar == STATE(AgentIndividualLearning)->ownerId) {	
