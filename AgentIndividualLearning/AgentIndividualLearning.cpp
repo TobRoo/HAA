@@ -356,6 +356,8 @@ int AgentIndividualLearning::step() {
 * Initiates the conversation to request the avatar positions from the DDB
 */
 int AgentIndividualLearning::updateStateData() {
+	DataStream lds;
+
     // Only update if avatar is ready
     if (!this->avatar.ready) {
         Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateData: Avatar not ready, sending wait action");
@@ -373,39 +375,39 @@ int AgentIndividualLearning::updateStateData() {
     this->avatar.locValid = false;
 
     //Request this avatar's location
-    this->ds.reset();
-    this->ds.packUUID((UUID *)&this->avatarId);
-    this->ds.packInt32(STATE(AgentIndividualLearning)->updateId);
-    convoThread = this->conversationInitiate(AgentIndividualLearning_CBR_convRequestAvatarLoc, DDB_REQUEST_TIMEOUT, this->ds.stream(), this->ds.length());
-    this->ds.unlock();
+    lds.reset();
+    lds.packUUID((UUID *)&this->avatarId);
+    lds.packInt32(STATE(AgentIndividualLearning)->updateId);
+    convoThread = this->conversationInitiate(AgentIndividualLearning_CBR_convRequestAvatarLoc, DDB_REQUEST_TIMEOUT, lds.stream(), lds.length());
+    lds.unlock();
     if (convoThread == nilUUID) {
         return 0;
     }
-    this->ds.reset();
-    this->ds.packUUID(&this->avatar.pf);
-    this->ds.packInt32(DDBPFINFO_CURRENT);
-    this->ds.packData(&tb, sizeof(_timeb)); // dummy
-    this->ds.packUUID(&convoThread);
-    this->sendMessage(this->hostCon, MSG_DDB_RPFINFO, this->ds.stream(), this->ds.length());
-    this->ds.unlock();
+    lds.reset();
+    lds.packUUID(&this->avatar.pf);
+    lds.packInt32(DDBPFINFO_CURRENT);
+    lds.packData(&tb, sizeof(_timeb)); // dummy
+    lds.packUUID(&convoThread);
+    this->sendMessage(this->hostCon, MSG_DDB_RPFINFO, lds.stream(), lds.length());
+    lds.unlock();
     //Request teammates locations
     std::map<UUID, AVATAR_INFO, UUIDless>::iterator avatarIter;
     for (avatarIter = this->otherAvatars.begin(); avatarIter != this->otherAvatars.end(); avatarIter++) {
-        this->ds.reset();
-        this->ds.packUUID((UUID *)&avatarIter->first);
-        this->ds.packInt32(STATE(AgentIndividualLearning)->updateId);
-        convoThread = this->conversationInitiate(AgentIndividualLearning_CBR_convRequestAvatarLoc, DDB_REQUEST_TIMEOUT, this->ds.stream(), this->ds.length());
-        this->ds.unlock();
+        lds.reset();
+        lds.packUUID((UUID *)&avatarIter->first);
+        lds.packInt32(STATE(AgentIndividualLearning)->updateId);
+        convoThread = this->conversationInitiate(AgentIndividualLearning_CBR_convRequestAvatarLoc, DDB_REQUEST_TIMEOUT, lds.stream(), lds.length());
+        lds.unlock();
         if (convoThread == nilUUID) {
             return 0;
         }
-        this->ds.reset();
-        this->ds.packUUID(&avatarIter->second.pf);
-        this->ds.packInt32(DDBPFINFO_CURRENT);
-        this->ds.packData(&tb, sizeof(_timeb)); // dummy
-        this->ds.packUUID(&convoThread);
-        this->sendMessage(this->hostCon, MSG_DDB_RPFINFO, this->ds.stream(), this->ds.length());
-        this->ds.unlock();
+        lds.reset();
+        lds.packUUID(&avatarIter->second.pf);
+        lds.packInt32(DDBPFINFO_CURRENT);
+        lds.packData(&tb, sizeof(_timeb)); // dummy
+        lds.packUUID(&convoThread);
+        this->sendMessage(this->hostCon, MSG_DDB_RPFINFO, lds.stream(), lds.length());
+        lds.unlock();
     }
 
 }
@@ -500,19 +502,21 @@ int AgentIndividualLearning::formAction() {
 		}
 		else {
 			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: trying to drop off cargo...");
-			//We have cargo, drop off
-
+			//We have cargo, drop off	
+			this->hasCargo = false;
 							// drop off
 			lds.reset();
 			lds.packUChar(this->target.code);
 			this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_DEPOSIT_LANDMARK), lds.stream(), lds.length(), &avAgent);
 			lds.unlock();
 
-			for (auto& cRIter : this->collectionRegions) {				//See if we are inside a collection region when dropping cargo
-				float cR_x_high = cRIter.second.x + cRIter.second.w;
-				float cR_x_low = cRIter.second.x;
-				float cR_y_high = cRIter.second.y + cRIter.second.h;
-				float cR_y_low = cRIter.second.y;
+			std::map<UUID, DDBRegion, UUIDless>::iterator cRIter;
+
+			for (cRIter = this->collectionRegions.begin(); cRIter != this->collectionRegions.end(); cRIter++) {				//See if we are inside a collection region when dropping cargo
+				float cR_x_high = cRIter->second.x + cRIter->second.w;
+				float cR_x_low = cRIter->second.x;
+				float cR_y_high = cRIter->second.y + cRIter->second.h;
+				float cR_y_low = cRIter->second.y;
 
 				if (cR_x_low <= STATE(AgentIndividualLearning)->prev_pos_x && STATE(AgentIndividualLearning)->prev_pos_x <= cR_x_high && cR_y_low <= STATE(AgentIndividualLearning)->prev_pos_y && STATE(AgentIndividualLearning)->prev_pos_y <= cR_y_high) {
 					//We delivered the cargo!
@@ -532,6 +536,18 @@ int AgentIndividualLearning::formAction() {
 					lds.unlock();
 					return 0;
 				}
+
+			}
+			if (cRIter == collectionRegions.end())		//Outside of collection regions, drop off and update landmark location
+			{
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: cargo outside of collection regions...");
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: my position is: x: %f, y: %f, cargo position is x: %f, y: %f", STATE(AgentIndividualLearning)->prev_pos_x, STATE(AgentIndividualLearning)->prev_pos_y, target.x, target.y);
+				// update landmark status
+				lds.reset();
+				lds.packUChar(this->target.code);
+				lds.packInt32(DDBLANDMARKINFO_COLLECTED);
+				this->sendMessage(this->hostCon, MSG_DDB_LANDMARKSETINFO, lds.stream(), lds.length());
+				lds.unlock();
 			}
 		}
 		this->backup(); // landmark delivered
@@ -1048,6 +1064,7 @@ int AgentIndividualLearning::requestAdvice(std::vector<float> &q_vals, std::vect
 * 
 */
 int AgentIndividualLearning::spawnAgentAdviceExchange() {
+	DataStream lds;
 	UUID thread;
 	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::spawnAgentAdviceExchange: requesting advice exchange agent...");
 	if (!STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned) {
@@ -1058,15 +1075,15 @@ int AgentIndividualLearning::spawnAgentAdviceExchange() {
 		if (thread == nilUUID) {
 			return 1;
 		}
-		this->ds.reset();
-		this->ds.packUUID(this->getUUID());
-		this->ds.packUUID(&aAgentAdviceExchangeuuid);
-		this->ds.packChar(-1); // no instance parameters
-		this->ds.packFloat32(0); // affinity
-		this->ds.packChar(DDBAGENT_PRIORITY_CRITICAL);
-		this->ds.packUUID(&thread);
-		this->sendMessage(this->hostCon, MSG_RAGENT_SPAWN, this->ds.stream(), this->ds.length());
-		this->ds.unlock();
+		lds.reset();
+		lds.packUUID(this->getUUID());
+		lds.packUUID(&aAgentAdviceExchangeuuid);
+		lds.packChar(-1); // no instance parameters
+		lds.packFloat32(0); // affinity
+		lds.packChar(DDBAGENT_PRIORITY_CRITICAL);
+		lds.packUUID(&thread);
+		this->sendMessage(this->hostCon, MSG_RAGENT_SPAWN, lds.stream(), lds.length());
+		lds.unlock();
 
 		STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned = false; // in progress
 	}
@@ -1422,7 +1439,7 @@ int AgentIndividualLearning::conProcessMessage(spConnection con, unsigned char m
             break;
 		case AgentIndividualLearning_MSGS::MSG_REQUEST_Q_VALUES:
 		{
-			
+			Log.log(0, " AgentIndividualLearning::conProcessMessage: MSG_REQUEST_Q_VALUES.");
 			UUID conv;
 			UUID sender;
 			lds.setData(data, len);
@@ -1488,7 +1505,7 @@ bool AgentIndividualLearning::convAction(void *vpConv) {
 
 	lds.setData(conv->response, conv->responseLen);
 	lds.unpackUUID(&thread); // thread
-    char result = this->ds.unpackChar();
+    char result = lds.unpackChar();
     _timeb tb;
     tb = *(_timeb *)lds.unpackData(sizeof(_timeb));
     int reason = lds.unpackInt32();
@@ -1902,6 +1919,7 @@ bool AgentIndividualLearning::convGetTargetInfo(void *vpConv) {
 * but only when AgentAdviceExchange has already been spawned.
 */
 bool AgentIndividualLearning::convMissionRegion(void *vpConv) {
+	DataStream lds;
     spConversation conv = (spConversation)vpConv;
 
     if (conv->response == NULL) {
@@ -1909,15 +1927,15 @@ bool AgentIndividualLearning::convMissionRegion(void *vpConv) {
         return 0; // end conversation
     }
 
-    this->ds.setData(conv->response, conv->responseLen);
-    this->ds.unpackData(sizeof(UUID)); // discard thread
+    lds.setData(conv->response, conv->responseLen);
+    lds.unpackData(sizeof(UUID)); // discard thread
 
-    if (this->ds.unpackChar() == DDBR_OK) { // succeeded
-        this->ds.unlock();
-        STATE(AgentIndividualLearning)->missionRegion.x = this->ds.unpackFloat32();
-        STATE(AgentIndividualLearning)->missionRegion.y = this->ds.unpackFloat32();
-        STATE(AgentIndividualLearning)->missionRegion.w = this->ds.unpackFloat32();
-        STATE(AgentIndividualLearning)->missionRegion.h = this->ds.unpackFloat32();
+    if (lds.unpackChar() == DDBR_OK) { // succeeded
+        lds.unlock();
+        STATE(AgentIndividualLearning)->missionRegion.x = lds.unpackFloat32();
+        STATE(AgentIndividualLearning)->missionRegion.y = lds.unpackFloat32();
+        STATE(AgentIndividualLearning)->missionRegion.w = lds.unpackFloat32();
+        STATE(AgentIndividualLearning)->missionRegion.h = lds.unpackFloat32();
 
         STATE(AgentIndividualLearning)->missionRegionReceived = true;
 
@@ -1925,7 +1943,7 @@ bool AgentIndividualLearning::convMissionRegion(void *vpConv) {
 			this->finishConfigureParameters();
     }
     else {
-        this->ds.unlock();
+        lds.unlock();
         // TODO try again?
     }
 
@@ -1977,7 +1995,10 @@ bool AgentIndividualLearning::convGetTaskInfo(void * vpConv) {
                     lds.packUChar(this->target.code);
                     this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_DEPOSIT_LANDMARK), lds.stream(), lds.length(), &this->avatarAgentId); // drop off
                     lds.unlock();
+					this->hasCargo = false;
                 }
+
+
 
 				// Save the new task data
                 this->task = newTask;
@@ -2179,6 +2200,7 @@ bool AgentIndividualLearning::convRequestAgentAdviceExchange(void *vpConv) {
 * values being overwritten by the advice.
 */
 bool AgentIndividualLearning::convRequestAdvice(void *vpConv) {
+	DataStream lds;
 	spConversation conv = (spConversation)vpConv;
 
 	if (conv->response == NULL) {
@@ -2190,16 +2212,16 @@ bool AgentIndividualLearning::convRequestAdvice(void *vpConv) {
 	// Start unpacking
 	UUID thread;
     UUID sender;
-	this->ds.setData(conv->response, conv->responseLen);
-	this->ds.unpackUUID(&thread);
-	this->ds.unpackUUID(&sender);
+	lds.setData(conv->response, conv->responseLen);
+	lds.unpackUUID(&thread);
+	lds.unpackUUID(&sender);
 
 	// Unpack Q values
 	this->q_vals.clear();
 	for (int i = 0; i < this->num_actions_; i++) {
 		this->q_vals.push_back(ds.unpackFloat32());
 	}
-	this->ds.unlock();
+	lds.unlock();
 
 	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAdvice: Received advice.");
 

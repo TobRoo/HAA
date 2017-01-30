@@ -1483,7 +1483,8 @@ int DDBStore::LandmarkSetInfo( UUID *id, int infoFlags, DataStream *ds ) {
 	}
 
 	if ( infoFlags & DDBLANDMARKINFO_COLLECTED ) {
-		lm->collected = true;
+		Log->log(0,"DDBStore: COLLECTED!");
+		lm->collected = !(lm->collected);	//Flip the status, eliminates need for new flag
 	}
 
 	return infoFlags;

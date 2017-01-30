@@ -236,6 +236,7 @@ int AgentAdviceExchange::askAdviser() {
 	for (auto& advIter : adviserData) {
 
 		if (advIter.second.hasReplied == false) {
+			Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::askAdviser: found adviser that has not yet replied...");
 			UUID adviserUUID = advIter.first;
 			sds.reset();
 			sds.packUUID(this->getUUID()); // Sender id
@@ -632,6 +633,7 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 
 		// Proceed to ask adviser for advice
 	    this->askAdviser();
+		//this->formAdvice();
 	}
 	break;
 	case AgentAdviceExchange_MSGS::MSG_REQUEST_CAPACITY:
@@ -690,10 +692,11 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 			this->adviserData[advIter->first].avatarInstance = instance;				
 		}
 
-		if (advExAgentCountReceived == advExAgentCount)		//We have received capacity info from all agents in our list - finish configuration and start the agent
-			if(STATE(AgentAdviceExchange)->parametersSet == false)
+		if (advExAgentCountReceived == advExAgentCount)// {		//We have received capacity info from all agents in our list - finish configuration and start the agent
+	//		if (STATE(AgentAdviceExchange)->parametersSet == false)
 				this->finishConfigureParameters();
-		advExAgentCountReceived = 0;
+	//		advExAgentCountReceived = 0;
+	//	}
 	}
 	break;
 	case MSG_MISSION_DONE:
