@@ -766,7 +766,8 @@ int AgentIndividualLearning::getStateVector() {
 
     // Form output vector
     std::vector<unsigned int> state_vector{target_type, target_dist, target_angle, goal_dist, goal_angle, obst_dist, obst_angle};
-
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateVector:HURRDUUUUUUUUUR)gsa;gadfsdghgsghg4yw6tuyh
+e65uj tu	CONTINUE HERE 
     // Check that state vector is valid
     for(int i = 0; i < this->num_state_vrbls_; i++) {
         if (state_vector[i] > this->state_resolution_[i]) {
@@ -2219,7 +2220,8 @@ bool AgentIndividualLearning::convRequestAdvice(void *vpConv) {
 	// Unpack Q values
 	this->q_vals.clear();
 	for (int i = 0; i < this->num_actions_; i++) {
-		this->q_vals.push_back(ds.unpackFloat32());
+		this->q_vals.push_back(lds.unpackFloat32());
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAdvice: received q_val: %f", this->q_vals.back());
 	}
 	lds.unlock();
 

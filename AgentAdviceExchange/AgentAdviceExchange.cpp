@@ -322,6 +322,7 @@ int AgentAdviceExchange::formAdvice() {
 	// Pack the advised Q values
 	for (std::vector<float>::iterator q_iter = advice.begin(); q_iter != advice.end(); ++q_iter) {
 		lds.packFloat32(*q_iter);
+		Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::formAdvice: *q_iter is %f", *q_iter);
 	}
 	this->sendMessage(this->hostCon, MSG_RESPONSE, lds.stream(), lds.length(), &STATE(AgentAdviceExchange)->ownerId);
 	lds.unlock();
@@ -624,6 +625,7 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 		// Unpack Q values
 		for (int i = 0; i < this->num_actions_; i++) {
 			this->q_vals_in.push_back(lds.unpackFloat32());
+			Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage: Received request for advice, q_vals_in: %f", this->q_vals_in.back());
 		}
 		// Unpack state vector
 		for (int j = 0; j < this->num_state_vrbls_; j++) {
