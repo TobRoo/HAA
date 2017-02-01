@@ -68,6 +68,7 @@ AgentAdviceExchange::AgentAdviceExchange(spAddressPort ap, UUID *ticket, int log
 
 	//No other advice exchange agents known at startup
 	advExAgentCount = 0;
+	advExAgentCountReceived = 0;
 
 	this->configuredParameters = false;
 
@@ -665,9 +666,8 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 	break;
 	case AgentAdviceExchange_MSGS::MSG_CAPACITY_REPLY:
 	{
-		Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage: Received capacity reply.");
 
-		DataStream sds;
+
 		UUID sender;
 		ITEM_TYPES capacity;
 		int instance;
@@ -678,11 +678,14 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 		capacity = (ITEM_TYPES)lds.unpackInt32();
 		instance = lds.unpackInt32();
 		lds.unlock();
-		this->advExAgentCountReceived++;
+		if(adviserData.find(sender) != adviserData.end() )
+			if(!adviserData.find(sender)->second.hasReplied)
+				this->advExAgentCountReceived++;
+		Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage: Received capacity reply from %s.", Log.formatUUID(0, &sender));
 		Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage. advExAgentCountReceived is %d.", advExAgentCountReceived);
 		if (capacity != STATE(AgentAdviceExchange)->avatarCapacity) {
 			Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage. Number of advisers: %d", adviserData.size());
-			auto advIter = adviserData.find(sender);
+			auto advIter = adviserData.find(sender);		do not erase items which do not exist
 			this->adviserData.erase(advIter);				//Delete any advisers from our list that are not of the same type
 			Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage. Removing agent %s from adviser list, not same capacity.", Log.formatUUID(0,&sender));
 			Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage. Number of advisers: %d", adviserData.size());
@@ -694,11 +697,11 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 			this->adviserData[advIter->first].avatarInstance = instance;				
 		}
 
-		if (advExAgentCountReceived == advExAgentCount)// {		//We have received capacity info from all agents in our list - finish configuration and start the agent
-	//		if (STATE(AgentAdviceExchange)->parametersSet == false)
+		if (advExAgentCountReceived == advExAgentCount) {		//We have received capacity info from all agents in our list - finish configuration and start the agent
+			if (STATE(AgentAdviceExchange)->parametersSet == false)
 				this->finishConfigureParameters();
-	//		advExAgentCountReceived = 0;
-	//	}
+			advExAgentCountReceived = 0;
+		}
 	}
 	break;
 	case MSG_MISSION_DONE:

@@ -766,8 +766,7 @@ int AgentIndividualLearning::getStateVector() {
 
     // Form output vector
     std::vector<unsigned int> state_vector{target_type, target_dist, target_angle, goal_dist, goal_angle, obst_dist, obst_angle};
-	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateVector:HURRDUUUUUUUUUR)gsa;gadfsdghgsghg4yw6tuyh
-e65uj tu	CONTINUE HERE 
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateVector: target type %d, target dist %d, target angle %d, goal dist %d, goal angle %d, obst dist %d, obst angle %d", target_type, target_dist, target_angle, goal_dist, goal_angle, obst_dist, obst_angle);
     // Check that state vector is valid
     for(int i = 0; i < this->num_state_vrbls_; i++) {
         if (state_vector[i] > this->state_resolution_[i]) {

@@ -12410,7 +12410,7 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 	break;
 	case MSG_DDB_ADVICEDATA:
 	{
-		Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_ADVICEDATA ");
+		//Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_ADVICEDATA ");
 
 		UUID avatarId;
 		char instance;	//Type of avatar, stored in the mission file
@@ -13741,7 +13741,7 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 	case OAC_DDB_ADDADVICEDATA:
 	{
 
-		Log.log(0, "AgentHost::conProcessMessage: OAC_DDB_ADDADVICEDATA");
+		//Log.log(0, "AgentHost::conProcessMessage: OAC_DDB_ADDADVICEDATA");
 
 		UUID sender;
 		char instance;
