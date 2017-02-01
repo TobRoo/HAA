@@ -269,6 +269,7 @@ typedef std::map<UUID, DDBLandmark *, UUIDless> mapDDBLandmark;
 enum DDBLANDMARKINFO_SET {
 	DDBLANDMARKINFO_POS = 0x0001 << 0,		// data = [int estNum, float R, float estimates..., float weights...]
 	DDBLANDMARKINFO_COLLECTED = 0x0001 << 1, // data = N/A
+	DDBLANDMARKINFO_DEPOSITED = 0x0002 << 2, // data = N/A
 };
 
 // -- DDB_MAP_PROBOCCGRID -------------------------------------

@@ -505,10 +505,7 @@ int AgentIndividualLearning::formAction() {
 			//We have cargo, drop off	
 			this->hasCargo = false;
 							// drop off
-			lds.reset();
-			lds.packUChar(this->target.code);
-			this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_DEPOSIT_LANDMARK), lds.stream(), lds.length(), &avAgent);
-			lds.unlock();
+
 
 			std::map<UUID, DDBRegion, UUIDless>::iterator cRIter;
 
@@ -534,7 +531,7 @@ int AgentIndividualLearning::formAction() {
 					lds.packBool(&this->task.completed);
 					this->sendMessage(this->hostCon, MSG_DDB_TASKSETINFO, lds.stream(), lds.length());
 					lds.unlock();
-					return 0;
+					break;
 				}
 
 			}
@@ -545,10 +542,17 @@ int AgentIndividualLearning::formAction() {
 				// update landmark status
 				lds.reset();
 				lds.packUChar(this->target.code);
-				lds.packInt32(DDBLANDMARKINFO_COLLECTED);
+				lds.packInt32(DDBLANDMARKINFO_DEPOSITED);
 				this->sendMessage(this->hostCon, MSG_DDB_LANDMARKSETINFO, lds.stream(), lds.length());
 				lds.unlock();
 			}
+
+			lds.reset();
+			lds.packUChar(this->target.code);
+			this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_DEPOSIT_LANDMARK), lds.stream(), lds.length(), &avAgent);
+			lds.unlock();
+
+
 		}
 		this->backup(); // landmark delivered
 		STATE(AgentIndividualLearning)->action.action = INTERACT;//AvatarBase_Defs::AA_WAIT;
@@ -1806,6 +1810,13 @@ bool AgentIndividualLearning::convRequestAvatarLoc(void *vpConv) {
             this->avatar.y = state[1];
             this->avatar.r = state[2];
             this->avatar.locValid = true;
+
+			//Update target location, actual landmark will be updated when cargo is dropped off
+
+			if (this->hasCargo) {	
+				this->target.x = this->avatar.x;
+				this->target.y = this->avatar.y;
+			}
 
             this->preActionUpdate();
         }

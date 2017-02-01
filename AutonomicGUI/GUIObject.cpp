@@ -375,7 +375,6 @@ int GODDBRegion::getAbstract( WCHAR *buf, int len, int offset ) {
 
 GODDBLandmark::GODDBLandmark( UUID *id, AgentMirrorGUI *mirror, int *pathLib ) : GUIObjectBase( id, mirror ) {
 	DataStream lds;
-
 	this->classType = DDB_LANDMARK;
 
 	this->pathLib = pathLib;

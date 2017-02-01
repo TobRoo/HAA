@@ -685,8 +685,8 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 		Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage. advExAgentCountReceived is %d.", advExAgentCountReceived);
 		if (capacity != STATE(AgentAdviceExchange)->avatarCapacity) {
 			Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage. Number of advisers: %d", adviserData.size());
-			auto advIter = adviserData.find(sender);		do not erase items which do not exist
-			this->adviserData.erase(advIter);				//Delete any advisers from our list that are not of the same type
+			if (adviserData.find(sender) != adviserData.end())					//We may have already deleted an adviser of different capacity if they did not respond fast enough	
+				this->adviserData.erase(adviserData.find(sender));				//Delete any advisers from our list that are not of the same type, while first checking that they exist in adviserData (undefined behaviour otherwise)
 			Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage. Removing agent %s from adviser list, not same capacity.", Log.formatUUID(0,&sender));
 			Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage. Number of advisers: %d", adviserData.size());
 
