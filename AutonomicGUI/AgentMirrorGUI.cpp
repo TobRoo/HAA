@@ -1045,7 +1045,12 @@ int AgentMirrorGUI::eventLandmark( UUID id, char evt, DataStream *ds ) {
 				((GODDBLandmark *)this->objects[id].object)->updatePosEstimation();
 			}
 			if ( infoFlags & DDBLANDMARKINFO_COLLECTED ) {
-				((GODDBLandmark *)this->objects[id].object)->collected();
+				((GODDBLandmark *)this->objects[id].object)->setVisibility(false);
+			//	((GODDBLandmark *)this->objects[id].object)->collected();
+			}
+			if (infoFlags & DDBLANDMARKINFO_DEPOSITED) {
+				((GODDBLandmark *)this->objects[id].object)->setVisibility(true);
+			//	((GODDBLandmark *)this->objects[id].object)->deposited();
 			}
 		}
 		break;

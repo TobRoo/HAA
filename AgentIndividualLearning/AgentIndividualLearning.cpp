@@ -543,6 +543,8 @@ int AgentIndividualLearning::formAction() {
 				lds.reset();
 				lds.packUChar(this->target.code);
 				lds.packInt32(DDBLANDMARKINFO_DEPOSITED);
+				lds.packFloat32(this->target.x);
+				lds.packFloat32(this->target.y);
 				this->sendMessage(this->hostCon, MSG_DDB_LANDMARKSETINFO, lds.stream(), lds.length());
 				lds.unlock();
 			}

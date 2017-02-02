@@ -1487,8 +1487,10 @@ int DDBStore::LandmarkSetInfo( UUID *id, int infoFlags, DataStream *ds ) {
 		lm->collected = true;
 	}
 	if (infoFlags & DDBLANDMARKINFO_DEPOSITED) {
-		Log->log(0, "DDBStore: DEPOSITED!");
 		lm->collected = false;
+		lm->x = ds->unpackFloat32();
+		lm->y = ds->unpackFloat32();
+		Log->log(0, "DDBStore: DEPOSITED at %f %f", lm->x, lm->y);
 	}
 	return infoFlags;
 }

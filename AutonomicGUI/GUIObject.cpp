@@ -445,7 +445,8 @@ GODDBLandmark::GODDBLandmark( UUID *id, AgentMirrorGUI *mirror, int *pathLib ) :
 GODDBLandmark::~GODDBLandmark() {
 	if ( this->visObj != -1 )
 		this->visualizer->deleteObject( this->visObj, true );
-	if ( !this->landmark.collected && this->landmark.estimatedPos ) {
+//	if ( !this->landmark.collected && this->landmark.estimatedPos ) {
+	if (this->landmark.estimatedPos) {
 		if ( this->visTrue != -1 ) this->visualizer->deleteObject( this->visTrue, true );
 		this->visualizer->deleteObject( this->visCov[0], true );
 		this->visualizer->deleteObject( this->visCov[1], true );
@@ -490,7 +491,8 @@ int GODDBLandmark::setVisibility( bool vis ) {
 	if ( GUIObjectBase::setVisibility( vis ) )
 		return 0; // no change
 
-	if ( !this->landmark.collected && this->landmark.estimatedPos ) {
+//	if ( !this->landmark.collected && this->landmark.estimatedPos ) {
+	if (this->landmark.estimatedPos) {
 		if ( vis ) { // show
 			if ( this->visTrue != -1 ) this->visualizer->showObject( this->visTrue );
 			this->visualizer->showObject( this->visCov[0] );
@@ -516,11 +518,11 @@ int GODDBLandmark::updatePosEstimation() {
 		this->landmark = *(DDBLandmark *)lds.unpackData( sizeof(DDBLandmark) );
 	}
 
-	if ( !this->landmark.collected ) {
+//	if ( !this->landmark.collected ) {
 		this->visualizer->updateStaticObject( this->visObj, this->landmark.x, this->landmark.y, 0, 0.1f );
 		this->visualizer->updateStaticObject( this->visCov[0], this->landmark.x - this->landmark.P, this->landmark.y, 0, max(0.00001f, this->landmark.P*2) );
 		this->visualizer->updateStaticObject( this->visCov[1], this->landmark.x, this->landmark.y - this->landmark.P, fM_PI_2, max(0.00001f, this->landmark.P*2) );
-	}
+//	}
 
 	return 0;
 }
