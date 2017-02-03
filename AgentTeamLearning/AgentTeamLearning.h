@@ -74,6 +74,7 @@ protected:
 	bool round_info_set;
 	bool last_agent;
 
+	int tempCounter;
 	
 //-----------------------------------------------------------------------------
 // Functions	

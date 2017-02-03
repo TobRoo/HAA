@@ -58,6 +58,8 @@ AgentTeamLearning::AgentTeamLearning(spAddressPort ap, UUID *ticket, int logLeve
 	this->delta_learn_time = 3000; // [ms]
 	this->round_timout = 500;  // [ms]
 	this->last_agent = false;
+
+	this->tempCounter = 0;
 	
 	// Prepare callbacks
 	this->callback[AgentTeamLearning_CBR_convGetAgentList] = NEW_MEMBER_CB(AgentTeamLearning, convGetAgentList);
@@ -350,6 +352,16 @@ int AgentTeamLearning::stop() {
 
 int AgentTeamLearning::step() {
 
+	this->tempCounter++;
+
+	if (tempCounter == 100) {
+		Log.log(0, "My agent id is%s")
+		for (auto& taskIter : mTaskList) {
+			Log.log(0,"Task: %s, agent:%s, avatar:%s, completed:%d", taskIter.first, taskIter.second->agentUUID, taskIter.second->avatar, taskIter.second->completed)
+		}
+
+	}
+
 	// Don't perform learning/task allocation every single step
 	_timeb currentTime;
 	_ftime64_s(&currentTime);
@@ -597,7 +609,7 @@ int AgentTeamLearning::sendRequest(UUID *agentId, int message, UUID *id) {
 		lds.reset();
 		lds.packUUID(this->getUUID()); // Sender id
 		lds.packUUID(&thread);
-		lds.packUUID(&previousTaskId);
+		lds.packUUID(id);
 		this->sendMessageEx(this->hostCon, MSGEX(AgentTeamLearning_MSGS, MSG_REQUEST_ACQUIESCENCE), lds.stream(), lds.length(), agentId);
 	}
 	break;
@@ -834,14 +846,18 @@ int AgentTeamLearning::conProcessMessage(spConnection con, unsigned char message
 		lds.unpackUUID(&sender);
 		lds.unpackData(sizeof(UUID));	//Discard thread (for now - do we need a conversation?)
 		lds.unpackUUID(&nilTask);
-
-		if (this->mTaskList.find(nilTask) != this->mTaskList.end()) {
-			mTaskList[nilTask]->avatar = nilUUID;
-			mTaskList[nilTask]->agentUUID = nilUUID;
-		}
-
 		Log.log(0, "AgentTeamLearning::conProcessMessage: Received acquiescence request from %s.", Log.formatUUID(0, &sender));
-		this->lAllianceObject.acquiesce(this->lAllianceObject.myData.taskId);
+		if (this->mTaskList.find(nilTask) != this->mTaskList.end()) {
+			if (nilTask == this->lAllianceObject.myData.taskId) {
+				mTaskList[nilTask]->avatar = nilUUID;
+				mTaskList[nilTask]->agentUUID = nilUUID;
+				this->lAllianceObject.acquiesce(nilTask);
+				Log.log(0, "AgentTeamLearning::conProcessMessage: Acquiescence request for current task, acquiescing...");
+			}
+			else {
+				Log.log(0, "AgentTeamLearning::conProcessMessage:  Acquiescence request for other task, cannot acquiesce.");
+			}
+		}
 		lds.unlock();
 	}
 	break;

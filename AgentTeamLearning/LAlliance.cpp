@@ -30,7 +30,7 @@
 LAlliance::LAlliance(AgentTeamLearning *parentAgent) {
 
     //// Algorithm variables (TODO: Load these in from a config file)
-    maxTaskTime = 2000;
+	maxTaskTime = 500;//2000;
     motivFreq = 5;
     impatienceRateTheta = 1.0f;
     stochasticUpdateTheta2 = 15.0f;
@@ -150,8 +150,8 @@ int LAlliance::chooseTask(const taskList &tasks) {
             available = !taskIter->second->completed;
         }
         else if (teammatesData.find(taskIter->second->avatar) != teammatesData.end()) {//Check, otherwise the map will be inserted with incorrect values
-            if (teammatesData[taskIter->second->avatar].psi < (teammatesData[taskIter->second->avatar].tau.at(taskIter->first)
-                                                               + teammatesData[taskIter->second->avatar].stddev.at(taskIter->first))) {
+            if (teammatesData.at(taskIter->second->avatar).psi < (teammatesData.at(taskIter->second->avatar).tau.at(taskIter->first)
+                                                               + teammatesData.at(taskIter->second->avatar).stddev.at(taskIter->first))) {
                 // An avatar is assigned, but it has not been engaged long enough to acquiesce
                 available = false;
             }
@@ -241,6 +241,7 @@ int LAlliance::chooseTask(const taskList &tasks) {
         if (myData.attempts.at(taskAssignment) == 0) {
             // This is the first attempt, zero other avatar's motivation
             requestMotivationReset(taskAssignment);
+
         }
     }
     // Increment the task attempts
@@ -248,7 +249,7 @@ int LAlliance::chooseTask(const taskList &tasks) {
 
     if (taskAssignment != nilUUID && tasks.at(taskAssignment)->avatar != nilUUID) {
         // Another avatar was assigned, and they must acquiesce
-        requestAcquiescence(tasks.at(taskAssignment)->agentUUID);	//Send directly to the team learning agent, not the avatar agent
+        requestAcquiescence(taskAssignment, tasks.at(taskAssignment)->agentUUID);	//Send directly to the team learning agent, not the avatar agent
     }
 
     return 0;
@@ -366,6 +367,12 @@ int LAlliance::acquiesce(UUID id) {
  */
 
 int LAlliance::updateTau() {
+
+	if (myData.taskId == nilUUID) {
+		parentAgent->logWrapper(LOG_LEVEL_VERBOSE, "updateTau: task is nilTask, cannot update tau.");
+		return 1;
+	}
+
 	parentAgent->logWrapper(LOG_LEVEL_VERBOSE, "updateTau: Updating tau values.");
 
     // Useful values
@@ -432,8 +439,8 @@ int LAlliance::updateTau() {
  * its current task as a result of this avatar taking over the task.
  */
 
-int LAlliance::requestAcquiescence(UUID agentId) {
-    parentAgent->sendRequest(&agentId, AgentTeamLearning_MSGS::MSG_REQUEST_ACQUIESCENCE, &nilUUID);
+int LAlliance::requestAcquiescence(UUID taskId, UUID agentId) {
+    parentAgent->sendRequest(&agentId, AgentTeamLearning_MSGS::MSG_REQUEST_ACQUIESCENCE, &taskId);
     return 0;
 }
 
@@ -468,6 +475,7 @@ int LAlliance::requestMotivationReset(UUID id) {
     std::map<UUID, DDBTaskData, UUIDless>::iterator avatarIter;
     if (teammatesData.empty() == false) {
         for (avatarIter = teammatesData.begin(); avatarIter != teammatesData.end(); avatarIter++) {
+			avatarIter->second.motivation.at(id) = 0;	//Zero local motivation, will be zeroed in callbacks later also	
             agentId = avatarIter->second.agentId;
             parentAgent->sendRequest(&agentId, AgentTeamLearning_MSGS::MSG_REQUEST_MOTRESET, &id);
         }

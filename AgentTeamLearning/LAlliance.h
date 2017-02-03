@@ -152,8 +152,9 @@ public:
      *
      * Sends a message to the avatar indicated by id that it must acquiesce
      * its current task as a result of this avatar taking over the task.
+	 * taskId is the task to be acquiesced, used when the receiving agent has already changed tasks
      */
-    int requestAcquiescence(UUID id);
+    int requestAcquiescence(UUID taskId, UUID id);
 
 
     /* motivationReset
