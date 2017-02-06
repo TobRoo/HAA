@@ -59,7 +59,7 @@ AgentTeamLearning::AgentTeamLearning(spAddressPort ap, UUID *ticket, int logLeve
 	this->round_timout = 500;  // [ms]
 	this->last_agent = false;
 
-	this->tempCounter = 0;
+	this->tempCounter = -300;
 	
 	// Prepare callbacks
 	this->callback[AgentTeamLearning_CBR_convGetAgentList] = NEW_MEMBER_CB(AgentTeamLearning, convGetAgentList);
@@ -355,10 +355,16 @@ int AgentTeamLearning::step() {
 	this->tempCounter++;
 
 	if (tempCounter == 100) {
-		Log.log(0, "My agent id is%s")
+		Log.log(0, "My agent id is %s, my task id is %s", Log.formatUUID(0,this->getUUID()), Log.formatUUID(0, &this->lAllianceObject.myData.taskId));
+		Log.log(0, "TASKLIST \n");
 		for (auto& taskIter : mTaskList) {
-			Log.log(0,"Task: %s, agent:%s, avatar:%s, completed:%d", taskIter.first, taskIter.second->agentUUID, taskIter.second->avatar, taskIter.second->completed)
+			Log.log(0, "Task: %s, agent:%s, avatar:%s, completed:%d", Log.formatUUID(0, &(UUID)taskIter.first), Log.formatUUID(0, &taskIter.second->agentUUID), Log.formatUUID(0, &taskIter.second->avatar), taskIter.second->completed);
 		}
+		Log.log(0, "TASKDATA \n");
+		for (auto& tdIter : lAllianceObject.teammatesData) {
+			Log.log(0, "Task: %s, agent:%s, avatar:%s", Log.formatUUID(0, &tdIter.second.taskId), Log.formatUUID(0, &tdIter.second.agentId), Log.formatUUID(0, &(UUID)tdIter.first));
+		}
+		tempCounter = 0;
 
 	}
 
@@ -477,6 +483,7 @@ int AgentTeamLearning::checkRoundStatus() {
 
 
 //			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Round %d: Uploaded task is: %s, uploaded agent id is %s, uploaded avatar id is: %s, and the uploaded task status is: %d", STATE(AgentTeamLearning)->round_number, Log.formatUUID(0, &new_task_id), Log.formatUUID(0, &this->mTaskList[new_task_id]->agentUUID), Log.formatUUID(0, &this->mTaskList[new_task_id]->avatar), this->mTaskList[new_task_id]->completed);
+			this->uploadTask(prev_task_id, nilUUID, nilUUID, false);
 			this->uploadTask(new_task_id, this->mTaskList[new_task_id]->agentUUID, this->mTaskList[new_task_id]->avatar, this->mTaskList[new_task_id]->completed);
 		}
 
