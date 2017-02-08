@@ -56,7 +56,7 @@ AgentTeamLearning::AgentTeamLearning(spAddressPort ap, UUID *ticket, int logLeve
 	this->lAllianceObject.myData.round_number = 0;
 	this->round_info_set = true;
 	this->delta_learn_time = 3000; // [ms]
-	this->round_timout = 500;  // [ms]
+	this->round_timout = 100;  // [ms]
 	this->last_agent = false;
 
 	this->tempCounter = -300;
@@ -352,21 +352,21 @@ int AgentTeamLearning::stop() {
 
 int AgentTeamLearning::step() {
 
-	this->tempCounter++;
+	//this->tempCounter++;
 
-	if (tempCounter == 100) {
-		Log.log(0, "My agent id is %s, my task id is %s", Log.formatUUID(0,this->getUUID()), Log.formatUUID(0, &this->lAllianceObject.myData.taskId));
-		Log.log(0, "TASKLIST \n");
-		for (auto& taskIter : mTaskList) {
-			Log.log(0, "Task: %s, agent:%s, avatar:%s, completed:%d", Log.formatUUID(0, &(UUID)taskIter.first), Log.formatUUID(0, &taskIter.second->agentUUID), Log.formatUUID(0, &taskIter.second->avatar), taskIter.second->completed);
-		}
-		Log.log(0, "TASKDATA \n");
-		for (auto& tdIter : lAllianceObject.teammatesData) {
-			Log.log(0, "Task: %s, agent:%s, avatar:%s", Log.formatUUID(0, &tdIter.second.taskId), Log.formatUUID(0, &tdIter.second.agentId), Log.formatUUID(0, &(UUID)tdIter.first));
-		}
-		tempCounter = 0;
+//	if (tempCounter == 100) {
+		//Log.log(0, "My agent id is %s, my task id is %s", Log.formatUUID(0,this->getUUID()), Log.formatUUID(0, &this->lAllianceObject.myData.taskId));
+		//Log.log(0, "TASKLIST \n");
+		//for (auto& taskIter : mTaskList) {
+		//	Log.log(0, "Task: %s, agent:%s, avatar:%s, completed:%d", Log.formatUUID(0, &(UUID)taskIter.first), Log.formatUUID(0, &taskIter.second->agentUUID), Log.formatUUID(0, &taskIter.second->avatar), taskIter.second->completed);
+		//}
+		//Log.log(0, "TASKDATA \n");
+		//for (auto& tdIter : lAllianceObject.teammatesData) {
+		//	Log.log(0, "Task: %s, agent:%s, avatar:%s", Log.formatUUID(0, &tdIter.second.taskId), Log.formatUUID(0, &tdIter.second.agentId), Log.formatUUID(0, &(UUID)tdIter.first));
+		//}
+	//	tempCounter = 0;
 
-	}
+//	}
 
 	// Don't perform learning/task allocation every single step
 	_timeb currentTime;
@@ -395,6 +395,7 @@ int AgentTeamLearning::step() {
 
 	//Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::step: currentTime: %I64d, timeout at: %I64d, diff: %I64d,", (currentTime.time * 1000 + currentTime.millitm) , (this->last_response_time.time * 1000 + this->last_response_time.millitm + n*this->round_timout), (this->last_response_time.time * 1000 + this->last_response_time.millitm + n*this->round_timout) - (currentTime.time * 1000 + currentTime.millitm));
 	//Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::step: currentTime: %I64d, round start at: %I64d, diff: %I64d,", (currentTime.time * 1000 + currentTime.millitm), (this->round_start_time.time * 1000 + this->round_start_time.millitm), (this->round_start_time.time * 1000 + this->round_start_time.millitm) - (currentTime.time * 1000 + currentTime.millitm));
+//	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::step: round start in: %I64d milliseconds", (this->round_start_time.time * 1000 + this->round_start_time.millitm) - (currentTime.time * 1000 + currentTime.millitm));
 
 	bool round_started = (currentTime.time * 1000 + currentTime.millitm) > (this->round_start_time.time * 1000 + this->round_start_time.millitm);
 	bool update_round_info = (currentTime.time * 1000 + currentTime.millitm) > (this->round_info_receive_time.time * 1000 + this->round_info_receive_time.millitm + this->round_timout);
@@ -404,10 +405,12 @@ int AgentTeamLearning::step() {
 		// Round info is updated here after one timeout, to allow messages to come in, and cutting off any
 		// that are too old (since they are rejected based on their round number)
 		if (update_round_info && !this->round_info_set) {
+			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::step: update_round_info");
 			STATE(AgentTeamLearning)->round_number = this->new_round_number;
 			this->lAllianceObject.myData.round_number = this->new_round_number;
 			//this->TLAgents = this->new_round_order;
 			this->round_info_set = true;
+			this->last_response_time = this->round_start_time;
 		}
 
 		if (round_started) {
@@ -441,6 +444,7 @@ int AgentTeamLearning::checkRoundStatus() {
 	std::vector<UUID>::iterator iter;
 	int count = 1;
 	for (iter = this->TLAgents.begin(); iter != this->TLAgents.end(); ++iter) {
+		//Log.log(0, " AgentTeamLearning::checkRoundStatus:: last agent iter %s", Log.formatUUID(0, &*iter));
 		// Stop counting once we've found ourself
 		if (*iter == STATE(AgentBase)->uuid) {
 			this->last_agent = (count == this->TLAgents.size());
@@ -455,10 +459,13 @@ int AgentTeamLearning::checkRoundStatus() {
 	}
 //	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Waiting for %d agents ahead of us.", n);
 
+
+	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Round %d: n is: %d", STATE(AgentTeamLearning)->round_number, n );
+
 	// Perform task allocation, only when we are next in line or previous agents have timed out
 	_timeb currentTime;
 	_ftime64_s(&currentTime);
-	if ((currentTime.time * 1000 + currentTime.millitm) > (this->last_response_time.time * 1000 + this->last_response_time.millitm + n*this->round_timout)) {
+	if (n == 0 || (currentTime.time * 1000 + currentTime.millitm) > (this->last_response_time.time * 1000 + this->last_response_time.millitm + n*this->round_timout)) {
 		
 		if (n > 0)
 			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Round %d: Timed out waiting for response.", STATE(AgentTeamLearning)->round_number);
@@ -489,6 +496,18 @@ int AgentTeamLearning::checkRoundStatus() {
 
 		// Upload the L-Alliance data (DDBTaskData)
 		this->uploadTaskDataInfo();
+
+		Log.log(0, "My agent id is %s, my task id is %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &this->lAllianceObject.myData.taskId));
+		Log.log(0, "TASKLIST \n");
+		for (auto& taskIter : mTaskList) {
+			Log.log(0, "Task: %s, agent:%s, avatar:%s, completed:%d", Log.formatUUID(0, &(UUID)taskIter.first), Log.formatUUID(0, &taskIter.second->agentUUID), Log.formatUUID(0, &taskIter.second->avatar), taskIter.second->completed);
+		}
+		Log.log(0, "TASKDATA \n");
+		for (auto& tdIter : lAllianceObject.teammatesData) {
+			Log.log(0, "Task: %s, agent:%s, avatar:%s", Log.formatUUID(0, &tdIter.second.taskId), Log.formatUUID(0, &tdIter.second.agentId), Log.formatUUID(0, &(UUID)tdIter.first));
+		}
+
+
 
 		// Mark our participation
 		this->TLAgentData[STATE(AgentBase)->uuid].response = true;
@@ -1208,7 +1227,7 @@ bool AgentTeamLearning::convGetTaskDataInfo(void * vpConv) {
 			if (taskData.round_number == STATE(AgentTeamLearning)->round_number) {
 				// Valid data
 				lAllianceObject.teammatesData[avatarId] = taskData;
-
+				Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetTaskDataInfo: Received response regarding round %d.", taskData.round_number);
 				// Mark that we have received a response from this agent
 				this->TLAgentData[taskData.agentId].response = true;
 				_ftime64_s(&this->last_response_time);
