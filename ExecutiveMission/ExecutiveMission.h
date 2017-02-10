@@ -155,6 +155,8 @@ public:
 		ExecutiveMission_CBR_convReachedPoint,
 		ExecutiveMission_CBR_convAgentInfo,
 		ExecutiveMission_CBR_cbAllocateAvatars,
+		ExecutiveMission_CBR_convGetTaskList,
+		ExecutiveMission_CBR_convGetTaskInfo,
 		ExecutiveMission_CBR_HIGH
 	};
 
@@ -168,6 +170,8 @@ public:
 	bool	convGetAvatarPos( void *vpConv );
 	bool	convReachedPoint( void *vpConv );
 	bool	convAgentInfo( void *vpConv );
+	bool	convGetTaskList(void * vpConv);
+	bool	convGetTaskInfo(void * vpConv);
 	bool	cbAllocateAvatars( void *NA );
 	
 protected:

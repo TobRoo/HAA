@@ -60,6 +60,8 @@ ExecutiveMission::ExecutiveMission( spAddressPort ap, UUID *ticket, int logLevel
 	this->callback[ExecutiveMission_CBR_convReachedPoint] = NEW_MEMBER_CB(ExecutiveMission,convReachedPoint);
 	this->callback[ExecutiveMission_CBR_convAgentInfo] = NEW_MEMBER_CB(ExecutiveMission,convAgentInfo);
 	this->callback[ExecutiveMission_CBR_cbAllocateAvatars] = NEW_MEMBER_CB(ExecutiveMission,cbAllocateAvatars);
+	this->callback[ExecutiveMission_CBR_convGetTaskList] = NEW_MEMBER_CB(ExecutiveMission, convGetTaskList);
+	this->callback[ExecutiveMission_CBR_convGetTaskInfo] = NEW_MEMBER_CB(ExecutiveMission, convGetTaskInfo);
 
 }
 
@@ -364,6 +366,19 @@ int ExecutiveMission::start( char *missionFile ) {
 	this->sendMessage( this->hostCon, MSG_DDB_WATCH_TYPE, lds.stream(), lds.length() );
 	lds.unlock();
 	// NOTE: we request a list of avatars when DDBE_WATCH_TYPE notficitation is received
+
+
+	if (this->teamLearning || this->individualLearning)	//If learning is enabled, watch tasks for scenario completion
+	{
+		// register as task watcher
+		lds.reset();
+		lds.packUUID(&STATE(AgentBase)->uuid);
+		lds.packInt32(DDB_TASK);
+		this->sendMessage(this->hostCon, MSG_DDB_WATCH_TYPE, lds.stream(), lds.length());
+		lds.unlock();
+	}
+
+
 
 	STATE(AgentBase)->started = true;
 
@@ -1017,6 +1032,20 @@ int ExecutiveMission::ddbNotification( char *data, int len ) {
 			this->sendMessage( this->hostCon, MSG_DDB_AVATARGETINFO, sds.stream(), sds.length() );
 			sds.unlock();
 		}
+		if (type == DDB_TASK) {
+			// request list of tasks
+			UUID thread = this->conversationInitiate(ExecutiveMission_CBR_convGetTaskList, DDB_REQUEST_TIMEOUT);
+			if (thread == nilUUID) {
+				return 1;
+			}
+			sds.reset();
+			sds.packUUID(this->getUUID()); // dummy id, getting the full list of tasks anyway
+			sds.packUUID(&thread);
+			sds.packBool(true);			   //true == send list of tasks, otherwise only info about a specific task
+			this->sendMessage(this->hostCon, MSG_DDB_TASKGETINFO, sds.stream(), sds.length());
+			sds.unlock();
+		}
+
 	} else if ( evt == DDBE_WATCH_ITEM ) {
 		if ( this->assignedAvatars.find(uuid) != this->assignedAvatars.end() ) { // one of our avatar agents
 			// get status
@@ -1107,6 +1136,22 @@ int ExecutiveMission::ddbNotification( char *data, int len ) {
 			}
 		}
 	}
+	else if (type == DDB_TASK) {
+		// request task info
+		UUID thread = this->conversationInitiate(ExecutiveMission_CBR_convGetTaskInfo, DDB_REQUEST_TIMEOUT);
+		if (thread == nilUUID) {
+			return 1;
+		}
+		sds.reset();
+		sds.packUUID(this->getUUID()); // dummy id, getting the full list of tasks anyway
+		sds.packUUID(&thread);
+		sds.packBool(false);			   //true == send list of tasks, otherwise only info about a specific task
+		this->sendMessage(this->hostCon, MSG_DDB_TASKGETINFO, sds.stream(), sds.length());
+		sds.unlock();
+	}
+
+
+
 	lds.unlock();
 	
 	return 0;
@@ -1662,6 +1707,130 @@ bool ExecutiveMission::convAgentInfo( void *vpConv ) {
 
 	return 0;
 }
+
+/* convGetTaskList
+*
+* Callback for being a task watcher. Called from ddbNotification when the event is
+* DDBE_WATCH_TYPE and the type DDB_TASK.
+*
+* Loops through all known tasks, and checks completion status.
+*/
+bool ExecutiveMission::convGetTaskList(void * vpConv)
+{
+	DataStream lds;
+	spConversation conv = (spConversation)vpConv;
+
+	if (conv->response == NULL) { // timed out
+		Log.log(LOG_LEVEL_NORMAL, "ExecutiveMission::convGetTaskList: timed out");
+		return 0; // end conversation
+	}
+
+	lds.setData(conv->response, conv->responseLen);
+	lds.unpackData(sizeof(UUID)); // discard thread
+
+	char response = lds.unpackChar();
+	if (response == DDBR_OK) { // succeeded
+		int i, count;
+
+		if (lds.unpackBool() != true) {	//True if we requested a list of tasks as opposed to just one
+			lds.unlock();
+			return 0; // what happened here?
+		}
+
+		count = lds.unpackInt32();
+		Log.log(LOG_LEVEL_VERBOSE, "ExecutiveMission::convGetTaskList: Notified of %d tasks", count);
+
+		UUID taskIdIn;
+		DDBTask newTask;
+
+		for (i = 0; i < count; i++) {
+			lds.unpackUUID(&taskIdIn);
+			newTask = *(DDBTask *)lds.unpackData(sizeof(DDBTask));
+
+			if (!newTask.completed) {
+				Log.log(LOG_LEVEL_NORMAL, "ExecutiveMission::convGetTaskList: there are unfinished tasks...");
+				lds.unlock();
+				return 0;
+			}
+			
+			}
+		lds.unlock();
+		Log.log(LOG_LEVEL_NORMAL, "ExecutiveMission::convGetTaskList: no unfinished tasks, mission done!");
+		this->missionDone();
+
+	}
+	else {
+		lds.unlock();
+		// TODO try again?
+	}
+
+
+	return 0;
+}
+
+/* convGetTaskInfo
+*
+* Callback for task updates. Called from ddbNotification when the type is DDB_TASK.
+*
+* Checks completion status, requests a full list of tasks if the task has been completed (check for scenario completion).
+*/
+bool ExecutiveMission::convGetTaskInfo(void * vpConv)
+{
+	DataStream lds;
+	spConversation conv = (spConversation)vpConv;
+
+	if (conv->response == NULL) { // timed out
+		Log.log(LOG_LEVEL_NORMAL, "ExecutiveMission::convGetTaskInfo: timed out");
+		return 0; // end conversation
+	}
+
+	lds.setData(conv->response, conv->responseLen);
+	lds.unpackData(sizeof(UUID)); // discard thread
+
+	char response = lds.unpackChar();
+	if (response == DDBR_OK) { // succeeded
+
+		if (lds.unpackBool() == true) {	//True if we requested a list of tasks as opposed to just one
+			lds.unlock();
+			return 0; // what happened here?
+		}
+
+		UUID taskIdIn;
+		DDBTask newTask;
+
+			lds.unpackUUID(&taskIdIn);
+			newTask = *(DDBTask *)lds.unpackData(sizeof(DDBTask));
+
+			if (!newTask.completed) {
+				Log.log(LOG_LEVEL_NORMAL, "ExecutiveMission::convGetTaskInfo: task not completed...");
+				lds.unlock();
+				return 0;
+			}
+
+		lds.unlock();
+		Log.log(LOG_LEVEL_NORMAL, "ExecutiveMission::convGetTaskList:  task completed, checking full list for scenario completion...");
+		
+		// request list of tasks
+		UUID thread = this->conversationInitiate(ExecutiveMission_CBR_convGetTaskList, DDB_REQUEST_TIMEOUT);
+		if (thread == nilUUID) {
+			return 1;
+		}
+		lds.reset();
+		lds.packUUID(this->getUUID()); // dummy id, getting the full list of tasks anyway
+		lds.packUUID(&thread);
+		lds.packBool(true);			   //true == send list of tasks, otherwise only info about a specific task
+		this->sendMessage(this->hostCon, MSG_DDB_TASKGETINFO, lds.stream(), lds.length());
+		lds.unlock();
+	}
+	else {
+		lds.unlock();
+		// TODO try again?
+	}
+
+
+	return 0;
+}
+
 
 bool ExecutiveMission::cbAllocateAvatars( void *NA ) {
 
