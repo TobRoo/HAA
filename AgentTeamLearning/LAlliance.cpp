@@ -148,12 +148,18 @@ int LAlliance::chooseTask(const taskList &tasks) {
         if (taskIter->second->avatar == nilUUID) {
             // No avatar assigned, but must check if it is completed
             available = !taskIter->second->completed;
+			char message1[100];
+			sprintf(message1, "chooseTask: checking if task is completed: %s", !available ? "true":"false");
+			parentAgent->logWrapper(LOG_LEVEL_VERBOSE, message1);
         }
         else if (teammatesData.find(taskIter->second->avatar) != teammatesData.end()) {//Check, otherwise the map will be inserted with incorrect values
             if (teammatesData.at(taskIter->second->avatar).psi < (teammatesData.at(taskIter->second->avatar).tau.at(taskIter->first)
                                                                + teammatesData.at(taskIter->second->avatar).stddev.at(taskIter->first))) {
                 // An avatar is assigned, but it has not been engaged long enough to acquiesce
                 available = false;
+				char message2[100];
+				sprintf(message2, "chooseTask: checking if task is assigned to another: %s", available ? "true" : "false");
+				parentAgent->logWrapper(LOG_LEVEL_VERBOSE, message2);
             }
         }
 
@@ -179,7 +185,9 @@ int LAlliance::chooseTask(const taskList &tasks) {
 
                 }
             }
-
+			char message3[100];
+			sprintf(message3, "chooseTask: checking if most motivated: %s and if fastest: %s", mostMotivated ? "true" : "false", fastest ? "true" : "false");
+			parentAgent->logWrapper(LOG_LEVEL_VERBOSE, message3);
             if (mostMotivated) {
                 if (fastest) {
                     // Expected to be the best, so assign to category 1

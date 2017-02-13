@@ -13601,7 +13601,7 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 	break;
 	case OAC_DDB_TASKSETINFO:
 	{
-		//Log.log(0, "AgentHost::conProcessMessage: OAC_DDB_TASKSETINFO ");
+		Log.log(0, "AgentHost::conProcessMessage: OAC_DDB_TASKSETINFO ");
 		UUID sender;
 		UUID agentUUID;
 		UUID avatar;

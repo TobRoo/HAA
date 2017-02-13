@@ -1137,13 +1137,14 @@ int ExecutiveMission::ddbNotification( char *data, int len ) {
 		}
 	}
 	else if (type == DDB_TASK) {
+		Log.log(0, "ExecutiveMission::ddbNotification: DDB_TASK");
 		// request task info
 		UUID thread = this->conversationInitiate(ExecutiveMission_CBR_convGetTaskInfo, DDB_REQUEST_TIMEOUT);
 		if (thread == nilUUID) {
 			return 1;
 		}
 		sds.reset();
-		sds.packUUID(this->getUUID()); // dummy id, getting the full list of tasks anyway
+		sds.packUUID(&uuid); // dummy id, getting the full list of tasks anyway
 		sds.packUUID(&thread);
 		sds.packBool(false);			   //true == send list of tasks, otherwise only info about a specific task
 		this->sendMessage(this->hostCon, MSG_DDB_TASKGETINFO, sds.stream(), sds.length());
@@ -1776,6 +1777,7 @@ bool ExecutiveMission::convGetTaskList(void * vpConv)
 */
 bool ExecutiveMission::convGetTaskInfo(void * vpConv)
 {
+	Log.log(LOG_LEVEL_NORMAL, "ExecutiveMission::convGetTaskInfo");
 	DataStream lds;
 	spConversation conv = (spConversation)vpConv;
 
@@ -1789,8 +1791,9 @@ bool ExecutiveMission::convGetTaskInfo(void * vpConv)
 
 	char response = lds.unpackChar();
 	if (response == DDBR_OK) { // succeeded
-
+		Log.log(LOG_LEVEL_NORMAL, "ExecutiveMission::convGetTaskInfo: response == DDBR_OK");
 		if (lds.unpackBool() == true) {	//True if we requested a list of tasks as opposed to just one
+			Log.log(LOG_LEVEL_NORMAL, "ExecutiveMission::convGetTaskInfo: enumTasks is true, but should not be.");
 			lds.unlock();
 			return 0; // what happened here?
 		}
@@ -1798,14 +1801,14 @@ bool ExecutiveMission::convGetTaskInfo(void * vpConv)
 		UUID taskIdIn;
 		DDBTask newTask;
 
-			lds.unpackUUID(&taskIdIn);
-			newTask = *(DDBTask *)lds.unpackData(sizeof(DDBTask));
+		lds.unpackUUID(&taskIdIn);
+		newTask = *(DDBTask *)lds.unpackData(sizeof(DDBTask));
 
-			if (!newTask.completed) {
-				Log.log(LOG_LEVEL_NORMAL, "ExecutiveMission::convGetTaskInfo: task not completed...");
-				lds.unlock();
-				return 0;
-			}
+		if (!newTask.completed) {
+			Log.log(LOG_LEVEL_NORMAL, "ExecutiveMission::convGetTaskInfo: task not completed...");
+			lds.unlock();
+			return 0;
+		}
 
 		lds.unlock();
 		Log.log(LOG_LEVEL_NORMAL, "ExecutiveMission::convGetTaskList:  task completed, checking full list for scenario completion...");

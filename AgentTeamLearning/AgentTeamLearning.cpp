@@ -330,6 +330,7 @@ int AgentTeamLearning::start(char *missionFile) {
 	//Log.log(0, "AgentTeamLearning::start completed.");
 	Log.log(LOG_LEVEL_NORMAL, "My instance is: %d", STATE(AgentTeamLearning)->avatarInstance);
 	STATE(AgentBase)->started = true;
+	//this->checkRoundStatus();
 	return 0;
 }// end start
 
@@ -895,7 +896,7 @@ int AgentTeamLearning::conProcessMessage(spConnection con, unsigned char message
 		lds.unpackUUID(&sender);
 		lds.unpackData(sizeof(UUID));	//Discard thread (for now - do we need a conversation?)
 		lds.unpackUUID(&taskId);
-	//	Log.log(0, "AgentTeamLearning::conProcessMessage: Received motivation reset request from %s.", Log.formatUUID(0, &sender));
+		Log.log(0, "AgentTeamLearning::conProcessMessage: Received motivation reset request from %s regarding task %s.", Log.formatUUID(0, &sender), Log.formatUUID(0, &taskId));
 		this->lAllianceObject.motivationReset(taskId);
 		lds.unlock();
 	}
@@ -995,6 +996,7 @@ bool AgentTeamLearning::convGetAgentList(void *vpConv) {
 		// Set the next round start time
 		_ftime64_s(&this->round_start_time);
 		this->round_start_time.millitm += this->delta_learn_time;
+		_ftime64_s(&this->last_response_time);
 		STATE(AgentTeamLearning)->round_number++;
 		this->new_round_number++;
 		this->lAllianceObject.myData.round_number++;
