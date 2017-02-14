@@ -35,8 +35,8 @@
 //#include <boost/filesystem/operations.hpp>
 //#include <boost/filesystem/path.hpp>
 
-#define COLLECTION_THRESHOLD 0.15f // m
-#define DELIVERY_THRESHOLD 0.15f // m
+#define COLLECTION_THRESHOLD 9.15f // m
+#define DELIVERY_THRESHOLD 9.15f // m
 
 using namespace AvatarBase_Defs;
 
@@ -480,25 +480,31 @@ int AgentIndividualLearning::formAction() {
 		UUID thread;
 
 		if (!this->hasCargo) {
-			// see if we are within range of the landmark
-			dx = STATE(AgentIndividualLearning)->prev_pos_x - this->target.x;
-			dy = STATE(AgentIndividualLearning)->prev_pos_y - this->target.y;
 
-			if (dx*dx + dy*dy < COLLECTION_THRESHOLD*COLLECTION_THRESHOLD) { // should be close enough
-				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: collecting landmark at %f %f", this->target.x, this->target.y);
-				thread = this->conversationInitiate(AgentIndividualLearning_CBR_convCollectLandmark, -1, &avAgent, sizeof(UUID));
-				if (thread == nilUUID) {
-					return 1;
+			if (target.landmarkType != NON_COLLECTABLE && this->avatar.capacity >= target.landmarkType) {	//Check that we can carry the item
+
+				// see if we are within range of the landmark
+				dx = STATE(AgentIndividualLearning)->prev_pos_x - this->target.x;
+				dy = STATE(AgentIndividualLearning)->prev_pos_y - this->target.y;
+
+				if (dx*dx + dy*dy < COLLECTION_THRESHOLD*COLLECTION_THRESHOLD) { // should be close enough
+					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: collecting landmark at %f %f", this->target.x, this->target.y);
+					thread = this->conversationInitiate(AgentIndividualLearning_CBR_convCollectLandmark, -1, &avAgent, sizeof(UUID));
+					if (thread == nilUUID) {
+						return 1;
+					}
+					lds.reset();
+					lds.packUChar(this->target.code);
+					lds.packFloat32(this->target.x);
+					lds.packFloat32(this->target.y);
+					lds.packUUID(this->getUUID());
+					lds.packUUID(&thread);
+					this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_COLLECT_LANDMARK), lds.stream(), lds.length(), &avAgent);
+					lds.unlock();
 				}
-				lds.reset();
-				lds.packUChar(this->target.code);
-				lds.packFloat32(this->target.x);
-				lds.packFloat32(this->target.y);
-				lds.packUUID(this->getUUID());
-				lds.packUUID(&thread);
-				this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_COLLECT_LANDMARK), lds.stream(), lds.length(), &avAgent);
-				lds.unlock();
+
 			}
+
 		}
 		else {
 			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: trying to drop off cargo...");
@@ -515,7 +521,7 @@ int AgentIndividualLearning::formAction() {
 				float cR_y_high = cRIter->second.y + cRIter->second.h;
 				float cR_y_low = cRIter->second.y;
 
-				if (cR_x_low <= STATE(AgentIndividualLearning)->prev_pos_x && STATE(AgentIndividualLearning)->prev_pos_x <= cR_x_high && cR_y_low <= STATE(AgentIndividualLearning)->prev_pos_y && STATE(AgentIndividualLearning)->prev_pos_y <= cR_y_high) {
+		//		if (cR_x_low <= STATE(AgentIndividualLearning)->prev_pos_x && STATE(AgentIndividualLearning)->prev_pos_x <= cR_x_high && cR_y_low <= STATE(AgentIndividualLearning)->prev_pos_y && STATE(AgentIndividualLearning)->prev_pos_y <= cR_y_high) {
 					//We delivered the cargo!
 					this->hasDelivered = true;
 					this->task.completed = true;
@@ -532,7 +538,7 @@ int AgentIndividualLearning::formAction() {
 					this->sendMessage(this->hostCon, MSG_DDB_TASKSETINFO, lds.stream(), lds.length());
 					lds.unlock();
 					break;
-				}
+		//		}
 
 			}
 			if (cRIter == collectionRegions.end())		//Outside of collection regions, drop off and update landmark location
@@ -1816,6 +1822,7 @@ bool AgentIndividualLearning::convRequestAvatarLoc(void *vpConv) {
 			//Update target location, actual landmark will be updated when cargo is dropped off
 
 			if (this->hasCargo) {	
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAvatarLoc: UPDATING CARGO POS");
 				this->target.x = this->avatar.x;
 				this->target.y = this->avatar.y;
 			}
@@ -2004,10 +2011,11 @@ bool AgentIndividualLearning::convGetTaskInfo(void * vpConv) {
 
 				// Drop the cargo if we get a new task assigned
                 if (this->hasCargo) { 
+					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Dropping our current cargo");
                     lds.reset();
                     lds.packUChar(this->target.code);
                     this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_DEPOSIT_LANDMARK), lds.stream(), lds.length(), &this->avatarAgentId); // drop off
-                    lds.unlock();
+                    //lds.unlock();
 					this->hasCargo = false;
                 }
 

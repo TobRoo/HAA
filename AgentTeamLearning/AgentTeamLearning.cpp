@@ -318,7 +318,7 @@ int AgentTeamLearning::start(char *missionFile) {
 		lds.packUUID(&STATE(AgentTeamLearning)->ownerId);
 		//_ftime64_s(&this->lAllianceObject.myData.updateTime);	//Update time
 		this->lAllianceObject.myData.taskId = nilUUID;
-		this->lAllianceObject.myData.agentId = *this->getUUID();
+		//this->lAllianceObject.myData.agentId = *this->getUUID();
 		lds.packTaskData(&this->lAllianceObject.myData);
 		this->sendMessage(this->hostCon, MSG_DDB_ADDTASKDATA, lds.stream(), lds.length());	//... then upload
 		lds.unlock();
@@ -478,7 +478,7 @@ int AgentTeamLearning::checkRoundStatus() {
 		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Round %d: Updating and performing task selection.", STATE(AgentTeamLearning)->round_number);
 		this->lAllianceObject.updateTaskProperties(this->mTaskList);
 		this->lAllianceObject.chooseTask(this->mTaskList);
-
+		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Round %d: My task is: %s", STATE(AgentTeamLearning)->round_number, Log.formatUUID(0, &this->lAllianceObject.myData.taskId));
 		// Upload the new task data (DDBTask), and 
 		UUID new_task_id = this->lAllianceObject.myData.taskId;
 		if (new_task_id == nilUUID) {
@@ -751,7 +751,7 @@ int AgentTeamLearning::ddbNotification(char *data, int len) {
 
 			if (uuid == this->lAllianceObject.myData.taskId && tmIter != this->lAllianceObject.teammatesData.end()) {		//If it's our own update, and if it's not in the teammatesData, do nothing
 
-																												//Log.log(0, "AgentTeamLearning::ddbNotification: task is our own, discarding.");
+																												Log.log(0, "AgentTeamLearning::ddbNotification: task is our own, discarding.");
 			}
 			else {
 				// request task info
@@ -953,7 +953,7 @@ bool AgentTeamLearning::convGetAgentList(void *vpConv) {
 		// Get number of agents
 		int count;
 		count = lds.unpackInt32();
-		Log.log(LOG_LEVEL_VERBOSE, "AgentTeamLearning::convGetAgentList: recieved %d total agents.", count);
+		Log.log(LOG_LEVEL_VERBOSE, "AgentTeamLearning::convGetAgentList: received %d total agents.", count);
 
 		std::list<UUID> tempTLAgentList;
 
@@ -996,7 +996,8 @@ bool AgentTeamLearning::convGetAgentList(void *vpConv) {
 		// Set the next round start time
 		_ftime64_s(&this->round_start_time);
 		this->round_start_time.millitm += this->delta_learn_time;
-		_ftime64_s(&this->last_response_time);
+		//_ftime64_s(&this->last_response_time);
+		this->last_response_time = this->round_start_time;
 		STATE(AgentTeamLearning)->round_number++;
 		this->new_round_number++;
 		this->lAllianceObject.myData.round_number++;

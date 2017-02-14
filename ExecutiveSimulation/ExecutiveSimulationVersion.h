@@ -14,6 +14,7 @@ namespace ExecutiveSimulation_Defs {
 		SAE_SENSOR_SONAR,		// data format: char index, _timeb time, float reading
 		SAE_SENSOR_CAMERA,		// data format: char index, _timeb time, int dataSize, ... camera data
 		SAE_COLLECT,			// data format: unsigned char code, char success, UUID thread
+		SAE_DEPOSIT,		    // data format: unsigned char code, char success, UUID thread
 		SAE_STREAM_END,
 	};
 };
@@ -37,7 +38,7 @@ namespace ExecutiveSimulation_MSGS {
 		MSG_AVATAR_IMAGE,	// request image [UUID avatarId, int cameraInd]
 
 		MSG_AVATAR_COLLECT_LANDMARK, // attempt to collect a landmark [UUID avatarId, unsigned char landmarkCode, float x, float y, UUID thread]
-
+		MSG_AVATAR_DEPOSIT_LANDMARK, // attempt to deposit a landmark [UUID avatarId, unsigned char landmarkCode]
 		MSG_RAVATAR_OUTPUT, // request avatar output [UUID avatarId, UUID thread]
 							// RESPONSE: output stream, [UUID thread, char response <, ... SimAvatar_Events for data format>]
 
@@ -55,6 +56,7 @@ namespace ExecutiveSimulation_MSGS {
 		sizeof(UUID) + 4, // MSG_AVATAR_IMAGE
 
 		sizeof(UUID) + 1 + 4*2 + sizeof(UUID), // MSG_AVATAR_COLLECT_LANDMARK
+		sizeof(UUID) + 1, // MSG_AVATAR_DEPOSIT_LANDMARK
 
 		sizeof(UUID)*2,	  // MSG_RAVATAR_OUTPUT
 	};

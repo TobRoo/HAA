@@ -98,7 +98,8 @@ public:
 	UUID ownerId; // owner id
 
 	int doCamera( int cameraInd );
-	int doCollectLandmark( unsigned char code, float x, float y, UUID *thread );
+	int doCollectLandmark ( unsigned char code, float x, float y, UUID *thread );
+	int doDepositLandmark (unsigned char code);
 
 	SimAvatarState *getState() { return &this->state; };
 

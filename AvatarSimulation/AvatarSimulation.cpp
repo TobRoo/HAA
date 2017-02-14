@@ -891,6 +891,13 @@ int AvatarSimulation::conProcessMessage( spConnection con, unsigned char message
 			lds.packUChar( code );
 			this->sendMessage( this->hostCon, MSG_DDB_AVATARSETINFO, lds.stream(), lds.length() );
 			lds.unlock();
+
+			// ask the simulation to deposit
+			lds.reset();
+			lds.packUUID(&STATE(AvatarBase)->avatarUUID);
+			lds.packUChar(code);
+			this->sendMessageEx(this->hostCon, MSGEX(ExecutiveSimulation_MSGS, MSG_AVATAR_DEPOSIT_LANDMARK), lds.stream(), lds.length(), &STATE(AvatarSimulation)->execSimulationId);
+			lds.unlock();
 		}
 		break;
 	default:

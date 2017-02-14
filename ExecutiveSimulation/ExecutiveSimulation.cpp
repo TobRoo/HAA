@@ -900,10 +900,32 @@ int ExecutiveSimulation::conProcessMessage( spConnection con, unsigned char mess
 			mapSimAvatar::iterator iA;
 			iA = this->avatars.find( uuid );
 			if ( iA != this->avatars.end() ) {
-				iA->second->doCollectLandmark( code, x, y, &thread ); // take image
+				iA->second->doCollectLandmark( code, x, y, &thread ); // collect landmark
 			}
 		}
 		break;
+	case ExecutiveSimulation_MSGS::MSG_AVATAR_DEPOSIT_LANDMARK:
+	{
+		unsigned char code;
+		float x, y;
+		UUID thread;
+		lds.setData(data, len);
+		lds.unpackUUID(&uuid);
+		code = lds.unpackUChar();
+		x = lds.unpackFloat32();
+		y = lds.unpackFloat32();
+		lds.unpackUUID(&thread);
+		lds.unlock();
+
+		// find avatar
+		mapSimAvatar::iterator iA;
+		iA = this->avatars.find(uuid);
+		if (iA != this->avatars.end()) {
+			iA->second->doDepositLandmark(code); // deposit landmark
+		}
+	}
+	break;
+
 	case ExecutiveSimulation_MSGS::MSG_RAVATAR_OUTPUT:
 		{
 			UUID thread, owner;
@@ -2303,8 +2325,8 @@ int SimAvatar::doCollectLandmark( unsigned char code, float x, float y, UUID *th
 	// see if we can pick it up
 	dx = state.x - lm->wx;
 	dy = state.y - lm->wy;
-	if ( dx*dx + dy*dy < 0.4f*0.4f ) { // close enough
-		
+//	if ( dx*dx + dy*dy < 0.4f*0.4f ) { // close enough
+	if (dx*dx + dy*dy < 9.0f*9.0f) { // close enough		
 		Log->log( 0, "SimAvatar::doCollectLandmark: landmark collected (%d)", code );
 
 		// pack data
@@ -2325,6 +2347,53 @@ int SimAvatar::doCollectLandmark( unsigned char code, float x, float y, UUID *th
 		this->output.packChar( 0 ); // fail
 		this->output.packUUID( thread );
 	}
+
+	return 0;
+}
+
+int SimAvatar::doDepositLandmark(unsigned char code)
+{
+
+	SimLandmark *lm;
+
+	// find the landmark
+	std::list<SimLandmark*> *landmarks = sim->getLandmarkList();
+	std::list<SimLandmark*>::iterator itSL;
+	for (itSL = landmarks->begin(); itSL != landmarks->end(); itSL++) {
+		lm = *itSL;
+
+		if (lm->code == code)
+			break;
+	}
+
+	if (itSL == landmarks->end() || !lm->collected) {
+
+		if (itSL == landmarks->end())
+			Log->log(0, "SimAvatar::doDepositLandmark: landmark not found (%d)", code);
+		else
+			Log->log(0, "SimAvatar::doDepositLandmark: landmark not yet collected (%d)", code);
+
+		// pack data
+		this->output.packChar(ExecutiveSimulation_Defs::SAE_DEPOSIT);
+		this->output.packUChar(code);
+		this->output.packChar(0); // fail
+		//this->output.packUUID( TODO: Pack a UUID (Currently not used anyway)
+
+		return 1; // not found
+	}
+
+	// deposit		
+		Log->log(0, "SimAvatar::doDepositLandmark: landmark deposited (%d)", code);
+
+		// pack data
+		this->output.packChar(ExecutiveSimulation_Defs::SAE_COLLECT);
+		this->output.packUChar(code);
+		this->output.packChar(1); // success
+		//this->output.packUUID( TODO: Pack a UUID (Currently not used anyway)
+
+		// flag as deposited
+		lm->collected = false;
+
 
 	return 0;
 }
