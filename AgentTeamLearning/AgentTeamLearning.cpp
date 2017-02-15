@@ -482,6 +482,8 @@ int AgentTeamLearning::checkRoundStatus() {
 		// Upload the new task data (DDBTask), and 
 		UUID new_task_id = this->lAllianceObject.myData.taskId;
 		if (new_task_id == nilUUID) {
+			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus:HURDURR???");
+
 			// When voluntarily leaving a task upload nil task data (DDBTask) to DDB to reset the task
 			uploadTask(prev_task_id, nilUUID, nilUUID, false);
 		}
@@ -501,7 +503,7 @@ int AgentTeamLearning::checkRoundStatus() {
 		Log.log(0, "My agent id is %s, my task id is %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &this->lAllianceObject.myData.taskId));
 		Log.log(0, "TASKLIST \n");
 		for (auto& taskIter : mTaskList) {
-			Log.log(0, "Task: %s, agent:%s, avatar:%s, completed:%d", Log.formatUUID(0, &(UUID)taskIter.first), Log.formatUUID(0, &taskIter.second->agentUUID), Log.formatUUID(0, &taskIter.second->avatar), taskIter.second->completed);
+			Log.log(0, "Task: %s, agent:%s, avatar:%s, type: %d completed:%d", Log.formatUUID(0, &(UUID)taskIter.first), Log.formatUUID(0, &taskIter.second->agentUUID), Log.formatUUID(0, &taskIter.second->avatar), taskIter.second->type, taskIter.second->completed);
 		}
 		Log.log(0, "TASKDATA \n");
 		for (auto& tdIter : lAllianceObject.teammatesData) {

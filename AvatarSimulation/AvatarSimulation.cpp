@@ -642,6 +642,49 @@ int AvatarSimulation::parseAvatarOutput( DataStream *ds ) {
 				}
 			}
 			break;
+		case ExecutiveSimulation_Defs::SAE_DEPOSIT:
+		{
+			//unsigned char code, success;
+			//UUID thread;
+			//code = ds->unpackUChar();
+			//success = ds->unpackChar();
+			//ds->unpackUUID(&thread);
+
+			//if (success) {
+			//	// update avatar capacity
+			//	lds.reset();
+			//	lds.packUUID(&STATE(AvatarBase)->avatarUUID);
+			//	lds.packInt32(DDBAVATARINFO_CARGO);
+			//	lds.packInt32(1);
+			//	lds.packBool(1); // load
+			//	lds.packUChar(code);
+			//	this->sendMessage(this->hostCon, MSG_DDB_AVATARSETINFO, lds.stream(), lds.length());
+			//	lds.unlock();
+
+			//	// update landmark status
+			//	lds.reset();
+			//	lds.packUChar(code);
+			//	lds.packInt32(DDBLANDMARKINFO_DEPOSITED);
+			//	this->sendMessage(this->hostCon, MSG_DDB_LANDMARKSETINFO, lds.stream(), lds.length());
+			//	lds.unlock();
+			//}
+
+			//// notify initiator
+			//if (this->collectionTask.front().thread == thread) {
+			//	Log.log(0, "AvatarSimulation::parseAvatarOutput: collection attempt finished, %d", success);
+			//	lds.reset();
+			//	lds.packUUID(&thread);
+			//	lds.packChar(success);
+			//	this->sendMessage(this->hostCon, MSG_RESPONSE, lds.stream(), lds.length(), &this->collectionTask.front().initiator);
+			//	lds.unlock();
+			//	this->collectionTask.pop_front();
+			//}
+			//else {
+			//	Log.log(0, "AvatarSimulation::parseAvatarOutput: out of order collection!");
+			//	// what happened?
+			//}
+		}
+		break;
 		default:
 			Log.log( 0, "AvatarSimulation::parseAvatarOutput: unknown event %d!", evt );
 			return 1;

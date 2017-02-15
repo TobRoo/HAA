@@ -1743,19 +1743,25 @@ bool ExecutiveMission::convGetTaskList(void * vpConv)
 
 		UUID taskIdIn;
 		DDBTask newTask;
+		bool scenarioCompleted = true;
 
 		for (i = 0; i < count; i++) {
 			lds.unpackUUID(&taskIdIn);
 			newTask = *(DDBTask *)lds.unpackData(sizeof(DDBTask));
+			Log.log(0, "Task: %s, agent:%s, avatar:%s, type: %d completed:%d", Log.formatUUID(0, &taskIdIn), Log.formatUUID(0, &newTask.agentUUID), Log.formatUUID(0, &newTask.avatar), newTask.type, newTask.completed);
 
 			if (!newTask.completed) {
-				Log.log(LOG_LEVEL_NORMAL, "ExecutiveMission::convGetTaskList: there are unfinished tasks...");
-				lds.unlock();
-				return 0;
+				Log.log(LOG_LEVEL_NORMAL, "ExecutiveMission::convGetTaskList: task not finished");
+				scenarioCompleted = false;
 			}
 			
 			}
 		lds.unlock();
+		if (!scenarioCompleted) {
+			Log.log(LOG_LEVEL_NORMAL, "ExecutiveMission::convGetTaskList: there are unfinished tasks...");
+			return 0;
+		}
+
 		Log.log(LOG_LEVEL_NORMAL, "ExecutiveMission::convGetTaskList: no unfinished tasks, mission done!");
 		this->missionDone();
 

@@ -532,8 +532,11 @@ int AgentIndividualLearning::formAction() {
 					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: task %s completed, uploading to DDB...", Log.formatUUID(LOG_LEVEL_NORMAL, &this->taskId));
 					lds.reset();
 					lds.packUUID(&this->taskId);		//Task id
-					lds.packUUID(&this->task.agentUUID);						//Agent id
-					lds.packUUID(&this->task.avatar);	//Avatar id
+					//lds.packUUID(&this->task.agentUUID);						//Agent id
+					//lds.packUUID(&this->task.avatar);	//Avatar id
+					lds.packUUID(&nilUUID);						//Agent id
+					lds.packUUID(&nilUUID);						//Avatar id
+
 					lds.packBool(&this->task.completed);
 					this->sendMessage(this->hostCon, MSG_DDB_TASKSETINFO, lds.stream(), lds.length());
 					lds.unlock();
@@ -911,7 +914,7 @@ float AgentIndividualLearning::determineReward() {
     // When the target is returned
     if (this->hasDelivered == true) {
         // Item has been returned
-        this->hasDelivered = false;	//Set back to false in perparation for new task
+        this->hasDelivered = false;	//Set back to false in preparation for new task
         return return_reward_;
     }
 

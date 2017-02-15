@@ -2377,7 +2377,7 @@ int SimAvatar::doDepositLandmark(unsigned char code)
 		this->output.packChar(ExecutiveSimulation_Defs::SAE_DEPOSIT);
 		this->output.packUChar(code);
 		this->output.packChar(0); // fail
-		//this->output.packUUID( TODO: Pack a UUID (Currently not used anyway)
+		this->output.packUUID(&this->ownerId); // TODO: Pack thread UUID (Currently not used anyway)
 
 		return 1; // not found
 	}
@@ -2386,10 +2386,10 @@ int SimAvatar::doDepositLandmark(unsigned char code)
 		Log->log(0, "SimAvatar::doDepositLandmark: landmark deposited (%d)", code);
 
 		// pack data
-		this->output.packChar(ExecutiveSimulation_Defs::SAE_COLLECT);
+		this->output.packChar(ExecutiveSimulation_Defs::SAE_DEPOSIT);
 		this->output.packUChar(code);
 		this->output.packChar(1); // success
-		//this->output.packUUID( TODO: Pack a UUID (Currently not used anyway)
+		this->output.packUUID(&this->ownerId); // TODO: Pack thread UUID (Currently not used anyway)
 
 		// flag as deposited
 		lm->collected = false;
