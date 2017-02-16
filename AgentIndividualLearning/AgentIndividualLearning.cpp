@@ -1210,7 +1210,7 @@ int AgentIndividualLearning::parseLearningData()
 				}
 				float qVal;
 				int count = 0;
-				while (fscanf_s(fp, "%f\n", qVal) == 1) {
+				while (fscanf_s(fp, "%f\n", &qVal) == 1) {
 					this->q_learning_.q_table_[count] = qVal;
 					count++;
 				}
@@ -1218,9 +1218,9 @@ int AgentIndividualLearning::parseLearningData()
 					Log.log(0, "AgentIndividualLearning::parseLearningData: badly formatted qTable");
 					break;
 				}
-				float expVal;
+				int expVal;
 				count = 0;
-				while (fscanf_s(fp, "%d\n", expVal) == 1) {
+				while (fscanf_s(fp, "%d\n", &expVal) == 1) {
 					this->q_learning_.exp_table_[count] = expVal;
 					count++;
 				}
@@ -2020,6 +2020,19 @@ bool AgentIndividualLearning::convGetTaskInfo(void * vpConv) {
                     this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_DEPOSIT_LANDMARK), lds.stream(), lds.length(), &this->avatarAgentId); // drop off
                     //lds.unlock();
 					this->hasCargo = false;
+
+
+					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: dropping cargo outside of collection regions...");
+					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: my position is: x: %f, y: %f, cargo position is x: %f, y: %f", STATE(AgentIndividualLearning)->prev_pos_x, STATE(AgentIndividualLearning)->prev_pos_y, target.x, target.y);
+					// update landmark status
+					lds.reset();
+					lds.packUChar(this->target.code);
+					lds.packInt32(DDBLANDMARKINFO_DEPOSITED);
+					lds.packFloat32(this->target.x);
+					lds.packFloat32(this->target.y);
+					this->sendMessage(this->hostCon, MSG_DDB_LANDMARKSETINFO, lds.stream(), lds.length());
+					lds.unlock();
+
                 }
 
 
