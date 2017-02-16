@@ -481,7 +481,7 @@ int AgentIndividualLearning::formAction() {
 
 		if (!this->hasCargo) {
 
-			if (target.landmarkType != NON_COLLECTABLE && this->avatar.capacity >= target.landmarkType) {	//Check that we can carry the item
+			if (target.landmarkType != NON_COLLECTABLE && this->avatar.capacity >= target.landmarkType && !this->task.completed) {	//Check that we can carry the item, and that the task is not completed (do not collect delivered targets)
 
 				// see if we are within range of the landmark
 				dx = STATE(AgentIndividualLearning)->prev_pos_x - this->target.x;
