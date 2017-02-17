@@ -878,10 +878,20 @@ int AgentTeamLearning::conProcessMessage(spConnection con, unsigned char message
 		Log.log(0, "AgentTeamLearning::conProcessMessage: Received acquiescence request from %s.", Log.formatUUID(0, &sender));
 		if (this->mTaskList.find(nilTask) != this->mTaskList.end()) {
 			if (nilTask == this->lAllianceObject.myData.taskId) {
+
+				Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::MSG_REQUEST_ACQUIESCENCE:HURDURR???");
+
+				// When leaving a task upload nil task data (DDBTask) to DDB 
+				uploadTask(nilUUID, mTaskList[nilTask]->agentUUID, mTaskList[nilTask]->avatar, false);
+
 				mTaskList[nilTask]->avatar = nilUUID;
 				mTaskList[nilTask]->agentUUID = nilUUID;
 				this->lAllianceObject.acquiesce(nilTask);
 				Log.log(0, "AgentTeamLearning::conProcessMessage: Acquiescence request for current task, acquiescing...");
+
+
+
+
 			}
 			else {
 				Log.log(0, "AgentTeamLearning::conProcessMessage:  Acquiescence request for other task, cannot acquiesce.");

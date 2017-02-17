@@ -644,6 +644,13 @@ int AvatarSimulation::parseAvatarOutput( DataStream *ds ) {
 			break;
 		case ExecutiveSimulation_Defs::SAE_DEPOSIT:
 		{
+			Log.log(0, "AvatarSimulation::parseAvatarOutput: SAE_DEPOSIT");
+
+			unsigned char code, success;
+			UUID thread;
+			code = ds->unpackUChar();
+			success = ds->unpackChar();
+			ds->unpackUUID(&thread);
 			//unsigned char code, success;
 			//UUID thread;
 			//code = ds->unpackUChar();

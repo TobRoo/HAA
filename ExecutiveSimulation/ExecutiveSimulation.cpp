@@ -907,14 +907,9 @@ int ExecutiveSimulation::conProcessMessage( spConnection con, unsigned char mess
 	case ExecutiveSimulation_MSGS::MSG_AVATAR_DEPOSIT_LANDMARK:
 	{
 		unsigned char code;
-		float x, y;
-		UUID thread;
 		lds.setData(data, len);
 		lds.unpackUUID(&uuid);
 		code = lds.unpackUChar();
-		x = lds.unpackFloat32();
-		y = lds.unpackFloat32();
-		lds.unpackUUID(&thread);
 		lds.unlock();
 
 		// find avatar
