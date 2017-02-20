@@ -2033,9 +2033,10 @@ bool AgentIndividualLearning::convGetTaskInfo(void * vpConv) {
 					this->sendMessage(this->hostCon, MSG_DDB_LANDMARKSETINFO, lds.stream(), lds.length());
 					lds.unlock();
 
-                }
-
-
+				}
+				else {
+					lds.unlock();
+				}
 
 				// Save the new task data
                 this->task = newTask;
@@ -2052,7 +2053,17 @@ bool AgentIndividualLearning::convGetTaskInfo(void * vpConv) {
                 sds.unlock();
             }
         }
-        lds.unlock();
+		else if (newTask.avatar != STATE(AgentIndividualLearning)->ownerId && newTask.avatar != nilUUID && !newTask.completed) {
+			if (taskIdIn == this->taskId) {
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: My task %s has a different avatar than me: %s", Log.formatUUID(0, &taskIdIn), Log.formatUUID(0, &newTask.avatar));
+
+			}
+			lds.unlock();
+		}
+
+
+
+
     }
     else {
         lds.unlock();

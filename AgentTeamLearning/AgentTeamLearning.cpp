@@ -880,18 +880,10 @@ int AgentTeamLearning::conProcessMessage(spConnection con, unsigned char message
 			if (nilTask == this->lAllianceObject.myData.taskId) {
 
 				Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::MSG_REQUEST_ACQUIESCENCE:HURDURR???");
-
-				// When leaving a task upload nil task data (DDBTask) to DDB 
-				uploadTask(nilUUID, mTaskList[nilTask]->agentUUID, mTaskList[nilTask]->avatar, false);
-
 				mTaskList[nilTask]->avatar = nilUUID;
 				mTaskList[nilTask]->agentUUID = nilUUID;
 				this->lAllianceObject.acquiesce(nilTask);
 				Log.log(0, "AgentTeamLearning::conProcessMessage: Acquiescence request for current task, acquiescing...");
-
-
-
-
 			}
 			else {
 				Log.log(0, "AgentTeamLearning::conProcessMessage:  Acquiescence request for other task, cannot acquiesce.");
@@ -910,6 +902,11 @@ int AgentTeamLearning::conProcessMessage(spConnection con, unsigned char message
 		lds.unpackUUID(&taskId);
 		Log.log(0, "AgentTeamLearning::conProcessMessage: Received motivation reset request from %s regarding task %s.", Log.formatUUID(0, &sender), Log.formatUUID(0, &taskId));
 		this->lAllianceObject.motivationReset(taskId);
+		if (taskId == lAllianceObject.myData.taskId) {
+			Log.log(0, "AgentTeamLearning::conProcessMessage: This is our current task!!!");// , also acquiescing.", Log.formatUUID(0, &sender), Log.formatUUID(0, &taskId));
+		//	this->lAllianceObject.acquiesce(taskId);
+		}
+
 		lds.unlock();
 	}
 	break;
@@ -1244,7 +1241,8 @@ bool AgentTeamLearning::convGetTaskDataInfo(void * vpConv) {
 				lAllianceObject.teammatesData[avatarId] = taskData;
 				Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetTaskDataInfo: Received response regarding round %d.", taskData.round_number);
 				// Mark that we have received a response from this agent
-				this->TLAgentData[taskData.agentId].response = true;
+				if (STATE(AgentTeamLearning)->round_number == this->new_round_number)	//If we have received a new round number, but not yet started, do not mark as response for next round
+					this->TLAgentData[taskData.agentId].response = true;
 				_ftime64_s(&this->last_response_time);
 			}
 			else {
