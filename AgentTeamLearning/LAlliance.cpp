@@ -244,6 +244,11 @@ int LAlliance::chooseTask(const taskList &tasks) {
     myData.taskId = taskAssignment;
 	parentAgent->logWrapper(LOG_LEVEL_VERBOSE, "chooseTask: Task has been assigned.");
 
+	if (taskAssignment != nilUUID && tasks.at(taskAssignment)->avatar != nilUUID) {
+		// Another avatar was assigned, and they must acquiesce
+		requestAcquiescence(taskAssignment, tasks.at(taskAssignment)->agentUUID);	//Send directly to the team learning agent, not the avatar agent
+	}
+
     if (taskAssignment != nilUUID) {
         //parentAgent->logWrapper(" chooseTask: We dont reach here...");
         if (myData.attempts.at(taskAssignment) == 0) {
@@ -255,10 +260,7 @@ int LAlliance::chooseTask(const taskList &tasks) {
     // Increment the task attempts
     myData.attempts.at(taskAssignment)++;
 
-    if (taskAssignment != nilUUID && tasks.at(taskAssignment)->avatar != nilUUID) {
-        // Another avatar was assigned, and they must acquiesce
-        requestAcquiescence(taskAssignment, tasks.at(taskAssignment)->agentUUID);	//Send directly to the team learning agent, not the avatar agent
-    }
+
 
     return 0;
 }

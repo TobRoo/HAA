@@ -602,7 +602,8 @@ int AvatarSimulation::parseAvatarOutput( DataStream *ds ) {
 			break;
 		case ExecutiveSimulation_Defs::SAE_COLLECT:
 			{
-				unsigned char code, success;
+			Log.log(0, "AvatarSimulation::parseAvatarOutput: SAE_COLLECT");
+			unsigned char code, success;
 				UUID thread;
 				code = ds->unpackUChar();
 				success = ds->unpackChar();
@@ -905,7 +906,7 @@ int AvatarSimulation::conProcessMessage( spConnection con, unsigned char message
 			lds.unpackUUID( &initiator );
 			lds.unpackUUID( &thread );
 			lds.unlock();
-
+			Log.log(LOG_LEVEL_VERBOSE, "AvatarSimulation::conProcessMessage: MSG_COLLECT_LANDMARK received concerning landmark %d", code);
 			// ask the simulation to collect
 			lds.reset();
 			lds.packUUID( &STATE(AvatarBase)->avatarUUID );

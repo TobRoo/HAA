@@ -137,7 +137,7 @@ int AgentAdviceExchange::configureParameters(DataStream *ds) {
 	ds->unpackUUID(&STATE(AgentAdviceExchange)->avatarId);
 	STATE(AgentAdviceExchange)->avatarInstance = ds->unpackInt32();
 	STATE(AgentAdviceExchange)->runNumber = ds->unpackInt32();
-
+	STATE(AgentAdviceExchange)->epoch = STATE(AgentAdviceExchange)->runNumber - 1;
 
 	Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::configureParameters: ownerId %s", Log.formatUUID(LOG_LEVEL_NORMAL, &STATE(AgentAdviceExchange)->ownerId));
 
@@ -217,14 +217,14 @@ int AgentAdviceExchange::stop() {
 
 int AgentAdviceExchange::step() {
 	//Log.log(0, "AgentAdviceExchange::step()");
-	this->tempCounter++;
+	//this->tempCounter++;
 	//  if (STATE(AgentBase)->stopFlag) {
 	//      uploadLearningData();	//Stores individual learningdata in DDB for next simulation run
 	//  }
-	if (tempCounter == 500) {
-		Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::step: REACHED UPLOAD TEST COUNT!");
-		uploadAdviceData();	//Stores individual learningdata in DDB for next simulation run
-	}
+	//if (tempCounter == 500) {
+	//	Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::step: REACHED UPLOAD TEST COUNT!");
+	//	uploadAdviceData();	//Stores individual learningdata in DDB for next simulation run
+	//}
 	return AgentBase::step();
 }// end step
 

@@ -11457,22 +11457,28 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		UUID aAETypeId;
 		UuidFromString((RPC_WSTR)_T(AgentAdviceExchange_UUID), &aAETypeId);
 
+		DataStream sds;
+
 		//Go through all agents and find the learning agents and advice agents
 		for (auto& iterAgent : this->dStore->DDBAgents) {
 
 			//Check if learning or advice agent id matches the agent id
 			if (iterAgent.second->agentTypeId == aITTypeId || iterAgent.second->agentTypeId == aTLTypeId || iterAgent.second->agentTypeId == aAETypeId) {
-				Log.log(0, "AgentHost::conProcessMessage: MSG_MISSION_DONE, messaging agents...!");
 				// Order agent to upload learning or advice data for next run
 
 				UUID agentUUID = iterAgent.first;
-				this->sendMessage(con, MSG_MISSION_DONE, &agentUUID);
+				Log.log(0, "AgentHost::conProcessMessage: MSG_MISSION_DONE, messaging agent %s", Log.formatUUID(0, &agentUUID));
+				sds.reset();
+				sds.packChar(1); // success
+				this->sendMessage(con, MSG_MISSION_DONE, sds.stream(),sds.length(),&agentUUID);
+				sds.unlock();
 			}
 		}
 		this->globalStateTransaction(OAC_MISSION_DONE, data, len);
 	}
 		break;
 	case OAC_MISSION_DONE:
+		Sleep(100);	//For MISSION_DONE messages to reach agents
 		Log.log( 0, "AgentHost::conProcessMessage: OAC_MISSION_DONE, mission done!" );
 		this->prepareStop();
 		this->DataDump( true );

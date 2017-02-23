@@ -340,14 +340,14 @@ int AgentIndividualLearning::stop() {
 // Step
 
 int AgentIndividualLearning::step() {
-	this->tempCounter++;
-  //  if (STATE(AgentBase)->stopFlag) {
-  //      uploadLearningData();	//Stores individual learningdata in DDB for next simulation run
-  //  }
-    if (tempCounter == 500) {
-		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::step: REACHED UPLOAD TEST COUNT!");
-        uploadLearningData();	//Stores individual learningdata in DDB for next simulation run
-    }
+	//this->tempCounter++;
+ // //  if (STATE(AgentBase)->stopFlag) {
+ // //      uploadLearningData();	//Stores individual learningdata in DDB for next simulation run
+ // //  }
+ //   if (tempCounter == 500) {
+	//	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::step: REACHED UPLOAD TEST COUNT!");
+ //       uploadLearningData();	//Stores individual learningdata in DDB for next simulation run
+ //   }
     return AgentBase::step();
 }// end step
 
@@ -1188,14 +1188,16 @@ int AgentIndividualLearning::parseLearningData()
 					Log.log(0, "AgentIndividualLearning::parseLearningData: badly formatted id");
 					break;
 				}
-				if (fscanf_s(fp, "cq=\n") != 1) {
+				if (fscanf_s(fp, "cq\n") != 1) {
 					Log.log(0, "AgentIndividualLearning::parseLearningData: badly formatted cq");
 					break;
 				}
-				if (fscanf_s(fp, "bq=\n") != 1) {
+				fscanf_s(fp, "%f\n");
+				if (fscanf_s(fp, "bq\n") != 1) {
 					Log.log(0, "AgentIndividualLearning::parseLearningData: badly formatted bq");
 					break;
 				}
+				fscanf_s(fp, "%f\n");
 			}
 			else if (!strncmp(keyBuf, "[QLData]", 64)) {
 				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::parseLearningData: Found Q-learning data section.");
@@ -2018,7 +2020,7 @@ bool AgentIndividualLearning::convGetTaskInfo(void * vpConv) {
                     lds.reset();
                     lds.packUChar(this->target.code);
                     this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_DEPOSIT_LANDMARK), lds.stream(), lds.length(), &this->avatarAgentId); // drop off
-                    //lds.unlock();
+                    lds.unlock();
 					this->hasCargo = false;
 
 
@@ -2054,8 +2056,59 @@ bool AgentIndividualLearning::convGetTaskInfo(void * vpConv) {
             }
         }
 		else if (newTask.avatar != STATE(AgentIndividualLearning)->ownerId && newTask.avatar != nilUUID && !newTask.completed) {
-			if (taskIdIn == this->taskId) {
+			if (taskIdIn == this->taskId && taskIdIn != nilUUID) {
 				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: My task %s has a different avatar than me: %s", Log.formatUUID(0, &taskIdIn), Log.formatUUID(0, &newTask.avatar));
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: I should acquiesce...");
+				if (this->hasCargo) {
+					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Dropping our current cargo");
+					DataStream sds;
+					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Dropping our current cargo 1");
+					sds.reset();
+					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Dropping our current cargo 2 ");
+					sds.packUChar(this->target.code);
+					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Dropping our current cargo 3");
+					this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_DEPOSIT_LANDMARK), sds.stream(), sds.length(), &this->avatarAgentId); // drop off
+					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Dropping our current cargo 4");
+					sds.unlock();																																	  //lds.unlock();
+					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Dropping our current cargo 5");
+					this->hasCargo = false;
+
+					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: dropping cargo outside of collection regions...");
+					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: my position is: x: %f, y: %f, cargo position is x: %f, y: %f", STATE(AgentIndividualLearning)->prev_pos_x, STATE(AgentIndividualLearning)->prev_pos_y, target.x, target.y);
+					// update landmark status
+					sds.reset();
+					sds.packUChar(this->target.code);
+					sds.packInt32(DDBLANDMARKINFO_DEPOSITED);
+					sds.packFloat32(this->target.x);
+					sds.packFloat32(this->target.y);
+					this->sendMessage(this->hostCon, MSG_DDB_LANDMARKSETINFO, sds.stream(), sds.length());
+					sds.unlock();
+
+				}
+
+
+				this->target.code = 0;
+				this->target.collected = false;
+				this->target.elevation = 0.0;
+				this->target.estimatedPos = this->target.estimatedPos;
+				this->target.height = 0.0;
+				this->target.landmarkType = NON_COLLECTABLE;
+				this->target.owner = nilUUID;
+				this->target.P = 0.0;
+				this->target.posInitialized = this->target.posInitialized;
+				this->target.trueX = 0.0;
+				this->target.trueY = 0.0;
+				this->target.x = 0.0;
+				this->target.y = 0.0;
+
+				this->taskId = nilUUID;
+				this->task.agentUUID = nilUUID;
+				this->task.avatar = nilUUID;
+				this->task.completed = this->task.completed;
+				this->task.landmarkUUID = nilUUID;
+				this->task.type = NON_COLLECTABLE;
+
+
 
 			}
 			lds.unlock();
@@ -2218,7 +2271,7 @@ bool AgentIndividualLearning::convRequestAgentAdviceExchange(void *vpConv) {
 		lds.packUUID(&STATE(AgentIndividualLearning)->ownerId);
 		lds.packInt32(STATE(AgentIndividualLearning)->avatarInstance);
 		lds.packInt32(STATE(AgentIndividualLearning)->runNumber);
-		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAgentAdviceExchange: sending run nubmer: %d", STATE(AgentIndividualLearning)->runNumber);
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAgentAdviceExchange: sending run number: %d", STATE(AgentIndividualLearning)->runNumber);
 
 		this->sendMessageEx(this->hostCon, MSGEX(AgentAdviceExchange_MSGS, MSG_CONFIGURE), lds.stream(), lds.length(), &STATE(AgentIndividualLearning)->agentAdviceExchange);
 		lds.unlock();
