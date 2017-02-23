@@ -139,9 +139,13 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
     this->callback[AgentIndividualLearning_CBR_convGetTaskList] = NEW_MEMBER_CB(AgentIndividualLearning, convGetTaskList);
     this->callback[AgentIndividualLearning_CBR_convGetTaskInfo] = NEW_MEMBER_CB(AgentIndividualLearning, convGetTaskInfo);
     this->callback[AgentIndividualLearning_CBR_convCollectLandmark] = NEW_MEMBER_CB(AgentIndividualLearning, convCollectLandmark);
+	this->callback[AgentIndividualLearning_CBR_convDepositLandmark] = NEW_MEMBER_CB(AgentIndividualLearning, convDepositLandmark);
 	this->callback[AgentIndividualLearning_CBR_convRequestAgentAdviceExchange] = NEW_MEMBER_CB(AgentIndividualLearning, convRequestAgentAdviceExchange);
 	this->callback[AgentIndividualLearning_CBR_convRequestAdvice] = NEW_MEMBER_CB(AgentIndividualLearning, convRequestAdvice);
 	this->callback[AgentIndividualLearning_CBR_convGetRunNumber] = NEW_MEMBER_CB(AgentIndividualLearning, convGetRunNumber);
+
+	
+
 	tempCounter = 0;
 
 }// end constructor
@@ -508,61 +512,18 @@ int AgentIndividualLearning::formAction() {
 		}
 		else {
 			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: trying to drop off cargo...");
-			//We have cargo, drop off	
-			this->hasCargo = false;
-							// drop off
-
-
-			std::map<UUID, DDBRegion, UUIDless>::iterator cRIter;
-
-			for (cRIter = this->collectionRegions.begin(); cRIter != this->collectionRegions.end(); cRIter++) {				//See if we are inside a collection region when dropping cargo
-				float cR_x_high = cRIter->second.x + cRIter->second.w;
-				float cR_x_low = cRIter->second.x;
-				float cR_y_high = cRIter->second.y + cRIter->second.h;
-				float cR_y_low = cRIter->second.y;
-
-		//		if (cR_x_low <= STATE(AgentIndividualLearning)->prev_pos_x && STATE(AgentIndividualLearning)->prev_pos_x <= cR_x_high && cR_y_low <= STATE(AgentIndividualLearning)->prev_pos_y && STATE(AgentIndividualLearning)->prev_pos_y <= cR_y_high) {
-					//We delivered the cargo!
-					this->hasDelivered = true;
-					this->task.completed = true;
-
-					//Upload task completion info to DDB
-					DataStream lds;
-					UUID *myUUID = this->getUUID();
-					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: task %s completed, uploading to DDB...", Log.formatUUID(LOG_LEVEL_NORMAL, &this->taskId));
-					lds.reset();
-					lds.packUUID(&this->taskId);		//Task id
-					//lds.packUUID(&this->task.agentUUID);						//Agent id
-					//lds.packUUID(&this->task.avatar);	//Avatar id
-					lds.packUUID(&nilUUID);						//Agent id
-					lds.packUUID(&nilUUID);						//Avatar id
-
-					lds.packBool(&this->task.completed);
-					this->sendMessage(this->hostCon, MSG_DDB_TASKSETINFO, lds.stream(), lds.length());
-					lds.unlock();
-					break;
-		//		}
-
+			thread = this->conversationInitiate(AgentIndividualLearning_CBR_convDepositLandmark, -1, &avAgent, sizeof(UUID));
+			if (thread == nilUUID) {
+				return 1;
 			}
-			if (cRIter == collectionRegions.end())		//Outside of collection regions, drop off and update landmark location
-			{
-				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: cargo outside of collection regions...");
-				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: my position is: x: %f, y: %f, cargo position is x: %f, y: %f", STATE(AgentIndividualLearning)->prev_pos_x, STATE(AgentIndividualLearning)->prev_pos_y, target.x, target.y);
-				// update landmark status
-				lds.reset();
-				lds.packUChar(this->target.code);
-				lds.packInt32(DDBLANDMARKINFO_DEPOSITED);
-				lds.packFloat32(this->target.x);
-				lds.packFloat32(this->target.y);
-				this->sendMessage(this->hostCon, MSG_DDB_LANDMARKSETINFO, lds.stream(), lds.length());
-				lds.unlock();
-			}
-
 			lds.reset();
 			lds.packUChar(this->target.code);
+			lds.packFloat32(this->target.x);
+			lds.packFloat32(this->target.y);
+			lds.packUUID(this->getUUID());
+			lds.packUUID(&thread);
 			this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_DEPOSIT_LANDMARK), lds.stream(), lds.length(), &avAgent);
 			lds.unlock();
-
 
 		}
 		this->backup(); // landmark delivered
@@ -2017,24 +1978,19 @@ bool AgentIndividualLearning::convGetTaskInfo(void * vpConv) {
 				// Drop the cargo if we get a new task assigned
                 if (this->hasCargo) { 
 					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Dropping our current cargo");
-                    lds.reset();
-                    lds.packUChar(this->target.code);
-                    this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_DEPOSIT_LANDMARK), lds.stream(), lds.length(), &this->avatarAgentId); // drop off
-                    lds.unlock();
-					this->hasCargo = false;
-
-
-					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: dropping cargo outside of collection regions...");
-					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: my position is: x: %f, y: %f, cargo position is x: %f, y: %f", STATE(AgentIndividualLearning)->prev_pos_x, STATE(AgentIndividualLearning)->prev_pos_y, target.x, target.y);
-					// update landmark status
-					lds.reset();
-					lds.packUChar(this->target.code);
-					lds.packInt32(DDBLANDMARKINFO_DEPOSITED);
-					lds.packFloat32(this->target.x);
-					lds.packFloat32(this->target.y);
-					this->sendMessage(this->hostCon, MSG_DDB_LANDMARKSETINFO, lds.stream(), lds.length());
-					lds.unlock();
-
+					DataStream sds;
+					UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convDepositLandmark, -1, &this->avatarAgentId, sizeof(UUID));
+					if (thread == nilUUID) {
+						return 1;
+					}
+					sds.reset();
+					sds.packUChar(this->target.code);
+					sds.packFloat32(this->target.x);
+					sds.packFloat32(this->target.y);
+					sds.packUUID(this->getUUID());
+					sds.packUUID(&thread);
+					this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_DEPOSIT_LANDMARK), lds.stream(), lds.length(), &this->avatarAgentId);
+					sds.unlock();
 				}
 				else {
 					lds.unlock();
@@ -2062,26 +2018,17 @@ bool AgentIndividualLearning::convGetTaskInfo(void * vpConv) {
 				if (this->hasCargo) {
 					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Dropping our current cargo");
 					DataStream sds;
-					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Dropping our current cargo 1");
-					sds.reset();
-					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Dropping our current cargo 2 ");
-					sds.packUChar(this->target.code);
-					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Dropping our current cargo 3");
-					this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_DEPOSIT_LANDMARK), sds.stream(), sds.length(), &this->avatarAgentId); // drop off
-					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Dropping our current cargo 4");
-					sds.unlock();																																	  //lds.unlock();
-					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Dropping our current cargo 5");
-					this->hasCargo = false;
-
-					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: dropping cargo outside of collection regions...");
-					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: my position is: x: %f, y: %f, cargo position is x: %f, y: %f", STATE(AgentIndividualLearning)->prev_pos_x, STATE(AgentIndividualLearning)->prev_pos_y, target.x, target.y);
-					// update landmark status
+					UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convDepositLandmark, -1, &this->avatarAgentId, sizeof(UUID));
+					if (thread == nilUUID) {
+						return 1;
+					}
 					sds.reset();
 					sds.packUChar(this->target.code);
-					sds.packInt32(DDBLANDMARKINFO_DEPOSITED);
 					sds.packFloat32(this->target.x);
 					sds.packFloat32(this->target.y);
-					this->sendMessage(this->hostCon, MSG_DDB_LANDMARKSETINFO, sds.stream(), sds.length());
+					sds.packUUID(this->getUUID());
+					sds.packUUID(&thread);
+					this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_DEPOSIT_LANDMARK), lds.stream(), lds.length(), &this->avatarAgentId);
 					sds.unlock();
 
 				}
@@ -2201,8 +2148,6 @@ bool AgentIndividualLearning::convGetTaskList(void * vpConv)
 */
 bool AgentIndividualLearning::convCollectLandmark(void * vpConv) {
 
-    //TODO: Do we need to add any logic to handle -actually- collecting the landmark, or is that handled in the simulation?
-
     DataStream lds;
     spConversation conv = (spConversation)vpConv;
     char success;
@@ -2228,6 +2173,71 @@ bool AgentIndividualLearning::convCollectLandmark(void * vpConv) {
     }
 
 }
+
+bool AgentIndividualLearning::convDepositLandmark(void * vpConv) {
+
+	DataStream lds;
+	spConversation conv = (spConversation)vpConv;
+	char success;
+
+	if (conv->response == NULL) {
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convDepositLandmark: request timed out");
+		return 0; // end conversation
+	}
+
+	lds.setData(conv->response, conv->responseLen);
+	lds.unpackData(sizeof(UUID)); // discard thread
+
+	success = lds.unpackChar();
+	lds.unlock();
+
+	if (success) { // succeeded
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convDepositLandmark: success");
+
+		//We have cargo, drop off	
+		this->hasCargo = false;
+		// drop off
+		std::map<UUID, DDBRegion, UUIDless>::iterator cRIter;
+
+	//	for ( auto cRIter : this->collectionRegions) {				//See if we are inside a collection region when dropping cargo
+
+		//for (cRIter = this->collectionRegions.begin(); cRIter != this->collectionRegions.end(); cRIter++) {				//See if we are inside a collection region when dropping cargo
+		//	float cR_x_high = cRIter->second.x + cRIter->second.w;
+		//	float cR_x_low = cRIter->second.x;
+		//	float cR_y_high = cRIter->second.y + cRIter->second.h;
+		//	float cR_y_low = cRIter->second.y;
+
+		//		if (cR_x_low <= STATE(AgentIndividualLearning)->prev_pos_x && STATE(AgentIndividualLearning)->prev_pos_x <= cR_x_high && cR_y_low <= STATE(AgentIndividualLearning)->prev_pos_y && STATE(AgentIndividualLearning)->prev_pos_y <= cR_y_high) {
+		//We delivered the cargo!
+		this->hasDelivered = true;
+		this->task.completed = true;
+
+		//Upload task completion info to DDB
+		DataStream sds;
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: task %s completed, uploading to DDB...", Log.formatUUID(LOG_LEVEL_NORMAL, &this->taskId));
+		sds.reset();
+		sds.packUUID(&this->taskId);		//Task id
+											//lds.packUUID(&this->task.agentUUID);						//Agent id
+											//lds.packUUID(&this->task.avatar);	//Avatar id
+		sds.packUUID(&nilUUID);						//Agent id
+		sds.packUUID(&nilUUID);						//Avatar id
+
+		sds.packBool(&this->task.completed);
+		this->sendMessage(this->hostCon, MSG_DDB_TASKSETINFO, sds.stream(), sds.length());
+		sds.unlock();
+		//break;
+		//		}
+
+		//}
+		this->backup(); // landmarkDeposited
+	}
+	else {
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convDepositLandmark: failed");
+	}
+
+}
+
+
 
 /* convRequestAgentAdviceExchange
 *

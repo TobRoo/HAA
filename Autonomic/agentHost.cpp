@@ -11474,11 +11474,11 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 				sds.unlock();
 			}
 		}
+		Sleep(300);
 		this->globalStateTransaction(OAC_MISSION_DONE, data, len);
 	}
 		break;
 	case OAC_MISSION_DONE:
-		Sleep(100);	//For MISSION_DONE messages to reach agents
 		Log.log( 0, "AgentHost::conProcessMessage: OAC_MISSION_DONE, mission done!" );
 		this->prepareStop();
 		this->DataDump( true );

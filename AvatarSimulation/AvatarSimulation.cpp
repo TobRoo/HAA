@@ -648,49 +648,44 @@ int AvatarSimulation::parseAvatarOutput( DataStream *ds ) {
 			Log.log(0, "AvatarSimulation::parseAvatarOutput: SAE_DEPOSIT");
 
 			unsigned char code, success;
-			UUID thread;
+			float x, y;
+			UUID thread, initiator;
 			code = ds->unpackUChar();
 			success = ds->unpackChar();
 			ds->unpackUUID(&thread);
-			//unsigned char code, success;
-			//UUID thread;
-			//code = ds->unpackUChar();
-			//success = ds->unpackChar();
-			//ds->unpackUUID(&thread);
+			x = ds->unpackFloat32();
+			y = ds->unpackFloat32();
+			ds->unpackUUID(&initiator);
 
-			//if (success) {
-			//	// update avatar capacity
-			//	lds.reset();
-			//	lds.packUUID(&STATE(AvatarBase)->avatarUUID);
-			//	lds.packInt32(DDBAVATARINFO_CARGO);
-			//	lds.packInt32(1);
-			//	lds.packBool(1); // load
-			//	lds.packUChar(code);
-			//	this->sendMessage(this->hostCon, MSG_DDB_AVATARSETINFO, lds.stream(), lds.length());
-			//	lds.unlock();
+			if (success) {
+				// update avatar capacity
+				lds.reset();
+				lds.packUUID(&STATE(AvatarBase)->avatarUUID);
+				lds.packInt32(DDBAVATARINFO_CARGO);
+				lds.packInt32(1);
+				lds.packBool(0); // unload
+				lds.packUChar(code);
+				this->sendMessage(this->hostCon, MSG_DDB_AVATARSETINFO, lds.stream(), lds.length());
+				lds.unlock();
 
-			//	// update landmark status
-			//	lds.reset();
-			//	lds.packUChar(code);
-			//	lds.packInt32(DDBLANDMARKINFO_DEPOSITED);
-			//	this->sendMessage(this->hostCon, MSG_DDB_LANDMARKSETINFO, lds.stream(), lds.length());
-			//	lds.unlock();
-			//}
+				// update landmark status
+				lds.reset();
+				lds.packUChar(code);
+				lds.packInt32(DDBLANDMARKINFO_DEPOSITED);
+				lds.packFloat32(x);
+				lds.packFloat32(y);
+				this->sendMessage(this->hostCon, MSG_DDB_LANDMARKSETINFO, lds.stream(), lds.length());
+				lds.unlock();
+			}
 
-			//// notify initiator
-			//if (this->collectionTask.front().thread == thread) {
-			//	Log.log(0, "AvatarSimulation::parseAvatarOutput: collection attempt finished, %d", success);
-			//	lds.reset();
-			//	lds.packUUID(&thread);
-			//	lds.packChar(success);
-			//	this->sendMessage(this->hostCon, MSG_RESPONSE, lds.stream(), lds.length(), &this->collectionTask.front().initiator);
-			//	lds.unlock();
-			//	this->collectionTask.pop_front();
-			//}
-			//else {
-			//	Log.log(0, "AvatarSimulation::parseAvatarOutput: out of order collection!");
-			//	// what happened?
-			//}
+			// notify initiator
+
+				Log.log(0, "AvatarSimulation::parseAvatarOutput: deposit attempt finished, %d", success);
+				lds.reset();
+				lds.packUUID(&thread);
+				lds.packChar(success);
+				this->sendMessage(this->hostCon, MSG_RESPONSE, lds.stream(), lds.length(), &initiator);
+				lds.unlock();
 		}
 		break;
 		default:
@@ -928,25 +923,27 @@ int AvatarSimulation::conProcessMessage( spConnection con, unsigned char message
 	case AvatarSimulation_MSGS::MSG_DEPOSIT_LANDMARK:
 		{
 
-			unsigned char code;
-			lds.setData( data, len );
-			code = lds.unpackUChar();
+		unsigned char code;
+		float x, y;
+		UUID initiator;
+		UUID thread;
+		lds.setData(data, len);
+		code = lds.unpackUChar();
+		x = lds.unpackFloat32();
+		y = lds.unpackFloat32();
+		lds.unpackUUID(&initiator);
+		lds.unpackUUID(&thread);
 			lds.unlock();
 			Log.log(LOG_LEVEL_VERBOSE, "AvatarSimulation::conProcessMessage: MSG_DEPOSIT_LANDMARK received concerning landmark %d", code );
-			// update avatar capacity
-			lds.reset();
-			lds.packUUID( &STATE(AvatarBase)->avatarUUID );
-			lds.packInt32( DDBAVATARINFO_CARGO );
-			lds.packInt32( 1 );
-			lds.packBool( 0 ); // unload
-			lds.packUChar( code );
-			this->sendMessage( this->hostCon, MSG_DDB_AVATARSETINFO, lds.stream(), lds.length() );
-			lds.unlock();
 
 			// ask the simulation to deposit
 			lds.reset();
 			lds.packUUID(&STATE(AvatarBase)->avatarUUID);
 			lds.packUChar(code);
+			lds.packFloat32(x);
+			lds.packFloat32(y);
+			lds.packUUID(&thread);
+			lds.packUUID(&initiator);
 			this->sendMessageEx(this->hostCon, MSGEX(ExecutiveSimulation_MSGS, MSG_AVATAR_DEPOSIT_LANDMARK), lds.stream(), lds.length(), &STATE(AvatarSimulation)->execSimulationId);
 			lds.unlock();
 		}

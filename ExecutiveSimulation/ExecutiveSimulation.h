@@ -99,7 +99,7 @@ public:
 
 	int doCamera( int cameraInd );
 	int doCollectLandmark ( unsigned char code, float x, float y, UUID *thread );
-	int doDepositLandmark (unsigned char code);
+	int doDepositLandmark (unsigned char code, float x, float y, UUID *thread, UUID *initiator);
 
 	SimAvatarState *getState() { return &this->state; };
 

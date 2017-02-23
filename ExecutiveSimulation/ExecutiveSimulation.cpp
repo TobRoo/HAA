@@ -907,16 +907,22 @@ int ExecutiveSimulation::conProcessMessage( spConnection con, unsigned char mess
 	case ExecutiveSimulation_MSGS::MSG_AVATAR_DEPOSIT_LANDMARK:
 	{
 		unsigned char code;
+		float x, y;
+		UUID thread, initiator;
 		lds.setData(data, len);
 		lds.unpackUUID(&uuid);
 		code = lds.unpackUChar();
+		x = lds.unpackFloat32();
+		y = lds.unpackFloat32();
+		lds.unpackUUID(&thread);
+		lds.unpackUUID(&initiator);
 		lds.unlock();
 
 		// find avatar
 		mapSimAvatar::iterator iA;
 		iA = this->avatars.find(uuid);
 		if (iA != this->avatars.end()) {
-			iA->second->doDepositLandmark(code); // deposit landmark
+			iA->second->doDepositLandmark(code, x, y, &thread, &initiator); // deposit landmark
 		}
 	}
 	break;
@@ -2346,7 +2352,7 @@ int SimAvatar::doCollectLandmark( unsigned char code, float x, float y, UUID *th
 	return 0;
 }
 
-int SimAvatar::doDepositLandmark(unsigned char code)
+int SimAvatar::doDepositLandmark(unsigned char code, float x, float y, UUID *thread, UUID *initiator)
 {
 
 	SimLandmark *lm;
@@ -2372,7 +2378,10 @@ int SimAvatar::doDepositLandmark(unsigned char code)
 		this->output.packChar(ExecutiveSimulation_Defs::SAE_DEPOSIT);
 		this->output.packUChar(code);
 		this->output.packChar(0); // fail
-		this->output.packUUID(&this->ownerId); // TODO: Pack thread UUID (Currently not used anyway)
+		this->output.packUUID(thread); 
+		this->output.packFloat32(x);
+		this->output.packFloat32(y);
+		this->output.packUUID(initiator);
 
 		return 1; // not found
 	}
@@ -2384,7 +2393,10 @@ int SimAvatar::doDepositLandmark(unsigned char code)
 		this->output.packChar(ExecutiveSimulation_Defs::SAE_DEPOSIT);
 		this->output.packUChar(code);
 		this->output.packChar(1); // success
-		this->output.packUUID(&this->ownerId); // TODO: Pack thread UUID (Currently not used anyway)
+		this->output.packUUID(thread);
+		this->output.packFloat32(x);
+		this->output.packFloat32(y);
+		this->output.packUUID(initiator);
 
 		// flag as deposited
 		lm->collected = false;

@@ -248,6 +248,7 @@ public:
 		AgentIndividualLearning_CBR_convRequestAgentAdviceExchange,
 		AgentIndividualLearning_CBR_convRequestAdvice,
 		AgentIndividualLearning_CBR_convGetRunNumber,
+		AgentIndividualLearning_CBR_convDepositLandmark,
     };
 
     // Define callback functions (make sure they match CallbackRef above and are added to this->callback during agent creation)
@@ -264,6 +265,7 @@ public:
     bool convGetTaskList(void * vpConv);
 
     bool convCollectLandmark(void * vpConv);
+	bool convDepositLandmark(void * vpConv);
 	bool convRequestAgentAdviceExchange(void *vpConv);
 	bool convRequestAdvice(void *vpConv);
 
