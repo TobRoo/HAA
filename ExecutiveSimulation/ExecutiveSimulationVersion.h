@@ -38,7 +38,7 @@ namespace ExecutiveSimulation_MSGS {
 		MSG_AVATAR_IMAGE,	// request image [UUID avatarId, int cameraInd]
 
 		MSG_AVATAR_COLLECT_LANDMARK, // attempt to collect a landmark [UUID avatarId, unsigned char landmarkCode, float x, float y, UUID thread]
-		MSG_AVATAR_DEPOSIT_LANDMARK, // attempt to deposit a landmark [UUID avatarId, unsigned char landmarkCode]
+		MSG_AVATAR_DEPOSIT_LANDMARK, // attempt to deposit a landmark [UUID avatarId, unsigned char landmarkCode, float x, float y, UUID thread, UUID initiator]
 		MSG_RAVATAR_OUTPUT, // request avatar output [UUID avatarId, UUID thread]
 							// RESPONSE: output stream, [UUID thread, char response <, ... SimAvatar_Events for data format>]
 
@@ -56,7 +56,7 @@ namespace ExecutiveSimulation_MSGS {
 		sizeof(UUID) + 4, // MSG_AVATAR_IMAGE
 
 		sizeof(UUID) + 1 + 4*2 + sizeof(UUID), // MSG_AVATAR_COLLECT_LANDMARK
-		sizeof(UUID) + 1, // MSG_AVATAR_DEPOSIT_LANDMARK
+		sizeof(UUID) + 1 + 4*2 + 2*sizeof(UUID),// MSG_AVATAR_DEPOSIT_LANDMARK
 
 		sizeof(UUID)*2,	  // MSG_RAVATAR_OUTPUT
 	};

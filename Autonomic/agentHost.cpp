@@ -125,7 +125,7 @@ AgentHost::AgentHost( char *libraryPath, int logLevel, char *logDirectory, char 
 	this->callback[AgentHost_CBR_cbPFResampleTimeout] = NEW_MEMBER_CB(AgentHost,cbPFResampleTimeout);
 	this->callback[AgentHost_CBR_cbCBBAQueued] = NEW_MEMBER_CB(AgentHost,cbCBBAQueued);
 	this->callback[AgentHost_CBR_cbQueueCloseConnection] = NEW_MEMBER_CB(AgentHost,cbQueueCloseConnection);
-	
+	this->callback[AgentHost_CBR_cbMissionDone] = NEW_MEMBER_CB(AgentHost, cbMissionDone);
 }
 
 //-----------------------------------------------------------------------------
@@ -11470,12 +11470,17 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 				Log.log(0, "AgentHost::conProcessMessage: MSG_MISSION_DONE, messaging agent %s", Log.formatUUID(0, &agentUUID));
 				sds.reset();
 				sds.packChar(1); // success
-				this->sendMessage(con, MSG_MISSION_DONE, sds.stream(),sds.length(),&agentUUID);
+				//this->sendMessage(con, MSG_MISSION_DONE, sds.stream(),sds.length(),&agentUUID);
+				sendAgentMessage(&agentUUID, MSG_MISSION_DONE, sds.stream(), sds.length());
 				sds.unlock();
 			}
 		}
-		Sleep(300);
-		this->globalStateTransaction(OAC_MISSION_DONE, data, len);
+
+		UUID id = this->addTimeout(3000, AgentHost_CBR_cbMissionDone);
+		if (id == nilUUID) {
+			Log.log(0, "AgentHost::conProcessMessage: MSG_MISSION_DONE: addTimeout failed");
+			return 1;
+		}
 	}
 		break;
 	case OAC_MISSION_DONE:
@@ -14328,6 +14333,14 @@ bool AgentHost::cbQueueCloseConnection( void *vpConId ) {
 	this->closeConnection( con );
 
 	return 0;
+}
+
+bool AgentHost::cbMissionDone(void * vpConId)
+{
+	this->globalStateTransaction(OAC_MISSION_DONE, 0, 0);
+
+
+	return false;
 }
 
 //-----------------------------------------------------------------------------

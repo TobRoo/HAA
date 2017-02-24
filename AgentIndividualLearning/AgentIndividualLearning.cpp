@@ -484,9 +484,8 @@ int AgentIndividualLearning::formAction() {
 		UUID thread;
 
 		if (!this->hasCargo) {
-
+			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: No cargo, trying to collect");
 			if (target.landmarkType != NON_COLLECTABLE && this->avatar.capacity >= target.landmarkType && !this->task.completed) {	//Check that we can carry the item, and that the task is not completed (do not collect delivered targets)
-
 				// see if we are within range of the landmark
 				dx = STATE(AgentIndividualLearning)->prev_pos_x - this->target.x;
 				dy = STATE(AgentIndividualLearning)->prev_pos_y - this->target.y;
@@ -507,6 +506,9 @@ int AgentIndividualLearning::formAction() {
 					lds.unlock();
 				}
 
+			}
+			else {
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Cannot collect - booleans: %d %d %d", target.landmarkType != NON_COLLECTABLE, this->avatar.capacity >= target.landmarkType, !this->task.completed);
 			}
 
 		}
@@ -1989,7 +1991,7 @@ bool AgentIndividualLearning::convGetTaskInfo(void * vpConv) {
 					sds.packFloat32(this->target.y);
 					sds.packUUID(this->getUUID());
 					sds.packUUID(&thread);
-					this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_DEPOSIT_LANDMARK), lds.stream(), lds.length(), &this->avatarAgentId);
+					this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_DEPOSIT_LANDMARK), sds.stream(), sds.length(), &this->avatarAgentId);
 					sds.unlock();
 				}
 				else {
@@ -2028,7 +2030,7 @@ bool AgentIndividualLearning::convGetTaskInfo(void * vpConv) {
 					sds.packFloat32(this->target.y);
 					sds.packUUID(this->getUUID());
 					sds.packUUID(&thread);
-					this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_DEPOSIT_LANDMARK), lds.stream(), lds.length(), &this->avatarAgentId);
+					this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_DEPOSIT_LANDMARK), sds.stream(), sds.length(), &this->avatarAgentId);
 					sds.unlock();
 
 				}
@@ -2214,7 +2216,7 @@ bool AgentIndividualLearning::convDepositLandmark(void * vpConv) {
 
 		//Upload task completion info to DDB
 		DataStream sds;
-		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: task %s completed, uploading to DDB...", Log.formatUUID(LOG_LEVEL_NORMAL, &this->taskId));
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convDepositLandmark: task %s completed, uploading to DDB...", Log.formatUUID(LOG_LEVEL_NORMAL, &this->taskId));
 		sds.reset();
 		sds.packUUID(&this->taskId);		//Task id
 											//lds.packUUID(&this->task.agentUUID);						//Agent id
@@ -2224,6 +2226,30 @@ bool AgentIndividualLearning::convDepositLandmark(void * vpConv) {
 
 		sds.packBool(&this->task.completed);
 		this->sendMessage(this->hostCon, MSG_DDB_TASKSETINFO, sds.stream(), sds.length());
+
+		this->target.code = 0;
+		this->target.collected = false;
+		this->target.elevation = 0.0;
+		this->target.estimatedPos = this->target.estimatedPos;
+		this->target.height = 0.0;
+		this->target.landmarkType = NON_COLLECTABLE;
+		this->target.owner = nilUUID;
+		this->target.P = 0.0;
+		this->target.posInitialized = this->target.posInitialized;
+		this->target.trueX = 0.0;
+		this->target.trueY = 0.0;
+		this->target.x = 0.0;
+		this->target.y = 0.0;
+
+		this->taskId = nilUUID;
+		this->task.agentUUID = nilUUID;
+		this->task.avatar = nilUUID;
+		this->task.completed = this->task.completed;
+		this->task.landmarkUUID = nilUUID;
+		this->task.type = NON_COLLECTABLE;
+
+
+
 		sds.unlock();
 		//break;
 		//		}

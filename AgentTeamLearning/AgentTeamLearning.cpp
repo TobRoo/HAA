@@ -258,7 +258,7 @@ int AgentTeamLearning::parseLearningData()
 					}
 				}
 				if (id == STATE(AgentTeamLearning)->avatarInstance) { //The data belongs to this agent, no need to parse further...
-					Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: parsing complete, stopping parsing process...");
+					Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: found this agent's id, parsing complete, stopping parsing process...");
 					break;
 				}
 			}
@@ -323,11 +323,6 @@ int AgentTeamLearning::start(char *missionFile) {
 		this->sendMessage(this->hostCon, MSG_DDB_ADDTASKDATA, lds.stream(), lds.length());	//... then upload
 		lds.unlock();
 	}
-
-	//Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::start: teammatesData is empty == %s", lAllianceObject.teammatesData.empty() ? "true" : "false");
-
-
-	//Log.log(0, "AgentTeamLearning::start completed.");
 	Log.log(LOG_LEVEL_NORMAL, "My instance is: %d", STATE(AgentTeamLearning)->avatarInstance);
 	STATE(AgentBase)->started = true;
 	//this->checkRoundStatus();
@@ -779,8 +774,8 @@ int AgentTeamLearning::ddbNotification(char *data, int len) {
 	}
 
 	if (type == DDB_TASKDATA) {
-		if (evt == DDBE_ADD || evt == DDBE_UPDATE) {
-	    //if (evt == DDBE_UPDATE) {
+		//if (evt == DDBE_ADD || evt == DDBE_UPDATE) {
+	    if (evt == DDBE_UPDATE) {
 
 			if (uuid != STATE(AgentTeamLearning)->ownerId) {		//If it's our own update, do nothing
 
@@ -1010,6 +1005,23 @@ bool AgentTeamLearning::convGetAgentList(void *vpConv) {
 		STATE(AgentTeamLearning)->round_number++;
 		this->new_round_number++;
 		this->lAllianceObject.myData.round_number++;
+
+		int pos = 1;
+
+		for (auto iter_outer: this->TLAgents) {
+
+			//// Zero everyone's response
+			//this->TLAgentData[*iter_outer].response = false;
+
+			// Don't send to ourselves
+			if (iter_outer == STATE(AgentBase)->uuid) {
+				Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetAgentList: Round %d: This round our position is %d.", this->new_round_number, pos);
+			}
+			//else {
+			pos++;
+		}
+
+
 
 		STATE(AgentTeamLearning)->receivedAllTeamLearningAgents = true;
 		this->finishConfigureParameters();

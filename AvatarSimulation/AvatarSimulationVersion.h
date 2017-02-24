@@ -25,7 +25,7 @@ namespace AvatarSimulation_MSGS {
 	
 	static const unsigned int MSG_SIZE[] = { // array of message size by MSGID - MSG_FIRST
 		1 + 4*2 + sizeof(UUID)*2,	// MSG_COLLECT_LANDMARK
-		1,							// MSG_DEPOSIT_LANDMARK
+		1 + 4*2 + sizeof(UUID)*2,							// MSG_DEPOSIT_LANDMARK
 	};
 
 }

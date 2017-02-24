@@ -778,6 +778,7 @@ public:
 		AgentHost_CBR_cbPFResampleTimeout,
 		AgentHost_CBR_cbCBBAQueued,
 		AgentHost_CBR_cbQueueCloseConnection,
+		AgentHost_CBR_cbMissionDone,
 		AgentHost_CBR_HIGH
 	};
 
@@ -818,7 +819,7 @@ public:
 	bool cbCBBAQueued( void *NA );
 
 	bool cbQueueCloseConnection( void *vpConId );
-	
+	bool cbMissionDone(void *vpConId);
 };
 
 // state functions
