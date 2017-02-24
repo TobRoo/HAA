@@ -705,8 +705,8 @@ int AvatarSimulation::queueAction( UUID *director, UUID *thread, int action, voi
 	float delay = AvatarSimulation_IMAGE_DELAY;
 
 	// if we have a camera, slip in an image before every action (except image!)
-	if ( action != AA_IMAGE && !this->cameraId.empty() )
-		AvatarBase::queueAction( getUUID(), getUUID(), AA_IMAGE, &delay, sizeof(float) );
+	//if ( action != AA_IMAGE && !this->cameraId.empty() )
+	//	AvatarBase::queueAction( getUUID(), getUUID(), AA_IMAGE, &delay, sizeof(float) );
 
 	return AvatarBase::queueAction( director, thread, action, data, len );
 }

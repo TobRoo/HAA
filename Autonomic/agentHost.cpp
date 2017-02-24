@@ -10962,11 +10962,9 @@ int AgentHost::WriteLearningData(DataStream *taskDataDS, DataStream *taskDS, map
 		tempLearningData << "[AdviserData]\n";
 		instance = advIter.first;
 		tempLearningData << "id=" << instance << "\n";
-		tempLearningData << "cq" << "\n";
+		tempLearningData << "cq=" << advIter.second.cq << "\n";
 		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData:8.2");
-		tempLearningData << advIter.second.cq << "\n";
-		tempLearningData << "bq" << "\n";
-		tempLearningData << advIter.second.bq << "\n";
+		tempLearningData << "bq=" << advIter.second.bq << "\n";
 		tempLearningData << "\n";
 		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData:8.3");
 	}
@@ -10983,11 +10981,11 @@ int AgentHost::WriteLearningData(DataStream *taskDataDS, DataStream *taskDS, map
 		tempLearningData << "qTable=" << "\n";
 		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData:9.2");
 		for (auto& qtIter : QLIter.second.qTable) {
-			tempLearningData << qtIter << "\n";
+			tempLearningData << &qtIter << "\n";
 		}
 		tempLearningData << "\nexpTable=" << "\n";
 		for (auto& exptIter : QLIter.second.expTable) {
-			tempLearningData << exptIter << "\n";
+			tempLearningData << &exptIter << "\n";
 		}
 		tempLearningData << "\n";
 		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData:9.3");

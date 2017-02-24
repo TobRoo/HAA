@@ -75,6 +75,9 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
 
     // initialize avatar and target info
     this->task.landmarkUUID = nilUUID;
+	this->target.landmarkType = NON_COLLECTABLE;
+	this->target.owner = nilUUID;
+	this->taskId = nilUUID;
     this->avatar.ready = false;	// Avatar's status will be set once the avatar info is recieved
 
     //---------------------------------------------------------------
@@ -536,7 +539,7 @@ int AgentIndividualLearning::formAction() {
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: No matching action, %d", action);
 	}// end form action if
 
-	Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::formAction: Average action quality: %.3f", this->q_avg);
+//	Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::formAction: Average action quality: %.3f", this->q_avg);
 
 	 // When the action is not valid retain the type, but zero the movement value
 	 // (so that it can still be used for learning)
@@ -559,7 +562,7 @@ int AgentIndividualLearning::learn() {
     // TODO: Adjust learning frequency based on experience
     if ((this->learning_iterations_ % this->learning_frequency_ == 0) && (STATE(AgentIndividualLearning)->action.action > 0)) {
         float reward = this->determineReward();
-        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::learn: Reward: %f", reward);
+ //       Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::learn: Reward: %f", reward);
 
         this->q_learning_.learn(this->prevStateVector, this->stateVector, STATE(AgentIndividualLearning)->action.action, reward);
         this->learning_iterations_++;
@@ -744,7 +747,7 @@ int AgentIndividualLearning::getStateVector() {
 
     // Form output vector
     std::vector<unsigned int> state_vector{target_type, target_dist, target_angle, goal_dist, goal_angle, obst_dist, obst_angle};
-	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateVector: target type %d, target dist %d, target angle %d, goal dist %d, goal angle %d, obst dist %d, obst angle %d", target_type, target_dist, target_angle, goal_dist, goal_angle, obst_dist, obst_angle);
+//	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateVector: target type %d, target dist %d, target angle %d, goal dist %d, goal angle %d, obst dist %d, obst angle %d", target_type, target_dist, target_angle, goal_dist, goal_angle, obst_dist, obst_angle);
     // Check that state vector is valid
     for(int i = 0; i < this->num_state_vrbls_; i++) {
         if (state_vector[i] > this->state_resolution_[i]) {
@@ -972,7 +975,7 @@ bool AgentIndividualLearning::validAction(ActionPair &action) {
 
 
     // Check against obstacles
-	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Checking obstacles (%d obstacles found)", this->obstacleList.size());
+//	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Checking obstacles (%d obstacles found)", this->obstacleList.size());
     for (auto& obstIter : this->obstacleList) {				//Get distance to closest obstacle
 
         float rel_obst_x_high = obstIter.second.x + 0.5f;	//Magic number for now, TODO: Define obstacle width and height in a header file (autonomic.h?)
@@ -1005,7 +1008,7 @@ bool AgentIndividualLearning::validAction(ActionPair &action) {
 */
 int AgentIndividualLearning::requestAdvice(std::vector<float> &q_vals, std::vector<unsigned int> &state_vector) {
 
-	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getAdvice: Sending request for advice");
+//	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getAdvice: Sending request for advice");
 
 	// Start the conversation
 	STATE(AgentIndividualLearning)->adviceRequestConv = this->conversationInitiate(AgentIndividualLearning_CBR_convRequestAdvice, DDB_REQUEST_TIMEOUT);
@@ -1087,13 +1090,13 @@ int AgentIndividualLearning::uploadQLearningData()
 
     for (auto qIter : this->q_learning_.q_table_) {
         lds.packFloat32(qIter);						//Pack all values in q-table
-		if (qIter > 0.0f)
-			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Uploading qVal: %f", qIter);
+//		if (qIter > 0.0f)
+//			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Uploading qVal: %f", qIter);
     }
     for (auto expIter : this->q_learning_.exp_table_) {
         lds.packInt32(expIter);						//Pack all values in exp-table
-		if (expIter > 0)
-			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Uploading expVal: %d", expIter);
+//		if (expIter > 0)
+//			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Uploading expVal: %d", expIter);
     }
 
     this->sendMessage(this->hostCon, MSG_DDB_QLEARNINGDATA, lds.stream(), lds.length());
@@ -1110,11 +1113,11 @@ int AgentIndividualLearning::parseLearningData()
 
 
 	FILE *fp;
-	int i;
+	int i, id;
 	char keyBuf[64];
 	char ch;
 	ITEM_TYPES landmark_type;
-	float tauVal;
+	float tauVal, cq, bq;
 
 	if (fopen_s(&fp, learningDataFile, "r")) {
 		Log.log(0, "AgentIndividualLearning::parseLearningData: failed to open %s", learningDataFile);
@@ -1135,59 +1138,65 @@ int AgentIndividualLearning::parseLearningData()
 				continue; // blank line
 
 			if (!strncmp(keyBuf, "[TLData]", 64)) {
-				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::parseLearningData: Found team learning data section.");
-				if (fscanf_s(fp, "id=%d\n") != 1) {
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::parseLearningData: Found [TLData] section.");
+				if (fscanf_s(fp, "id=%d\n", &id) != 1) {
 					Log.log(0, "AgentIndividualLearning::parseLearningData: badly formatted id");
 					break;
 				}
 				while (fscanf_s(fp, "landmark_type=%d\n", &landmark_type) == 1) {
 					fscanf_s(fp, "tau=%f\n", &tauVal);
-					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::parseLearningData: type: %d, tau: %f", landmark_type, tauVal);
+				//	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::parseLearningData: type: %d, tau: %f", landmark_type, tauVal);
 				}
-
 			}
 			else if (!strncmp(keyBuf, "[AdviserData]", 64)) {
-				if (fscanf_s(fp, "id=%d\n") != 1) {
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::parseLearningData: Found [AdviserData] section.");
+				if (fscanf_s(fp, "id=%d\n", &id) != 1) {
 					Log.log(0, "AgentIndividualLearning::parseLearningData: badly formatted id");
 					break;
 				}
-				if (fscanf_s(fp, "cq\n") != 1) {
+				if (fscanf_s(fp, "cq=%f\n", &cq) != 1) {
 					Log.log(0, "AgentIndividualLearning::parseLearningData: badly formatted cq");
 					break;
 				}
-				fscanf_s(fp, "%f\n");
-				if (fscanf_s(fp, "bq\n") != 1) {
+				if (fscanf_s(fp, "bq=%f\n", &bq) != 1) {
 					Log.log(0, "AgentIndividualLearning::parseLearningData: badly formatted bq");
 					break;
 				}
-				fscanf_s(fp, "%f\n");
 			}
 			else if (!strncmp(keyBuf, "[QLData]", 64)) {
-				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::parseLearningData: Found Q-learning data section.");
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::parseLearningData: Found [QLData] section.");
 				int id;
 				if (fscanf_s(fp, "id=%d\n", &id) != 1) {
 					Log.log(0, "AgentIndividualLearning::parseLearningData: badly formatted id");
 					break;
 				}
-				if (fscanf_s(fp, "qTable=\n") != 1) {
+				if (fscanf_s(fp, "qTable=\n") != 0) {
 					Log.log(0, "AgentIndividualLearning::parseLearningData: badly formatted qTable");
 					break;
 				}
 				float qVal;
 				int count = 0;
 				while (fscanf_s(fp, "%f\n", &qVal) == 1) {
-					this->q_learning_.q_table_[count] = qVal;
-					count++;
+					if (id == STATE(AgentIndividualLearning)->avatarInstance) {				//If the data belongs to this agent, store it
+						this->q_learning_.q_table_[count] = qVal;
+						count++;
+					}
 				}
-				if (fscanf_s(fp, "expTable=\n") != 1) {
+				if (fscanf_s(fp, "expTable=\n") != 0) {
 					Log.log(0, "AgentIndividualLearning::parseLearningData: badly formatted qTable");
 					break;
 				}
 				int expVal;
 				count = 0;
 				while (fscanf_s(fp, "%d\n", &expVal) == 1) {
-					this->q_learning_.exp_table_[count] = expVal;
-					count++;
+					if (id == STATE(AgentIndividualLearning)->avatarInstance) {				//If the data belongs to this agent, store it
+						this->q_learning_.exp_table_[count] = expVal;
+						count++;
+					}
+				}
+				if (id == STATE(AgentIndividualLearning)->avatarInstance) { //The data belongs to this agent, no need to parse further...
+					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::parseLearningData: found this agent's id, parsing complete, stopping parsing process...");
+					break;
 				}
 			}
 			else { // unknown key
@@ -1492,7 +1501,7 @@ bool AgentIndividualLearning::convAction(void *vpConv) {
 	lds.unlock();
 
     if (result == AAR_SUCCESS) {
-        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convAction: Action successful, getting new action");
+  //      Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convAction: Action successful, getting new action");
 
         // Begin getting new action
         this->updateStateData();
@@ -2357,11 +2366,11 @@ bool AgentIndividualLearning::convRequestAdvice(void *vpConv) {
 	this->q_vals.clear();
 	for (int i = 0; i < this->num_actions_; i++) {
 		this->q_vals.push_back(lds.unpackFloat32());
-		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAdvice: received q_val: %f", this->q_vals.back());
+//		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAdvice: received q_val: %f", this->q_vals.back());
 	}
 	lds.unlock();
 
-	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAdvice: Received advice.");
+//	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAdvice: Received advice.");
 
 	// Proceed to form the next action
 	this->formAction();

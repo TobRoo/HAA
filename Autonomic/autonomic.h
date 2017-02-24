@@ -794,6 +794,25 @@ protected:
 	ds->packBool( 0 ); \
 }
 
+#define _READ_STATE_VECTOR( type, vectorPtr ) \
+{ \
+	type var; \
+	while ( ds->unpackBool() ) { \
+		var = *(type *)ds->unpackData(sizeof(type)); \
+		(vectorPtr)->push_back( var ); \
+	} \
+}
+
+#define _WRITE_STATE_VECTOR( type, vectorPtr ) \
+{ \
+	std::vector<type>::iterator it; \
+	for ( it = (vectorPtr)->begin(); it != (vectorPtr)->end(); it++ ) { \
+		ds->packBool( 1 ); \
+		ds->packData( (void *)&*it, sizeof(type) ); \
+	} \
+	ds->packBool( 0 ); \
+}
+
 #define _READ_STATE_LIST( type, listPtr ) \
 { \
 	type var; \

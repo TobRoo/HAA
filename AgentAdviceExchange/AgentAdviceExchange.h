@@ -91,9 +91,9 @@ protected:
 	bool configuredParameters;
 
 	// Random number generator
-	RandomGenerator randomGenerator;
+	//RandomGenerator randomGenerator;
 
-	int tempCounter;
+	//int tempCounter;
 
 //-----------------------------------------------------------------------------
 // Functions	

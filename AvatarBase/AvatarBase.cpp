@@ -2428,6 +2428,11 @@ int	AvatarBase::writeState( DataStream *ds, bool top ) {
 	}
 	ds->packBool( 0 );
 
+	ds->packBool(motionPlanner);
+	ds->packBool(mapRandom);
+	ds->packBool(mapReveal);
+
+
 	return AgentBase::writeState( ds, false );;
 }
 
@@ -2463,6 +2468,10 @@ int	AvatarBase::readState( DataStream *ds, bool top ) {
 		keyAQ = *(UUID *)ds->unpackData( sizeof(UUID) );
 		_READ_STATE_LIST( READING_QUEUE, &this->agentQueue[keyAQ] ); // unpack types
 	}
+
+	motionPlanner = ds->unpackBool();
+	mapRandom = ds->unpackBool();
+	mapReveal = ds->unpackBool();
 
 	return AgentBase::readState( ds, false );
 }
@@ -2588,6 +2597,10 @@ int AvatarBase::writeBackup( DataStream *ds ) {
 	ds->packFloat32( STATE(AvatarBase)->minLinear );
 	ds->packFloat32( STATE(AvatarBase)->minRotation );
 
+	ds->packBool(motionPlanner);
+	ds->packBool(mapRandom);
+	ds->packBool(mapReveal);
+
 	return AgentBase::writeBackup( ds );
 }
 
@@ -2658,6 +2671,10 @@ int AvatarBase::readBackup( DataStream *ds ) {
 		this->sendMessage( this->hostCon, MSG_DDB_RPFINFO, lds.stream(), lds.length() );
 		lds.unlock();
 	}
+
+	motionPlanner = ds->unpackBool();
+	mapRandom = ds->unpackBool();
+	mapReveal = ds->unpackBool();
 	
 	return AgentBase::readBackup( ds );
 }

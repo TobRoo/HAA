@@ -1882,6 +1882,12 @@ int	ExecutiveMission::writeState( DataStream *ds, bool top ) {
 	_WRITE_STATE_MAP_LESS( UUID, char, UUIDless, &this->assignedAvatars );
 	_WRITE_STATE_MAP_LESS( UUID, int, UUIDless, &this->agentStatus );
 
+	ds->packBool(this->mapReveal);			
+	ds->packBool(this->mapRandom);			
+	ds->packBool(this->individualLearning);
+	ds->packBool(this->teamLearning);		
+
+
 	return AgentBase::writeState( ds, false );;
 }
 
@@ -1902,6 +1908,12 @@ int	ExecutiveMission::readState( DataStream *ds, bool top ) {
 	_READ_STATE_MAP( UUID, AVATAR_INFO, &this->avatarInfo );
 	_READ_STATE_MAP( UUID, char, &this->assignedAvatars );
 	_READ_STATE_MAP( UUID, int, &this->agentStatus );
+
+	this->mapReveal = ds->unpackBool();
+	this->mapRandom = ds->unpackBool();
+	this->individualLearning = ds->unpackBool();
+	this->teamLearning = ds->unpackBool();
+
 
 	return AgentBase::readState( ds, false );
 }
@@ -2003,6 +2015,11 @@ int ExecutiveMission::writeBackup( DataStream *ds ) {
 	
 	_WRITE_STATE_MAP_LESS( UUID, DDBLandmark, UUIDless, &this->landmarks );
 
+	ds->packBool(this->mapReveal);
+	ds->packBool(this->mapRandom);
+	ds->packBool(this->individualLearning);
+	ds->packBool(this->teamLearning);
+
 	return AgentBase::writeBackup( ds );
 }
 
@@ -2027,6 +2044,11 @@ int ExecutiveMission::readBackup( DataStream *ds ) {
 	_READ_STATE_MAP( UUID, UUID, &this->agentSuperForage );
 	
 	_READ_STATE_MAP( UUID, DDBLandmark, &this->landmarks );
+
+	this->mapReveal = ds->unpackBool();
+	this->mapRandom = ds->unpackBool();
+	this->individualLearning = ds->unpackBool();
+	this->teamLearning = ds->unpackBool();
 
 	return AgentBase::readBackup( ds );
 }
