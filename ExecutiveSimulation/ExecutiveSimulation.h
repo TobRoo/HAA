@@ -260,8 +260,11 @@ private:
 	std::list<SimLandmark*> landmarks; // list of all landmarks
 
 	_timeb simTime;
+	unsigned long long totalSimSteps;
+
 
 	int parseLandmarkFile( char *filename );
+	int uploadSimSteps();
 
 protected:
 	virtual int conProcessMessage( spConnection con, unsigned char message, char *data, unsigned int len );

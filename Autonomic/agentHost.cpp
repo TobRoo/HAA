@@ -15,6 +15,7 @@
 #include "..\AgentIndividualLearning\AgentIndividualLearningVersion.h"
 #include "..\AgentTeamLearning\AgentTeamLearningVersion.h"
 #include "..\AgentAdviceExchange\AgentAdviceExchangeVersion.h"
+#include "..\ExecutiveSimulation\ExecutiveSimulationVersion.h"
 
 // TEMP
 #include "time.h"
@@ -10649,23 +10650,26 @@ int AgentHost::ddbGetTaskData(UUID *id, spConnection con, UUID *thread, bool enu
 	return 0;
 }
 
-int AgentHost::ddbAddQLearningData(char typeId, long long totalActions, long long usefulActions, int tableSize, std::vector<float>* qTable, std::vector<unsigned int>* expTable)
+int AgentHost::ddbAddQLearningData(bool onlyActions, char typeId, long long totalActions, long long usefulActions, int tableSize, std::vector<float>* qTable, std::vector<unsigned int>* expTable)
 {
 	this->ds.reset();
 	this->ds.packUUID(this->getUUID());
 	this->ds.packChar(typeId);
+	this->ds.packBool(onlyActions);
 	this->ds.packInt64(totalActions);
 	this->ds.packInt64(usefulActions);
 
-	this->ds.packInt32(tableSize);		//Size of value tables to store
 
-	for (auto qIter : *qTable) {
-		this->ds.packFloat32(qIter);						//Pack all values in q-table
-	}
-	for (auto expIter : *expTable) {
-		this->ds.packInt32(expIter);						//Pack all values in exp-table
-	}
+	if (!onlyActions) {
+		this->ds.packInt32(tableSize);		//Size of value tables to store
 
+		for (auto qIter : *qTable) {
+			this->ds.packFloat32(qIter);						//Pack all values in q-table
+		}
+		for (auto expIter : *expTable) {
+			this->ds.packInt32(expIter);						//Pack all values in exp-table
+		}
+	}
 	this->globalStateTransaction(OAC_DDB_ADDQLEARNINGDATA, this->ds.stream(), this->ds.length());
 	this->ds.unlock();
 	return 0;
@@ -10684,7 +10688,14 @@ int AgentHost::ddbAddAdviceData(char instance, float cq, float bq)
 	return 0;
 }
 
-
+int AgentHost::ddbAddSimSteps(unsigned long long totalSimSteps)
+{
+	this->ds.reset();
+	this->ds.packUInt64(totalSimSteps);
+	this->globalStateTransaction(OAC_DDB_ADDSIMSTEPS, this->ds.stream(), this->ds.length());
+	this->ds.unlock();
+	return 0;
+}
 
 
 int AgentHost::DataDump( bool fulldump, bool getPose, char *label ) {
@@ -10917,6 +10928,7 @@ int AgentHost::WriteLearningData(DataStream *taskDataDS, DataStream *taskDS, map
 	WCHAR tempLearningDataFile[512];
 	wsprintf(tempLearningDataFile, _T("learningData%d.tmp"), STATE(AgentHost)->runNumber);
 
+
 	std::ofstream    tempLearningData(tempLearningDataFile);
 	//std::ofstream    archiveLearningData(learningArchiveFile);
 
@@ -11021,7 +11033,7 @@ int AgentHost::WritePerformanceData(mapDDBQLearningData * QLData)
 			Log.log(LOG_LEVEL_NORMAL, "AgentHost::WritePerformanceData: no performance records found, writing headers...");
 			testIfExists.close();
 			outputData.open("performanceData.csv", std::ios::app);
-			outputData << "Time," << "runNumber," << " totalActions," << "usefulActions" << "\n";
+			outputData << "Time," << "runNumber," << " totalActions," << "usefulActions," << "totalSimSteps" << "\n";
 			outputData.close();
 		}
 		else {					 //File exists, do not write headers
@@ -11034,7 +11046,7 @@ int AgentHost::WritePerformanceData(mapDDBQLearningData * QLData)
 		//outputData << asctime(utcTime) << "," << STATE(AgentHost)->runNumber << "," << totalActions << "," << usefulActions << "\n";
 		outputData << utcTime->tm_year + 1900 << "-" << setw(2) << setfill('0') << utcTime->tm_mon + 1 << "-" << utcTime->tm_mday;
 		outputData << " " << utcTime->tm_hour << ":" << utcTime->tm_min << ":" << utcTime->tm_sec << ",";
-		outputData << STATE(AgentHost)->runNumber << "," << totalActions << "," << usefulActions << "\n";
+		outputData << STATE(AgentHost)->runNumber << "," << totalActions << "," << usefulActions << "," << this->dStore->GetSimSteps() << "\n";
 		outputData.close();
 	}
 
@@ -11454,6 +11466,8 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		UuidFromString((RPC_WSTR)_T(AgentIndividualLearning_UUID), &aITTypeId);
 		UUID aAETypeId;
 		UuidFromString((RPC_WSTR)_T(AgentAdviceExchange_UUID), &aAETypeId);
+		UUID eSTypeId;
+		UuidFromString((RPC_WSTR)_T(ExecutiveSimulation_UUID), &eSTypeId);
 
 		DataStream sds;
 
@@ -11461,7 +11475,7 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		for (auto& iterAgent : this->dStore->DDBAgents) {
 
 			//Check if learning or advice agent id matches the agent id
-			if (iterAgent.second->agentTypeId == aITTypeId || iterAgent.second->agentTypeId == aTLTypeId || iterAgent.second->agentTypeId == aAETypeId) {
+			if (iterAgent.second->agentTypeId == aITTypeId || iterAgent.second->agentTypeId == aTLTypeId || iterAgent.second->agentTypeId == aAETypeId || iterAgent.second->agentTypeId == eSTypeId) {
 				// Order agent to upload learning or advice data for next run
 
 				UUID agentUUID = iterAgent.first;
@@ -12393,6 +12407,7 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		long long totalActions;
 		long long usefulActions;
 		int tableSize;
+		bool onlyActions;
 
 		std::vector<float> qTable;             // Vector of all Q-values
 		std::vector<unsigned int> expTable;    // Vector of all experience values
@@ -12402,19 +12417,22 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		instance = lds.unpackChar();
 		totalActions = lds.unpackInt64();
 		usefulActions = lds.unpackInt64();
-		tableSize = lds.unpackInt32();
+		onlyActions = lds.unpackBool();
+		if (!onlyActions) {
+			tableSize = lds.unpackInt32();
 
-		qTable.resize(tableSize, 0);
-		expTable.resize(tableSize, 0);
+			qTable.resize(tableSize, 0);
+			expTable.resize(tableSize, 0);
 
-		for (auto qIter : qTable) {
-			qIter = lds.unpackFloat32();						//Pack all values in q-table
-		}
-		for (auto expIter : expTable) {
-			expIter = lds.unpackInt32();						//Pack all values in exp-table
+			for (auto qIter : qTable) {
+				qIter = lds.unpackFloat32();						//Pack all values in q-table
+			}
+			for (auto expIter : expTable) {
+				expIter = lds.unpackInt32();						//Pack all values in exp-table
+			}
 		}
 		lds.unlock();
-		this->ddbAddQLearningData(instance, totalActions, usefulActions, tableSize, &qTable, &expTable);
+		this->ddbAddQLearningData(onlyActions, instance, totalActions, usefulActions, tableSize, &qTable, &expTable);
 	}
 	break;
 	case MSG_DDB_ADVICEDATA:
@@ -12435,7 +12453,19 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		this->ddbAddAdviceData(instance, cq, bq);
 	}
 	break;
+	case MSG_DDB_SIMSTEPS:
+	{
+		Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_SIMSTEPS ");
 
+		unsigned long long totalSimSteps;
+
+		lds.setData(data, len);
+		totalSimSteps = lds.unpackUInt64();
+		Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_SIMSTEPS: simsteps is %llu ", totalSimSteps);
+		lds.unlock();
+		this->ddbAddSimSteps(totalSimSteps);
+	}
+	break;
 
 
 	case MSG_DDB_RHOSTGROUPSIZE:
@@ -13712,12 +13742,13 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 	case OAC_DDB_ADDQLEARNINGDATA:
 	{
 
-		Log.log(0, "AgentHost::conProcessMessage: OAC_DDB_ADDQLEARNINGDATA");
+		//Log.log(0, "AgentHost::conProcessMessage: OAC_DDB_ADDQLEARNINGDATA");
 
 		UUID sender;
 		char instance;
 		long long totalActions;
 		long long usefulActions;
+		bool onlyActions;
 
 		int tableSize;
 		std::vector<float> qTable;
@@ -13727,22 +13758,25 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		lds.setData(data, len);
 		lds.unpackUUID(&sender);
 		instance = lds.unpackChar();
+		onlyActions = lds.unpackBool();
 		totalActions = lds.unpackInt64();
 		usefulActions = lds.unpackInt64();
-		tableSize = lds.unpackInt32();
 
-		qTable.resize(tableSize, 0);
-		expTable.resize(tableSize, 0);
+		if (!onlyActions) {
+			tableSize = lds.unpackInt32();
 
-		for (auto qIter : qTable) {
-			qIter = lds.unpackFloat32();						//Unpack all values in q-table
+			qTable.resize(tableSize, 0);
+			expTable.resize(tableSize, 0);
+
+			for (auto qIter : qTable) {
+				qIter = lds.unpackFloat32();						//Unpack all values in q-table
+			}
+			for (auto expIter : expTable) {
+				expIter = lds.unpackInt32();						//Unpack all values in exp-table
+			}
 		}
-		for (auto expIter : expTable) {
-			expIter = lds.unpackInt32();						//Unpack all values in exp-table
-		}
 
-
-		this->dStore->AddQLearningData(instance, totalActions, usefulActions, tableSize, &qTable, &expTable);
+		this->dStore->AddQLearningData(onlyActions, instance, totalActions, usefulActions, tableSize, &qTable, &expTable);
 
 		lds.unlock();
 	}
@@ -13765,6 +13799,22 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		bq = lds.unpackFloat32();
 
 		this->dStore->AddAdviceData(instance, cq, bq);
+
+		lds.unlock();
+	}
+	break;
+	case OAC_DDB_ADDSIMSTEPS:
+	{
+
+		Log.log(0, "AgentHost::conProcessMessage: OAC_DDB_ADDSIMSTEPS");
+
+		unsigned long long totalSimSteps;
+
+
+		lds.setData(data, len);
+		totalSimSteps = lds.unpackUInt64();
+		Log.log(0, "AgentHost::conProcessMessage: OAC_DDB_ADDSIMSTEPS: simsteps is %llu", totalSimSteps);
+		this->dStore->AddSimSteps(totalSimSteps);
 
 		lds.unlock();
 	}

@@ -220,7 +220,7 @@ private:
     //Learning data storage for multiple simulation runs - so far, only Q-Learning implemented
 
     int uploadLearningData();		//General function, selects method depending on policy - so far, only Q-Learning implemented
-    int uploadQLearningData();		//Uploads Q-Learning data to the DDB
+    int uploadQLearningData(bool onlyActions);		//Uploads Q-Learning data to the DDB
     int parseLearningData();		//Loads data from previous runs when constructing the agent
 
     virtual int ddbNotification(char *data, int len);

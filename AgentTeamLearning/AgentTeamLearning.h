@@ -66,7 +66,7 @@ protected:
 	_timeb round_start_time;          // Start time of the current round of learning/task allocation [ms]
 	long long round_timout;           // Maximum time for an agent to respond in a round [ms]
 	long long delta_learn_time;       // Time between rounds of learning/task allocation
-	_timeb last_response_time;        // Time of the last from another agent performing task allocation
+	_timeb last_response_time;        // Time of the last message from another agent performing task allocation
 
 	_timeb round_info_receive_time;
 	int new_round_number;

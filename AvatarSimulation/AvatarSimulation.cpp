@@ -98,7 +98,8 @@ int AvatarSimulation::configure() {
 		strftime( timeBuf, 64, "%y.%m.%d [%H.%M.%S]", &stm );
 		UuidToString( &STATE(AgentBase)->uuid, &rpc_wstr );
 		sprintf_s( logName, "%s\\AvatarSimulation %s %ls.txt", logDirectory, timeBuf, rpc_wstr );
-
+		
+		//Log.setLogMode(LOG_MODE_OFF);
 		Log.setLogMode( LOG_MODE_COUT );
 		Log.setLogMode( LOG_MODE_FILE, logName );
 		Log.setLogLevel( LOG_LEVEL_VERBOSE );
@@ -704,9 +705,9 @@ int AvatarSimulation::parseAvatarOutput( DataStream *ds ) {
 int AvatarSimulation::queueAction( UUID *director, UUID *thread, int action, void *data, int len ) {
 	float delay = AvatarSimulation_IMAGE_DELAY;
 
-	// if we have a camera, slip in an image before every action (except image!)
-	//if ( action != AA_IMAGE && !this->cameraId.empty() )
-	//	AvatarBase::queueAction( getUUID(), getUUID(), AA_IMAGE, &delay, sizeof(float) );
+	/* if we have a camera, slip in an image before every action (except image!)*/
+	if ( action != AA_IMAGE && !this->cameraId.empty() )
+		AvatarBase::queueAction( getUUID(), getUUID(), AA_IMAGE, &delay, sizeof(float) );
 
 	return AvatarBase::queueAction( director, thread, action, data, len );
 }
@@ -724,7 +725,7 @@ int AvatarSimulation::nextAction() {
 	case AA_WAIT:
 		{
 			float *pAD = (float *)getDynamicBuffer(*this->actionData.begin());
-			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::nextAction: AA_WAIT start %.3f", *pAD );
+//			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::nextAction: AA_WAIT start %.3f", *pAD );
 			unsigned int millis = (unsigned int)((*pAD) * 1000);
 			if ( nilUUID == (STATE(AvatarBase)->actionTimeout = this->addTimeout( millis, AvatarSimulation_CBR_cbActionStep ) ) )
 				return 1;
@@ -769,7 +770,7 @@ int AvatarSimulation::nextAction() {
 				millis = (unsigned short)(1000 * (accT + decT));
 			}
 
-			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::nextAction: AA_MOVE start %.3f est millis=%d", D, millis );
+//			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::nextAction: AA_MOVE start %.3f est millis=%d", D, millis );
 
 			STATE(AvatarSimulation)->moveDone = false;
 			STATE(AvatarSimulation)->moveId++;
@@ -827,7 +828,7 @@ int AvatarSimulation::nextAction() {
 				millis = (unsigned short)(1000 * (accT + decT));
 			}
 
-			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::nextAction: AA_ROTATE start %.3f est millis=%d", *pAD, millis );
+//			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::nextAction: AA_ROTATE start %.3f est millis=%d", *pAD, millis );
 		
 			STATE(AvatarSimulation)->moveDone = false;
 			STATE(AvatarSimulation)->moveId++;
@@ -851,7 +852,7 @@ int AvatarSimulation::nextAction() {
 			float *pAD = (float *)getDynamicBuffer(*this->actionData.begin());
 			unsigned int millis = (unsigned int)((*pAD) * 1000);
 
-			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::nextAction: AA_IMAGE, requesting image (delay %d ms)", millis );
+//			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::nextAction: AA_IMAGE, requesting image (delay %d ms)", millis );
 
 			STATE(AvatarSimulation)->actionProgressStatus = 0; // delaying
 
@@ -868,7 +869,7 @@ int AvatarSimulation::nextAction() {
 
 int AvatarSimulation::cameraCommandFinished() {
 
-	Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::cameraCommandFinished: AA_IMAGE complete" );
+//	Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::cameraCommandFinished: AA_IMAGE complete" );
 
 	// prepare next action
 	this->removeTimeout( &STATE(AvatarBase)->actionTimeout );
@@ -966,7 +967,7 @@ bool AvatarSimulation::cbActionStep( void *vpdata ) {
 	pAI = &(*this->actionQueue.begin());
 	switch ( pAI->action ) {
 	case AA_WAIT:
-		Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::cbActionStep: AA_WAIT finished" );
+//		Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::cbActionStep: AA_WAIT finished" );
 		STATE(AvatarBase)->actionTimeout = nilUUID;
 		this->nextAction();
 		return 0;
@@ -977,7 +978,7 @@ bool AvatarSimulation::cbActionStep( void *vpdata ) {
 			float dD = sqrt(dX*dX + dY*dY);
 			
 			apb->apb_ftime_s( &tb );
-			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::cbActionStep: AA_MOVE finished (dD=%f, tb=%d.%d)", dD, tb.time, (int)tb.millitm );
+//			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::cbActionStep: AA_MOVE finished (dD=%f, tb=%d.%d)", dD, tb.time, (int)tb.millitm );
 			STATE(AvatarBase)->actionTimeout = nilUUID;
 			this->nextAction();
 		} else {
@@ -986,7 +987,7 @@ bool AvatarSimulation::cbActionStep( void *vpdata ) {
 			  || tb.time == STATE(AvatarSimulation)->actionGiveupTime.time && tb.millitm < STATE(AvatarSimulation)->actionGiveupTime.millitm ) 
 				return 1; // keep waiting
 			// give up
-			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::cbActionStep: AA_MOVE failed!" );
+//			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::cbActionStep: AA_MOVE failed!" );
 			this->abortActions();
 		}
 		return 0;
@@ -995,7 +996,7 @@ bool AvatarSimulation::cbActionStep( void *vpdata ) {
 			float dR = STATE(AvatarSimulation)->lastUpdatePosR - STATE(AvatarSimulation)->moveStartR;
 
 			apb->apb_ftime_s( &tb );
-			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::cbActionStep: AA_ROTATE finished (dR=%f, tb=%d.%d)", dR, tb.time, (int)tb.millitm );
+//			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::cbActionStep: AA_ROTATE finished (dR=%f, tb=%d.%d)", dR, tb.time, (int)tb.millitm );
 			STATE(AvatarBase)->actionTimeout = nilUUID;
 			this->nextAction();
 		} else {
@@ -1004,7 +1005,7 @@ bool AvatarSimulation::cbActionStep( void *vpdata ) {
 			  || tb.time == STATE(AvatarSimulation)->actionGiveupTime.time && tb.millitm < STATE(AvatarSimulation)->actionGiveupTime.millitm ) 
 				return 1; // keep waiting
 			// give up
-			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::cbActionStep: AA_ROTATE failed!" );
+//			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::cbActionStep: AA_ROTATE failed!" );
 			this->abortActions();
 		}
 		return 0;
@@ -1027,7 +1028,7 @@ bool AvatarSimulation::cbActionStep( void *vpdata ) {
 			STATE(AvatarBase)->actionTimeout = this->addTimeout( AvatarSimulation_IMAGECHECKPERIOD, AvatarSimulation_CBR_cbActionStep );
 		} else {
 			STATE(AvatarSimulation)->requestedImages = 0;
-			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::cbActionStep: AA_IMAGE timed out!" );
+//			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::cbActionStep: AA_IMAGE timed out!" );
 			this->abortActions();
 		}
 		return 0;

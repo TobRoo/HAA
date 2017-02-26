@@ -477,7 +477,7 @@ int AgentTeamLearning::checkRoundStatus() {
 		// Upload the new task data (DDBTask), and 
 		UUID new_task_id = this->lAllianceObject.myData.taskId;
 		if (new_task_id == nilUUID) {
-			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus:HURDURR???");
+			//Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus:HURDURR???");
 
 			// When voluntarily leaving a task upload nil task data (DDBTask) to DDB to reset the task
 			uploadTask(prev_task_id, nilUUID, nilUUID, false);
@@ -514,7 +514,7 @@ int AgentTeamLearning::checkRoundStatus() {
 		if (last_agent)
 			this->initiateNextRound();
 	}
-
+	this->backup();
 	return 0;
 }
 
@@ -1248,7 +1248,11 @@ bool AgentTeamLearning::convGetTaskDataInfo(void * vpConv) {
 		// Only add data about other agent's tasks, ours is handled in ddbNotification
 		if (avatarId != STATE(AgentTeamLearning)->ownerId) {
 
-			if (taskData.round_number == STATE(AgentTeamLearning)->round_number) {
+			if (taskData.round_number >= STATE(AgentTeamLearning)->round_number) {
+
+				if (taskData.round_number > STATE(AgentTeamLearning)->round_number)
+					STATE(AgentTeamLearning)->round_number = taskData.round_number;		//If we receive a higher round number, we are lagging behind, update...
+
 				// Valid data
 				lAllianceObject.teammatesData[avatarId] = taskData;
 				Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetTaskDataInfo: Received response regarding round %d.", taskData.round_number);
@@ -1302,21 +1306,135 @@ bool AgentTeamLearning::convGetRunNumber(void * vpConv)
 // State functions
 
 int AgentTeamLearning::freeze(UUID *ticket) {
+	Log.log(0, "FREEZING!");
 	return AgentBase::freeze(ticket);
 }// end freeze
 
 int AgentTeamLearning::thaw(DataStream *ds, bool resumeReady) {
+	Log.log(0, "THAWING!");
 	return AgentBase::thaw(ds, resumeReady);
 }// end thaw
 
 int	AgentTeamLearning::writeState(DataStream *ds, bool top) {
 	if (top) _WRITE_STATE(AgentTeamLearning);
 
-	return AgentBase::writeState(ds, false);;
+	ds->packUUID(&lAllianceObject.id);
+	ds->packTaskData(&lAllianceObject.myData);
+
+
+	//ds->packUUID(&lAllianceObject.myData.taskId);
+	//ds->packUUID(&lAllianceObject.myData.agentId);
+	//_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &lAllianceObject.myData.tau);
+	//_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &lAllianceObject.myData.motivation);
+	//_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &lAllianceObject.myData.impatience);
+	//_WRITE_STATE_MAP_LESS(UUID, int, UUIDless, &lAllianceObject.myData.attempts);
+	//_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &lAllianceObject.myData.mean);
+	//_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &lAllianceObject.myData.stddev);
+	//ds->packInt32(lAllianceObject.myData.psi);
+	//ds->packData(&lAllianceObject.myData.updateTime, sizeof(_timeb));
+	//ds->packInt32(lAllianceObject.myData.round_number);
+
+	ds->packInt32(lAllianceObject.teammatesData.size());
+
+	for (auto tmDataIter : lAllianceObject.teammatesData) {
+		//ds->packInt32((lAllianceObject.teammatesData.size()));
+		ds->packUUID(&(UUID)tmDataIter.first);
+		ds->packTaskData(&tmDataIter.second);
+		/*ds->packUUID(&tmDataIter.second.taskId);
+		ds->packUUID(&tmDataIter.second.agentId);
+		_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &tmDataIter.second.tau);
+		_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &tmDataIter.second.motivation);
+		_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &tmDataIter.second.impatience);
+		_WRITE_STATE_MAP_LESS(UUID, int, UUIDless, &tmDataIter.second.attempts);
+		_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &tmDataIter.second.mean);
+		_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &tmDataIter.second.stddev);
+		ds->packInt32(tmDataIter.second.psi);
+		ds->packData(&tmDataIter.second.updateTime, sizeof(_timeb));
+		ds->packInt32(tmDataIter.second.round_number);*/
+	}
+	ds->packInt32(mTaskList.size());
+
+	for (auto taskIter : this->mTaskList) {
+		ds->packUUID(&(UUID)taskIter.first);
+		ds->packData(taskIter.second, sizeof(DDBTask));
+	}
+	ds->packUUID(&previousTaskId);
+	_WRITE_STATE_MAP_LESS(UUID, TLAgentDataStruct, UUIDless, &TLAgentData);
+	_WRITE_STATE_VECTOR(UUID, &TLAgents);
+	
+	ds->packData(&round_start_time, sizeof(_timeb));
+	ds->packData(&last_response_time, sizeof(_timeb));
+	ds->packData(&round_info_receive_time, sizeof(_timeb));
+	ds->packInt32(new_round_number);
+	_WRITE_STATE_VECTOR(UUID, &new_round_order);
+	ds->packBool(round_info_set);
+	ds->packBool(last_agent);
+	
+	return AgentBase::writeState(ds, false);
 }// end writeState
 
 int	AgentTeamLearning::readState(DataStream *ds, bool top) {
 	if (top) _READ_STATE(AgentTeamLearning);
+
+	Log.log(0, "HURR DURR STATE WILL BE READ DERP 1 ");
+	ds->unpackUUID(&lAllianceObject.id);
+	ds->unpackTaskData(&lAllianceObject.myData);
+/*
+	ds->unpackUUID(&lAllianceObject.myData.taskId);
+	ds->unpackUUID(&lAllianceObject.myData.agentId);
+	_READ_STATE_MAP(UUID, float, &lAllianceObject.myData.tau);
+	_READ_STATE_MAP(UUID, float,  &lAllianceObject.myData.motivation);
+	_READ_STATE_MAP(UUID, float, &lAllianceObject.myData.impatience);
+	_READ_STATE_MAP(UUID, int,  &lAllianceObject.myData.attempts);
+	_READ_STATE_MAP(UUID, float,  &lAllianceObject.myData.mean);
+	_READ_STATE_MAP(UUID, float,  &lAllianceObject.myData.stddev);
+	lAllianceObject.myData.psi = ds->unpackInt32();
+	lAllianceObject.myData.updateTime =*(_timeb*)ds->unpackData(sizeof(_timeb));
+	lAllianceObject.myData.round_number = ds->unpackInt32();*/
+
+	Log.log(0, "HURR DURR STATE WILL BE READ DERP 2");
+	UUID tmId;	//Teammate id
+	DDBTaskData newTaskData;
+
+		int tDSize = ds->unpackInt32();
+		Log.log(0, "TDSIZE is %d", tDSize);
+		for (int i = 0; i < tDSize; i++) {
+			ds->unpackUUID(&tmId);
+			Log.log(0, "tmId is %s", Log.formatUUID(0,&tmId));
+			ds->unpackTaskData(&newTaskData);
+			lAllianceObject.teammatesData[tmId] = newTaskData;
+		}
+
+		Log.log(0, "HURR DURR STATE WILL BE READ DERP 3");
+	UUID taskId;
+	int numTasks = ds->unpackInt32();
+
+	for (int i = 0; i < numTasks;i++) {
+
+		ds->unpackUUID(&taskId);
+		free(mTaskList[taskId]);
+		this->mTaskList[taskId] = (DDBTask *)malloc(sizeof(DDBTask));
+		DDBTask task = *(DDBTask*)ds->unpackData(sizeof(DDBTask));
+		this->mTaskList[taskId]->landmarkUUID = task.landmarkUUID;
+		this->mTaskList[taskId]->agentUUID = task.agentUUID;
+		this->mTaskList[taskId]->avatar = task.avatar;
+		this->mTaskList[taskId]->type = task.type;
+		this->mTaskList[taskId]->completed = task.completed;
+		Log.log(0, "Task is: %s", Log.formatUUID(0,&taskId));
+	}
+
+	ds->unpackUUID(&previousTaskId);
+
+	_READ_STATE_MAP(UUID, TLAgentDataStruct, &TLAgentData);
+	_READ_STATE_VECTOR(UUID, &TLAgents);
+	Log.log(0, "HURR DURR STATE WILL BE READ DERP 4");
+	round_start_time = *(_timeb*)ds->unpackData(sizeof(_timeb));
+	last_response_time = *(_timeb*)ds->unpackData(sizeof(_timeb));
+	round_info_receive_time = *(_timeb*)ds->unpackData(sizeof(_timeb));
+	new_round_number = ds->unpackInt32();
+	_READ_STATE_VECTOR(UUID, &new_round_order);
+	round_info_set = ds->unpackBool();
+	last_agent = ds->unpackBool();
 
 	return AgentBase::readState(ds, false);
 }// end readState
@@ -1325,42 +1443,173 @@ int AgentTeamLearning::recoveryFinish() {
 	if (AgentBase::recoveryFinish())
 		return 1;
 
+
+	//DataStream sds;
+
+	//// request list of taskdata
+	//UUID thread = this->conversationInitiate(AgentTeamLearning_CBR_convGetTaskDataList, DDB_REQUEST_TIMEOUT);
+	//if (thread == nilUUID) {
+	//	return 1;
+	//}
+	//sds.reset();
+	//sds.packUUID(this->getUUID()); // dummy id, getting the full list of task datas anyway
+	//sds.packUUID(&thread);
+	//sds.packBool(true);			   //true == send list of taskdatas, otherwise only info about a specific taskdata set
+	//this->sendMessage(this->hostCon, MSG_DDB_TASKDATAGETINFO, sds.stream(), sds.length());
+	//sds.unlock();
+
+	this->checkRoundStatus();
+	
 	return 0;
 }// end recoveryFinish
 
 int AgentTeamLearning::writeBackup(DataStream *ds) {
 
-	// configuration
-	ds->packUUID(&STATE(AgentTeamLearning)->ownerId);
+	_WRITE_STATE(AgentTeamLearning);
 
-	ds->packBool(STATE(AgentTeamLearning)->parametersSet);
-	ds->packBool(STATE(AgentTeamLearning)->startDelayed);
-	ds->packInt32(STATE(AgentTeamLearning)->updateId);
-	ds->packBool(STATE(AgentTeamLearning)->isSetupComplete);
+	ds->packUUID(&lAllianceObject.id);
+	ds->packTaskData(&lAllianceObject.myData);
 
+
+	//ds->packUUID(&lAllianceObject.myData.taskId);
+	//ds->packUUID(&lAllianceObject.myData.agentId);
+	//_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &lAllianceObject.myData.tau);
+	//_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &lAllianceObject.myData.motivation);
+	//_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &lAllianceObject.myData.impatience);
+	//_WRITE_STATE_MAP_LESS(UUID, int, UUIDless, &lAllianceObject.myData.attempts);
+	//_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &lAllianceObject.myData.mean);
+	//_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &lAllianceObject.myData.stddev);
+	//ds->packInt32(lAllianceObject.myData.psi);
+	//ds->packData(&lAllianceObject.myData.updateTime, sizeof(_timeb));
+	//ds->packInt32(lAllianceObject.myData.round_number);
+
+	ds->packInt32(lAllianceObject.teammatesData.size());
+
+	for (auto tmDataIter : lAllianceObject.teammatesData) {
+		//ds->packInt32((lAllianceObject.teammatesData.size()));
+		ds->packUUID(&(UUID)tmDataIter.first);
+		ds->packTaskData(&tmDataIter.second);
+		/*ds->packUUID(&tmDataIter.second.taskId);
+		ds->packUUID(&tmDataIter.second.agentId);
+		_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &tmDataIter.second.tau);
+		_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &tmDataIter.second.motivation);
+		_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &tmDataIter.second.impatience);
+		_WRITE_STATE_MAP_LESS(UUID, int, UUIDless, &tmDataIter.second.attempts);
+		_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &tmDataIter.second.mean);
+		_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &tmDataIter.second.stddev);
+		ds->packInt32(tmDataIter.second.psi);
+		ds->packData(&tmDataIter.second.updateTime, sizeof(_timeb));
+		ds->packInt32(tmDataIter.second.round_number);*/
+	}
+	ds->packInt32(mTaskList.size());
+
+	for (auto taskIter : this->mTaskList) {
+		ds->packUUID(&(UUID)taskIter.first);
+		ds->packData(taskIter.second, sizeof(DDBTask));
+	}
+	ds->packUUID(&previousTaskId);
+	_WRITE_STATE_MAP_LESS(UUID, TLAgentDataStruct, UUIDless, &TLAgentData);
+	_WRITE_STATE_VECTOR(UUID, &TLAgents);
+
+	ds->packData(&round_start_time, sizeof(_timeb));
+	ds->packData(&last_response_time, sizeof(_timeb));
+	ds->packData(&round_info_receive_time, sizeof(_timeb));
+	ds->packInt32(new_round_number);
+	_WRITE_STATE_VECTOR(UUID, &new_round_order);
+	ds->packBool(round_info_set);
+	ds->packBool(last_agent);
+
+
+
+
+	//this->writeState(ds, true);
 
 	return AgentBase::writeBackup(ds);
 }// end writeBackup
 
 int AgentTeamLearning::readBackup(DataStream *ds) {
-	Log.log(0, "AgentTeamLearning::readBackup: failures likely now...");
+
 	DataStream lds;
-
-	// configuration
-	ds->unpackUUID(&STATE(AgentTeamLearning)->ownerId);
-
-	STATE(AgentTeamLearning)->parametersSet = ds->unpackBool();
-	STATE(AgentTeamLearning)->startDelayed = ds->unpackBool();
-	STATE(AgentTeamLearning)->updateId = ds->unpackInt32();
-	STATE(AgentTeamLearning)->isSetupComplete = ds->unpackBool();
+	Log.log(0, "HURR DURR STATE WILL BE READ DERP");
 
 
-	if (STATE(AgentTeamLearning)->isSetupComplete) {
-		this->finishConfigureParameters();
+	 _READ_STATE(AgentTeamLearning);
+
+	Log.log(0, "HURR DURR STATE WILL BE READ DERP 1 ");
+	ds->unpackUUID(&lAllianceObject.id);
+	ds->unpackTaskData(&lAllianceObject.myData);
+	/*
+	ds->unpackUUID(&lAllianceObject.myData.taskId);
+	ds->unpackUUID(&lAllianceObject.myData.agentId);
+	_READ_STATE_MAP(UUID, float, &lAllianceObject.myData.tau);
+	_READ_STATE_MAP(UUID, float,  &lAllianceObject.myData.motivation);
+	_READ_STATE_MAP(UUID, float, &lAllianceObject.myData.impatience);
+	_READ_STATE_MAP(UUID, int,  &lAllianceObject.myData.attempts);
+	_READ_STATE_MAP(UUID, float,  &lAllianceObject.myData.mean);
+	_READ_STATE_MAP(UUID, float,  &lAllianceObject.myData.stddev);
+	lAllianceObject.myData.psi = ds->unpackInt32();
+	lAllianceObject.myData.updateTime =*(_timeb*)ds->unpackData(sizeof(_timeb));
+	lAllianceObject.myData.round_number = ds->unpackInt32();*/
+
+	Log.log(0, "HURR DURR STATE WILL BE READ DERP 2");
+	UUID tmId;	//Teammate id
+	DDBTaskData newTaskData;
+
+	int tDSize = ds->unpackInt32();
+	Log.log(0, "TDSIZE is %d", tDSize);
+	for (int i = 0; i < tDSize; i++) {
+		ds->unpackUUID(&tmId);
+		Log.log(0, "tmId is %s", Log.formatUUID(0, &tmId));
+		ds->unpackTaskData(&newTaskData);
+		lAllianceObject.teammatesData[tmId] = newTaskData;
 	}
-	else {
 
+	Log.log(0, "HURR DURR STATE WILL BE READ DERP 3");
+	UUID taskId;
+	int numTasks = ds->unpackInt32();
+
+	for (int i = 0; i < numTasks; i++) {
+
+		ds->unpackUUID(&taskId);
+		free(mTaskList[taskId]);
+		this->mTaskList[taskId] = (DDBTask *)malloc(sizeof(DDBTask));
+		DDBTask task = *(DDBTask*)ds->unpackData(sizeof(DDBTask));
+		this->mTaskList[taskId]->landmarkUUID = task.landmarkUUID;
+		this->mTaskList[taskId]->agentUUID = task.agentUUID;
+		this->mTaskList[taskId]->avatar = task.avatar;
+		this->mTaskList[taskId]->type = task.type;
+		this->mTaskList[taskId]->completed = task.completed;
+		Log.log(0, "Task is: %s", Log.formatUUID(0, &taskId));
 	}
+
+	ds->unpackUUID(&previousTaskId);
+
+	_READ_STATE_MAP(UUID, TLAgentDataStruct, &TLAgentData);
+	_READ_STATE_VECTOR(UUID, &TLAgents);
+	Log.log(0, "HURR DURR STATE WILL BE READ DERP 4");
+	round_start_time = *(_timeb*)ds->unpackData(sizeof(_timeb));
+	last_response_time = *(_timeb*)ds->unpackData(sizeof(_timeb));
+	round_info_receive_time = *(_timeb*)ds->unpackData(sizeof(_timeb));
+	new_round_number = ds->unpackInt32();
+	_READ_STATE_VECTOR(UUID, &new_round_order);
+	round_info_set = ds->unpackBool();
+	last_agent = ds->unpackBool();
+
+
+
+	//this->readState(ds, true);
+
+	Log.log(0, "HURR DURR STATE IS READ DERP");
+
+
+
+
+	//if (STATE(AgentTeamLearning)->isSetupComplete) {
+	//	this->finishConfigureParameters();
+	//}
+	//else {
+
+	//}
 
 	return AgentBase::readBackup(ds);
 }// end readBackup

@@ -39,6 +39,8 @@ ExecutiveSimulation::ExecutiveSimulation( spAddressPort ap, UUID *ticket, int lo
 		this->objects[i].path_refs = NULL;
 	}
 
+	this->totalSimSteps = 0;
+
 	// Prepare callbacks
 	this->callback[ExecutiveSimulation_CBR_cbSimStep] = NEW_MEMBER_CB(ExecutiveSimulation,cbSimStep);
 	this->callback[ExecutiveSimulation_CBR_cbLogPose] = NEW_MEMBER_CB(ExecutiveSimulation,cbLogPose);
@@ -259,6 +261,19 @@ int ExecutiveSimulation::parseLandmarkFile( char *filename ) {
 	fclose( landmarkF );
 
 	return err;
+}
+
+int ExecutiveSimulation::uploadSimSteps()
+{
+	DataStream lds;
+
+	// notify host
+	lds.reset();
+	lds.packUInt64(this->totalSimSteps); 
+	this->sendMessage(this->hostCon, MSG_DDB_SIMSTEPS, lds.stream(), lds.length());
+	lds.unlock();
+
+	return 0;
 }
 
 int ExecutiveSimulation::newPath( int count, float *x, float *y ) {
@@ -960,6 +975,12 @@ int ExecutiveSimulation::conProcessMessage( spConnection con, unsigned char mess
 			lds.unlock();
 		}
 		break;
+	case MSG_MISSION_DONE:
+	{
+		Log.log(0, " ExecutiveSimulation::conProcessMessage: mission done, uploading total sim step count.");
+		this->uploadSimSteps();
+	}
+	break;
 	default:
 		return 1; // unhandled message
 	}
@@ -974,7 +995,7 @@ int ExecutiveSimulation::conProcessMessage( spConnection con, unsigned char mess
 bool ExecutiveSimulation::cbSimStep( void *NA ) {
 	int dt;
 	_timeb lastTime;
-
+	this->totalSimSteps++;
 	//Log.log( 0, "ExecutiveSimulation::cbSimStep: step!" );
 
 	lastTime = this->simTime;

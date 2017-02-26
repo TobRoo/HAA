@@ -531,7 +531,7 @@ int AgentAdviceExchange::parseAdviserData()
 int AgentAdviceExchange::uploadAdviceData()
 {
 	DataStream lds;
-	Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::uploadAdviceData:Avatar id: %s, bq: %f, cq: %f", Log.formatUUID(0, &STATE(AgentAdviceExchange)->avatarId), STATE(AgentAdviceExchange)->avatarInstance, this->cq, this->bq);
+	Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::uploadAdviceData:Avatar id: %s, instance %d, bq: %f, cq: %f", Log.formatUUID(0, &STATE(AgentAdviceExchange)->avatarId), STATE(AgentAdviceExchange)->avatarInstance, this->cq, this->bq);
 	lds.reset();
 	lds.packUUID(&STATE(AgentAdviceExchange)->avatarId);	//Avatar id
 	lds.packChar(STATE(AgentAdviceExchange)->avatarInstance);		//Pack the agent type instance - remember to set as different for each avatar in the config! (different avatar types will have different learning data)
@@ -912,10 +912,12 @@ bool AgentAdviceExchange::convAdviceQuery(void *vpConv) {
 // State functions
 
 int AgentAdviceExchange::freeze(UUID *ticket) {
+	Log.log(0, "FREEZING!");
 	return AgentBase::freeze(ticket);
 }// end freeze
 
 int AgentAdviceExchange::thaw(DataStream *ds, bool resumeReady) {
+	Log.log(0, "THAWING!");
 	return AgentBase::thaw(ds, resumeReady);
 }// end thaw
 
@@ -944,7 +946,7 @@ int	AgentAdviceExchange::writeState(DataStream *ds, bool top) {
 	ds->packInt32(ask_count);
 
 	ds->packBool(configuredParameters);
-
+	Log.log(0, "STATE WRITTEN!");
 	return AgentBase::writeState(ds, false);
 }// end writeState
 
@@ -983,14 +985,14 @@ int	AgentAdviceExchange::readState(DataStream *ds, bool top) {
 	ask_count = ds->unpackInt32();
 
 	configuredParameters = ds->unpackBool();
-
+	Log.log(0, "STATE READ!");
 	return AgentBase::readState(ds, false);
 }// end readState
 
 int AgentAdviceExchange::recoveryFinish() {
 	if (AgentBase::recoveryFinish())
 		return 1;
-
+	Log.log(0, "RECOVERY FINISH!");
 
 	return 0;
 }// end recoveryFinish
@@ -1022,7 +1024,7 @@ int AgentAdviceExchange::writeBackup(DataStream *ds) {
 
 	ds->packBool(configuredParameters);
 
-
+	Log.log(0, "BACKUP WRITTEN!");
 	return AgentBase::writeBackup(ds);
 }// end writeBackup
 
@@ -1071,14 +1073,15 @@ int AgentAdviceExchange::readBackup(DataStream *ds) {
 	ask_count = ds->unpackInt32();
 
 	configuredParameters = ds->unpackBool();
-
-	if (STATE(AgentAdviceExchange)->setupComplete) {
+	Log.log(0, "READBACKUP 1!");
+	if (!STATE(AgentAdviceExchange)->parametersSet) {
+		Log.log(0, "READBACKUP 2!");
 		this->finishConfigureParameters();
 	}
 	else {
 		//TODO
 	}
-
+	Log.log(0, "READBACKUP 3!");
 	return AgentBase::readBackup(ds);
 }// end readBackup
 

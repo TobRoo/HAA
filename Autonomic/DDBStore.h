@@ -29,6 +29,8 @@ public:
 	mapDDBQLearningData DDBQLearningDatas;	//map of all Q-learning data stored at the end of a run, to be loaded in the next run
 	mapDDBAdviceData	DDBAdviceDatas;		//map of all advice data stored at the end of a run, to be loaded in the next run
 
+	unsigned long long DDBTotalSimSteps;		//Count of the total amount of simulation steps that have been taken
+
 	UUID nilUUID;
 
 	// DEBUG
@@ -141,8 +143,10 @@ public:
 	bool GetTaskId(UUID * id, UUID * foundId);
 	UUID GetTaskDataId(UUID * id);
 
-	bool AddQLearningData(char instance, long long totalActions, long long usefulActions, int tableSize, std::vector<float> *qTable, std::vector<unsigned int> *expTable);
+	bool AddQLearningData(bool onlyActions, char instance, long long totalActions, long long usefulActions, int tableSize, std::vector<float> *qTable, std::vector<unsigned int> *expTable);
 	bool AddAdviceData(char instance, float cq, float bq);
+	bool AddSimSteps(unsigned long long totalSimSteps);
+	unsigned long long GetSimSteps();
 	mapDDBAdviceData GetAdviceData();
 	mapDDBQLearningData GetQLearningData();
 

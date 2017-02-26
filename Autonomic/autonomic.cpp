@@ -331,7 +331,9 @@ float x = Tmin + Tdif*y;
 
 Log.log(0, "AgentBase::calcLifeExpectancy: setting crash for T - %f minutes", x);
 
-this->addTimeout((int)(x * 60 * 1000), AgentBase_CBR_cbSimulateCrash);
+UUID crashId = this->addTimeout((int)(x * 60 * 1000), AgentBase_CBR_cbSimulateCrash);
+
+Log.log(0, "AgentBase::calcLifeExpectancy: this crash CB is %s", Log.formatUUID(0, &crashId));
 
 return 0;
 }

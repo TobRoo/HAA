@@ -455,27 +455,27 @@ int AgentIndividualLearning::formAction() {
 
 	// Form action
 	if (action == MOVE_FORWARD) {
-		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action MOVE_FORWARD");
+//		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action MOVE_FORWARD");
 		STATE(AgentIndividualLearning)->action.action = MOVE_FORWARD; //	AvatarBase_Defs::AA_MOVE;
 		STATE(AgentIndividualLearning)->action.val = STATE(AgentIndividualLearning)->maxLinear;
 	}
 	else if (action == MOVE_BACKWARD) {
-		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action MOVE_BACKWARD");
+//		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action MOVE_BACKWARD");
 		STATE(AgentIndividualLearning)->action.action = MOVE_BACKWARD; //AvatarBase_Defs::AA_MOVE;
 		STATE(AgentIndividualLearning)->action.val = STATE(AgentIndividualLearning)->maxLinear*this->backupFractionalSpeed;
 	}
 	else if (action == ROTATE_LEFT) {
-		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action ROTATE_LEFT");
+//		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action ROTATE_LEFT");
 		STATE(AgentIndividualLearning)->action.action = ROTATE_LEFT; // AvatarBase_Defs::AA_ROTATE;
 		STATE(AgentIndividualLearning)->action.val = STATE(AgentIndividualLearning)->maxRotation;
 	}
 	else if (action == ROTATE_RIGHT) {
-		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action ROTATE_RIGHT");
+//		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action ROTATE_RIGHT");
 		STATE(AgentIndividualLearning)->action.action = ROTATE_RIGHT;// AvatarBase_Defs::AA_ROTATE;
 		STATE(AgentIndividualLearning)->action.val = -STATE(AgentIndividualLearning)->maxRotation;
 	}
 	else if (action == INTERACT) {
-		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action INTERACT");
+//		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action INTERACT");
 		// TODO: Add interact capabilities
 		//If we have no cargo, pick up - first check if we can carry it (strength, capacity)
 		//If we have cargo, drop it
@@ -487,7 +487,7 @@ int AgentIndividualLearning::formAction() {
 		UUID thread;
 
 		if (!this->hasCargo) {
-			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: No cargo, trying to collect");
+//			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: No cargo, trying to collect");
 			if (target.landmarkType != NON_COLLECTABLE && this->avatar.capacity >= target.landmarkType && !this->task.completed) {	//Check that we can carry the item, and that the task is not completed (do not collect delivered targets)
 				// see if we are within range of the landmark
 				dx = STATE(AgentIndividualLearning)->prev_pos_x - this->target.x;
@@ -511,12 +511,12 @@ int AgentIndividualLearning::formAction() {
 
 			}
 			else {
-				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Cannot collect - booleans: %d %d %d", target.landmarkType != NON_COLLECTABLE, this->avatar.capacity >= target.landmarkType, !this->task.completed);
+	//			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Cannot collect - booleans: %d %d %d", target.landmarkType != NON_COLLECTABLE, this->avatar.capacity >= target.landmarkType, !this->task.completed);
 			}
 
 		}
 		else {
-			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: trying to drop off cargo...");
+//			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: trying to drop off cargo...");
 			thread = this->conversationInitiate(AgentIndividualLearning_CBR_convDepositLandmark, -1, &avAgent, sizeof(UUID));
 			if (thread == nilUUID) {
 				return 1;
@@ -531,7 +531,7 @@ int AgentIndividualLearning::formAction() {
 			lds.unlock();
 
 		}
-		this->backup(); // landmark delivered
+
 		STATE(AgentIndividualLearning)->action.action = INTERACT;//AvatarBase_Defs::AA_WAIT;
 		STATE(AgentIndividualLearning)->action.val = 0.0;
 	}
@@ -550,7 +550,7 @@ int AgentIndividualLearning::formAction() {
 	this->sendAction(STATE(AgentIndividualLearning)->action);
 
 	this->totalActions++;
-
+	uploadQLearningData(true);	//Upload action counts to DDB
 	return 0;
 }// end formAction
 
@@ -791,7 +791,7 @@ int AgentIndividualLearning::policy(std::vector<float> &quality) {
     if (quality_sum == 0.0f) {
         random_actions_++;
         int action = (int)ceil(randomGenerator.Uniform01() * num_actions_);
-        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::policy: All zero quality, selecting a random action");
+        //Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::policy: All zero quality, selecting a random action");
         return action;
     }
     else {
@@ -1074,31 +1074,33 @@ int AgentIndividualLearning::spawnAgentAdviceExchange() {
 int AgentIndividualLearning::uploadLearningData()
 {
     //TODO Add additional learning algorithms
-    return uploadQLearningData();
+    return uploadQLearningData(false);
 }
 
-int AgentIndividualLearning::uploadQLearningData()
+int AgentIndividualLearning::uploadQLearningData(bool onlyActions)
 {
     DataStream lds;
-	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Avatar id: %s, Instance: %d, Total actions: %d, Useful actions: %d, table size: %d", Log.formatUUID(0,&STATE(AgentIndividualLearning)->ownerId), STATE(AgentIndividualLearning)->avatarInstance, this->totalActions, usefulActions, this->q_learning_.table_size_);
+	//Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Avatar id: %s, Instance: %d, Total actions: %d, Useful actions: %d, table size: %d", Log.formatUUID(0,&STATE(AgentIndividualLearning)->ownerId), STATE(AgentIndividualLearning)->avatarInstance, this->totalActions, usefulActions, this->q_learning_.table_size_);
     lds.reset();
     lds.packUUID(&STATE(AgentIndividualLearning)->ownerId);	//Avatar id
     lds.packChar(STATE(AgentIndividualLearning)->avatarInstance);		//Pack the agent type instance - remember to set as different for each avatar in the config! (different avatar types will have different learning data)
-    lds.packInt64(this->totalActions);
-    lds.packInt64(this->usefulActions);
-    lds.packInt32(this->q_learning_.table_size_);	//Size of value tables to store
+	lds.packBool(onlyActions);
+	lds.packInt64(this->totalActions);
+	lds.packInt64(this->usefulActions);
+	if (!onlyActions) {			//Full upload at the end of a run
+		lds.packInt32(this->q_learning_.table_size_);	//Size of value tables to store
 
-    for (auto qIter : this->q_learning_.q_table_) {
-        lds.packFloat32(qIter);						//Pack all values in q-table
-//		if (qIter > 0.0f)
-//			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Uploading qVal: %f", qIter);
-    }
-    for (auto expIter : this->q_learning_.exp_table_) {
-        lds.packInt32(expIter);						//Pack all values in exp-table
-//		if (expIter > 0)
-//			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Uploading expVal: %d", expIter);
-    }
-
+		for (auto qIter : this->q_learning_.q_table_) {
+			lds.packFloat32(qIter);						//Pack all values in q-table
+	//		if (qIter > 0.0f)
+	//			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Uploading qVal: %f", qIter);
+		}
+		for (auto expIter : this->q_learning_.exp_table_) {
+			lds.packInt32(expIter);						//Pack all values in exp-table
+	//		if (expIter > 0)
+	//			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Uploading expVal: %d", expIter);
+		}
+	}
     this->sendMessage(this->hostCon, MSG_DDB_QLEARNINGDATA, lds.stream(), lds.length());
     lds.unlock();
     return 0;
@@ -1428,7 +1430,7 @@ int AgentIndividualLearning::conProcessMessage(spConnection con, unsigned char m
             break;
 		case AgentIndividualLearning_MSGS::MSG_REQUEST_Q_VALUES:
 		{
-			Log.log(0, " AgentIndividualLearning::conProcessMessage: MSG_REQUEST_Q_VALUES.");
+		//	Log.log(0, " AgentIndividualLearning::conProcessMessage: MSG_REQUEST_Q_VALUES.");
 			UUID conv;
 			UUID sender;
 			lds.setData(data, len);
@@ -1489,6 +1491,9 @@ bool AgentIndividualLearning::convAction(void *vpConv) {
 
     if (conv->response == NULL) {
         Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convAction: Request timed out");
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convAction: Resending previous action");
+		// Resend the action
+		this->sendAction(STATE(AgentIndividualLearning)->action);
         return 0; // end conversation
     }
 
@@ -2411,11 +2416,81 @@ int AgentIndividualLearning::thaw(DataStream *ds, bool resumeReady) {
 int	AgentIndividualLearning::writeState(DataStream *ds, bool top) {
     if (top) _WRITE_STATE(AgentIndividualLearning);
 
+	_WRITE_STATE_MAP_LESS( UUID, DDBRegion, UUIDless, &collectionRegions);
+	ds->packData(&avatar, sizeof(avatar));
+	ds->packUUID(&avatarId);
+	ds->packUUID(&avatarAgentId);
+	_WRITE_STATE_MAP_LESS(UUID, AVATAR_INFO, UUIDless, &otherAvatars);
+	ds->packBool(hasCargo);
+	ds->packBool(hasDelivered);
+
+	_WRITE_STATE_VECTOR(float, &this->q_learning_.q_table_);
+	_WRITE_STATE_VECTOR(unsigned int, &this->q_learning_.exp_table_);
+
+	_WRITE_STATE_VECTOR(float, &this->q_learning_.q_vals_);
+	_WRITE_STATE_VECTOR(unsigned int, &this->q_learning_.exp_vals_);
+
+	_WRITE_STATE_VECTOR(float, &this->q_vals);
+	_WRITE_STATE_VECTOR(unsigned int, &this->stateVector);
+	_WRITE_STATE_VECTOR(unsigned int, &this->prevStateVector);
+	ds->packFloat32(q_avg);
+
+												// Learning parameters
+	ds->packUInt32(learning_iterations_);          // Counter for how many times learning is performed
+	ds->packUInt32(random_actions_);               // Counter for number of random actions
+	ds->packUInt32(learned_actions_);              // Counter for number of learned actions
+
+	// Task data
+	ds->packUUID(&taskId);
+	ds->packData(&task, sizeof(task));
+	ds->packData(&target, sizeof(target));
+
+	_WRITE_STATE_MAP(unsigned char, DDBLandmark, &targetList);
+	_WRITE_STATE_MAP(unsigned char, DDBLandmark, &obstacleList);
+
+	ds->packData(&totalActions, sizeof(totalActions));
+	ds->packData(&usefulActions, sizeof(usefulActions));
+
     return AgentBase::writeState(ds, false);
 }// end writeState
 
 int	AgentIndividualLearning::readState(DataStream *ds, bool top) {
     if (top) _READ_STATE(AgentIndividualLearning);
+
+	_READ_STATE_MAP(UUID, DDBRegion, &collectionRegions);
+	this->avatar = *(AVATAR_INFO*)ds->unpackData(sizeof(AVATAR_INFO));
+	ds->unpackUUID(&avatarId);
+	ds->unpackUUID(&avatarAgentId);
+	_READ_STATE_MAP(UUID, AVATAR_INFO, &otherAvatars);
+	hasCargo = ds->unpackBool();
+	hasDelivered = ds->unpackBool();
+
+	_READ_STATE_VECTOR(float, &this->q_learning_.q_table_);
+	_READ_STATE_VECTOR(unsigned int, &this->q_learning_.exp_table_);
+
+	_READ_STATE_VECTOR(float, &this->q_learning_.q_vals_);
+	_READ_STATE_VECTOR(unsigned int, &this->q_learning_.exp_vals_);
+
+	_READ_STATE_VECTOR(float, &this->q_vals);
+	_READ_STATE_VECTOR(unsigned int, &this->stateVector);
+	_READ_STATE_VECTOR(unsigned int, &this->prevStateVector);
+	q_avg = ds->unpackFloat32();
+
+	// Learning parameters
+	learning_iterations_ = ds->unpackUInt32();          // Counter for how many times learning is performed
+	random_actions_ = ds->unpackUInt32();               // Counter for number of random actions
+	learned_actions_ = ds->unpackUInt32();              // Counter for number of learned actions
+
+												   // Task data
+	ds->unpackUUID(&taskId);
+	this->task = *(DDBTask*)ds->unpackData(sizeof(DDBTask));
+	this->target = *(DDBLandmark*)ds->unpackData(sizeof(DDBLandmark));
+
+	_READ_STATE_MAP(unsigned char, DDBLandmark, &targetList);
+	_READ_STATE_MAP(unsigned char, DDBLandmark, &obstacleList);
+
+	this->totalActions = *(unsigned long*)ds->unpackData(sizeof(unsigned long));
+	this->usefulActions = *(unsigned long*)ds->unpackData(sizeof(unsigned long));
 
     return AgentBase::readState(ds, false);
 }// end readState
@@ -2424,18 +2499,49 @@ int AgentIndividualLearning::recoveryFinish() {
     if (AgentBase::recoveryFinish())
         return 1;
 
+	this->updateStateData();
+
     return 0;
 }// end recoveryFinish
 
 int AgentIndividualLearning::writeBackup(DataStream *ds) {
 
-    // Agent Data
-    ds->packUUID(&STATE(AgentIndividualLearning)->ownerId);
-    ds->packBool(STATE(AgentIndividualLearning)->parametersSet);
-    ds->packBool(STATE(AgentIndividualLearning)->startDelayed);
-    ds->packInt32(STATE(AgentIndividualLearning)->updateId);
-    ds->packBool(STATE(AgentIndividualLearning)->missionRegionReceived);
-	ds->packBool(STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned);
+	_WRITE_STATE(AgentIndividualLearning);
+
+	_WRITE_STATE_MAP_LESS(UUID, DDBRegion, UUIDless, &collectionRegions);
+	ds->packData(&avatar, sizeof(avatar));
+	ds->packUUID(&avatarId);
+	ds->packUUID(&avatarAgentId);
+	_WRITE_STATE_MAP_LESS(UUID, AVATAR_INFO, UUIDless, &otherAvatars);
+	ds->packBool(hasCargo);
+	ds->packBool(hasDelivered);
+
+	_WRITE_STATE_VECTOR(float, &this->q_learning_.q_table_);
+	_WRITE_STATE_VECTOR(unsigned int, &this->q_learning_.exp_table_);
+
+	_WRITE_STATE_VECTOR(float, &this->q_learning_.q_vals_);
+	_WRITE_STATE_VECTOR(unsigned int, &this->q_learning_.exp_vals_);
+
+	_WRITE_STATE_VECTOR(float, &this->q_vals);
+	_WRITE_STATE_VECTOR(unsigned int, &this->stateVector);
+	_WRITE_STATE_VECTOR(unsigned int, &this->prevStateVector);
+	ds->packFloat32(q_avg);
+
+	// Learning parameters
+	ds->packUInt32(learning_iterations_);          // Counter for how many times learning is performed
+	ds->packUInt32(random_actions_);               // Counter for number of random actions
+	ds->packUInt32(learned_actions_);              // Counter for number of learned actions
+
+												   // Task data
+	ds->packUUID(&taskId);
+	ds->packData(&task, sizeof(task));
+	ds->packData(&target, sizeof(target));
+
+	_WRITE_STATE_MAP(unsigned char, DDBLandmark, &targetList);
+	_WRITE_STATE_MAP(unsigned char, DDBLandmark, &obstacleList);
+
+	ds->packData(&totalActions, sizeof(totalActions));
+	ds->packData(&usefulActions, sizeof(usefulActions));
 
     return AgentBase::writeBackup(ds);
 }// end writeBackup
@@ -2443,18 +2549,61 @@ int AgentIndividualLearning::writeBackup(DataStream *ds) {
 int AgentIndividualLearning::readBackup(DataStream *ds) {
     DataStream lds;
 
-    // configuration
-    ds->unpackUUID(&STATE(AgentIndividualLearning)->ownerId);
-    STATE(AgentIndividualLearning)->parametersSet = ds->unpackBool();
-    STATE(AgentIndividualLearning)->startDelayed = ds->unpackBool();
-    STATE(AgentIndividualLearning)->updateId = ds->unpackInt32();
-    STATE(AgentIndividualLearning)->missionRegionReceived = ds->unpackBool();
-	STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned = ds->unpackBool();
+	_READ_STATE(AgentIndividualLearning);
+
+	_READ_STATE_MAP(UUID, DDBRegion, &collectionRegions);
+	this->avatar = *(AVATAR_INFO*)ds->unpackData(sizeof(AVATAR_INFO));
+	ds->unpackUUID(&avatarId);
+	ds->unpackUUID(&avatarAgentId);
+	_READ_STATE_MAP(UUID, AVATAR_INFO, &otherAvatars);
+	hasCargo = ds->unpackBool();
+	hasDelivered = ds->unpackBool();
+
+	_READ_STATE_VECTOR(float, &this->q_learning_.q_table_);
+	_READ_STATE_VECTOR(unsigned int, &this->q_learning_.exp_table_);
+
+	_READ_STATE_VECTOR(float, &this->q_learning_.q_vals_);
+	_READ_STATE_VECTOR(unsigned int, &this->q_learning_.exp_vals_);
+
+	_READ_STATE_VECTOR(float, &this->q_vals);
+	_READ_STATE_VECTOR(unsigned int, &this->stateVector);
+	_READ_STATE_VECTOR(unsigned int, &this->prevStateVector);
+	q_avg = ds->unpackFloat32();
+
+	// Learning parameters
+	learning_iterations_ = ds->unpackUInt32();          // Counter for how many times learning is performed
+	random_actions_ = ds->unpackUInt32();               // Counter for number of random actions
+	learned_actions_ = ds->unpackUInt32();              // Counter for number of learned actions
+
+														// Task data
+	ds->unpackUUID(&taskId);
+	this->task = *(DDBTask*)ds->unpackData(sizeof(DDBTask));
+	this->target = *(DDBLandmark*)ds->unpackData(sizeof(DDBLandmark));
+
+	_READ_STATE_MAP(unsigned char, DDBLandmark, &targetList);
+	_READ_STATE_MAP(unsigned char, DDBLandmark, &obstacleList);
+
+	this->totalActions = *(unsigned long*)ds->unpackData(sizeof(unsigned long));
+	this->usefulActions = *(unsigned long*)ds->unpackData(sizeof(unsigned long));
+
+	if (!STATE(AgentIndividualLearning)->hasReceivedRunNumber) {
+		// request run number info
+		UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convGetRunNumber, DDB_REQUEST_TIMEOUT);
+		if (thread == nilUUID) {
+			return 1;
+		}
+		lds.reset();
+		lds.packUUID(&thread);
+		//lds.packUUID(&STATE(AgentBase)->uuid);
+		this->sendMessage(this->hostCon, MSG_RRUNNUMBER, lds.stream(), lds.length());
+		lds.unlock();
+	}
 
     if (STATE(AgentIndividualLearning)->missionRegionReceived && STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned) {
-        this->finishConfigureParameters();
+		if (!STATE(AgentIndividualLearning)->parametersSet)
+			this->finishConfigureParameters();
     }
-    else {
+    else if (STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned) {		//Only need mission region
         // get mission region
         UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convMissionRegion, DDB_REQUEST_TIMEOUT);
         if (thread == nilUUID) {
@@ -2466,6 +2615,20 @@ int AgentIndividualLearning::readBackup(DataStream *ds) {
         this->sendMessage(this->hostCon, MSG_DDB_RREGION, lds.stream(), lds.length());
         lds.unlock();
     }
+	else {		//Need both mission region and agentAdviceExchange
+		// get mission region
+		UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convMissionRegion, DDB_REQUEST_TIMEOUT);
+		if (thread == nilUUID) {
+			return 1;
+		}
+		lds.reset();
+		lds.packUUID(&STATE(AgentIndividualLearning)->regionId);
+		lds.packUUID(&thread);
+		this->sendMessage(this->hostCon, MSG_DDB_RREGION, lds.stream(), lds.length());
+		lds.unlock();
+
+		this->spawnAgentAdviceExchange();
+	}
 
     return AgentBase::readBackup(ds);
 }// end readBackup

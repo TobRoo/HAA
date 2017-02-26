@@ -83,8 +83,9 @@ int AgentSensorCooccupancy::configure() {
 		strftime( timeBuf, 64, "%y.%m.%d [%H.%M.%S]", &stm );
 		sprintf_s( logName, "%s\\AgentSensorCooccupancy %s.txt", logDirectory, timeBuf );
 
-		Log.setLogMode( LOG_MODE_COUT );
-		Log.setLogMode( LOG_MODE_FILE, logName );
+		Log.setLogMode(LOG_MODE_OFF);
+		//Log.setLogMode( LOG_MODE_COUT );
+		//Log.setLogMode( LOG_MODE_FILE, logName );
 		Log.setLogLevel( LOG_LEVEL_VERBOSE );
 		Log.log( 0, "AgentSensorCooccupancy %.2d.%.2d.%.5d.%.2d", AgentSensorCooccupancy_MAJOR, AgentSensorCooccupancy_MINOR, AgentSensorCooccupancy_BUILDNO, AgentSensorCooccupancy_EXTEND );
 	}

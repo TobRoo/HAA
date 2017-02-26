@@ -4981,21 +4981,31 @@ int DDBStore::GetTaskData(UUID *id, DataStream *ds, UUID *thread, bool enumTaskD
 
 //Individual Q-learning value storage, for storing data between simulation runs
 
-bool DDBStore::AddQLearningData(char instance, long long totalActions, long long usefulActions, int tableSize, std::vector<float>* qTable, std::vector<unsigned int>* expTable)
+bool DDBStore::AddQLearningData(bool onlyActions, char instance, long long totalActions, long long usefulActions, int tableSize, std::vector<float>* qTable, std::vector<unsigned int>* expTable)
 {
-	// check to see if it already exists
-	if (this->DDBQLearningDatas.find(instance) != this->DDBQLearningDatas.end()) {
-		return true; // already exists
+
+	if (onlyActions) {
+		if (this->DDBQLearningDatas.find(instance) != this->DDBQLearningDatas.end()) { //Already exists
+			this->DDBQLearningDatas[instance].totalActions = totalActions;
+			this->DDBQLearningDatas[instance].usefulActions = usefulActions;
+		}
+		else {	//Create new
+			QLStorage newQLStorage;
+			newQLStorage.totalActions = totalActions;
+			newQLStorage.usefulActions = usefulActions;
+		}
+	}
+	else {		//Full upload, end of run
+
+		if (totalActions > this->DDBQLearningDatas[instance].totalActions)
+			this->DDBQLearningDatas[instance].totalActions = totalActions;	//Only update if our number is greater, otherwise we have missed updates while crashed
+		if (usefulActions > this->DDBQLearningDatas[instance].usefulActions)
+			this->DDBQLearningDatas[instance].usefulActions = usefulActions;	//Only update if our number is greater, otherwise we have missed updates while crashed
+		this->DDBQLearningDatas[instance].qTable = *qTable;
+		this->DDBQLearningDatas[instance].expTable = *expTable;
 	}
 
-	QLStorage newQLStorage;
-	newQLStorage.totalActions = totalActions;
-	newQLStorage.usefulActions = usefulActions;
-	newQLStorage.qTable = *qTable;
-	newQLStorage.expTable = *expTable;
-
-	// insert into DDBQLearningDatas
-	this->DDBQLearningDatas[instance] = newQLStorage;
+	
 
 	return false;
 }
@@ -5025,6 +5035,21 @@ bool DDBStore::AddAdviceData(char instance, float cq, float bq)
 
 	return false;
 }
+
+bool DDBStore::AddSimSteps(unsigned long long totalSimSteps)
+{
+	// insert into DDBTotalSimSteps
+	this->DDBTotalSimSteps = totalSimSteps;
+
+	return false;
+}
+
+unsigned long long DDBStore::GetSimSteps()
+{
+
+	return this->DDBTotalSimSteps;
+}
+
 
 mapDDBAdviceData DDBStore::GetAdviceData()
 {
