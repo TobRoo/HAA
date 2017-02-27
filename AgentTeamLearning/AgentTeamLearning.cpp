@@ -1306,12 +1306,12 @@ bool AgentTeamLearning::convGetRunNumber(void * vpConv)
 // State functions
 
 int AgentTeamLearning::freeze(UUID *ticket) {
-	Log.log(0, "FREEZING!");
+	Log.log(0, "AgentTeamLearning::freeze: FREEZING!");
 	return AgentBase::freeze(ticket);
 }// end freeze
 
 int AgentTeamLearning::thaw(DataStream *ds, bool resumeReady) {
-	Log.log(0, "THAWING!");
+	Log.log(0, "AgentTeamLearning::thaw: THAWING!");
 	return AgentBase::thaw(ds, resumeReady);
 }// end thaw
 
@@ -1376,7 +1376,7 @@ int	AgentTeamLearning::writeState(DataStream *ds, bool top) {
 int	AgentTeamLearning::readState(DataStream *ds, bool top) {
 	if (top) _READ_STATE(AgentTeamLearning);
 
-	Log.log(0, "HURR DURR STATE WILL BE READ DERP 1 ");
+	Log.log(0, "AgentTeamLearning::readState : STATE WILL BE READ 1 ");
 	ds->unpackUUID(&lAllianceObject.id);
 	ds->unpackTaskData(&lAllianceObject.myData);
 /*
@@ -1392,12 +1392,12 @@ int	AgentTeamLearning::readState(DataStream *ds, bool top) {
 	lAllianceObject.myData.updateTime =*(_timeb*)ds->unpackData(sizeof(_timeb));
 	lAllianceObject.myData.round_number = ds->unpackInt32();*/
 
-	Log.log(0, "HURR DURR STATE WILL BE READ DERP 2");
+	Log.log(0, "AgentTeamLearning::readState : STATE WILL BE READ 2");
 	UUID tmId;	//Teammate id
 	DDBTaskData newTaskData;
 
 		int tDSize = ds->unpackInt32();
-		Log.log(0, "TDSIZE is %d", tDSize);
+		Log.log(0, "AgentTeamLearning::readState : TDSIZE is %d", tDSize);
 		for (int i = 0; i < tDSize; i++) {
 			ds->unpackUUID(&tmId);
 			Log.log(0, "tmId is %s", Log.formatUUID(0,&tmId));
@@ -1405,7 +1405,7 @@ int	AgentTeamLearning::readState(DataStream *ds, bool top) {
 			lAllianceObject.teammatesData[tmId] = newTaskData;
 		}
 
-		Log.log(0, "HURR DURR STATE WILL BE READ DERP 3");
+		Log.log(0, "AgentTeamLearning::readState : STATE WILL BE READ 3");
 	UUID taskId;
 	int numTasks = ds->unpackInt32();
 
@@ -1420,14 +1420,14 @@ int	AgentTeamLearning::readState(DataStream *ds, bool top) {
 		this->mTaskList[taskId]->avatar = task.avatar;
 		this->mTaskList[taskId]->type = task.type;
 		this->mTaskList[taskId]->completed = task.completed;
-		Log.log(0, "Task is: %s", Log.formatUUID(0,&taskId));
+		Log.log(0, "AgentTeamLearning::readState : Task is: %s", Log.formatUUID(0,&taskId));
 	}
 
 	ds->unpackUUID(&previousTaskId);
 
 	_READ_STATE_MAP(UUID, TLAgentDataStruct, &TLAgentData);
 	_READ_STATE_VECTOR(UUID, &TLAgents);
-	Log.log(0, "HURR DURR STATE WILL BE READ DERP 4");
+	Log.log(0, "AgentTeamLearning::readState : STATE WILL BE READ 4");
 	round_start_time = *(_timeb*)ds->unpackData(sizeof(_timeb));
 	last_response_time = *(_timeb*)ds->unpackData(sizeof(_timeb));
 	round_info_receive_time = *(_timeb*)ds->unpackData(sizeof(_timeb));
@@ -1457,7 +1457,7 @@ int AgentTeamLearning::recoveryFinish() {
 	//sds.packBool(true);			   //true == send list of taskdatas, otherwise only info about a specific taskdata set
 	//this->sendMessage(this->hostCon, MSG_DDB_TASKDATAGETINFO, sds.stream(), sds.length());
 	//sds.unlock();
-
+	this->TLAgentData[STATE(AgentBase)->uuid].response = false;
 	this->checkRoundStatus();
 	
 	return 0;
@@ -1530,12 +1530,12 @@ int AgentTeamLearning::writeBackup(DataStream *ds) {
 int AgentTeamLearning::readBackup(DataStream *ds) {
 
 	DataStream lds;
-	Log.log(0, "HURR DURR STATE WILL BE READ DERP");
+	Log.log(0, "AgentTeamLearning::readBackup : STATE WILL BE READ");
 
 
 	 _READ_STATE(AgentTeamLearning);
 
-	Log.log(0, "HURR DURR STATE WILL BE READ DERP 1 ");
+	Log.log(0, "AgentTeamLearning::readBackup : STATE WILL BE READ 1 ");
 	ds->unpackUUID(&lAllianceObject.id);
 	ds->unpackTaskData(&lAllianceObject.myData);
 	/*
@@ -1551,20 +1551,20 @@ int AgentTeamLearning::readBackup(DataStream *ds) {
 	lAllianceObject.myData.updateTime =*(_timeb*)ds->unpackData(sizeof(_timeb));
 	lAllianceObject.myData.round_number = ds->unpackInt32();*/
 
-	Log.log(0, "HURR DURR STATE WILL BE READ DERP 2");
+	Log.log(0, "AgentTeamLearning::readBackup : STATE WILL BE READ 2");
 	UUID tmId;	//Teammate id
 	DDBTaskData newTaskData;
 
 	int tDSize = ds->unpackInt32();
-	Log.log(0, "TDSIZE is %d", tDSize);
+	Log.log(0, "AgentTeamLearning::readBackup : TDSIZE is %d", tDSize);
 	for (int i = 0; i < tDSize; i++) {
 		ds->unpackUUID(&tmId);
-		Log.log(0, "tmId is %s", Log.formatUUID(0, &tmId));
+		Log.log(0, "AgentTeamLearning::readBackup : tmId is %s", Log.formatUUID(0, &tmId));
 		ds->unpackTaskData(&newTaskData);
 		lAllianceObject.teammatesData[tmId] = newTaskData;
 	}
 
-	Log.log(0, "HURR DURR STATE WILL BE READ DERP 3");
+	Log.log(0, "AgentTeamLearning::readBackup : STATE WILL BE READ 3");
 	UUID taskId;
 	int numTasks = ds->unpackInt32();
 
@@ -1579,14 +1579,14 @@ int AgentTeamLearning::readBackup(DataStream *ds) {
 		this->mTaskList[taskId]->avatar = task.avatar;
 		this->mTaskList[taskId]->type = task.type;
 		this->mTaskList[taskId]->completed = task.completed;
-		Log.log(0, "Task is: %s", Log.formatUUID(0, &taskId));
+		Log.log(0, "AgentTeamLearning::readBackup : Task is: %s", Log.formatUUID(0, &taskId));
 	}
 
 	ds->unpackUUID(&previousTaskId);
 
 	_READ_STATE_MAP(UUID, TLAgentDataStruct, &TLAgentData);
 	_READ_STATE_VECTOR(UUID, &TLAgents);
-	Log.log(0, "HURR DURR STATE WILL BE READ DERP 4");
+	Log.log(0, "AgentTeamLearning::readBackup : STATE WILL BE READ 4");
 	round_start_time = *(_timeb*)ds->unpackData(sizeof(_timeb));
 	last_response_time = *(_timeb*)ds->unpackData(sizeof(_timeb));
 	round_info_receive_time = *(_timeb*)ds->unpackData(sizeof(_timeb));
@@ -1599,7 +1599,7 @@ int AgentTeamLearning::readBackup(DataStream *ds) {
 
 	//this->readState(ds, true);
 
-	Log.log(0, "HURR DURR STATE IS READ DERP");
+	Log.log(0, "AgentTeamLearning::readBackup : STATE IS READ");
 
 
 

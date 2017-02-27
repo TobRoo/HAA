@@ -228,7 +228,7 @@ int generateRandomMap(char * misFile, char* newMisFile, char* newPathFile, char*
 
 
 	while (!validPosFound) {
-		cout << "DERPvalidPosFound!\n";
+		cout << "validPosFound!\n";
 		// Take random permutations of positions in each direction
 		std::random_shuffle(randomPositions.begin(), randomPositions.end());
 		//	Loop through assigning random positions, while checking if any new random
