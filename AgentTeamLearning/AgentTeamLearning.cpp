@@ -48,7 +48,7 @@ AgentTeamLearning::AgentTeamLearning(spAddressPort ap, UUID *ticket, int logLeve
 	STATE(AgentTeamLearning)->isMyDataFound = false;
 	STATE(AgentTeamLearning)->hasReceivedRunNumber = false;
 	STATE(AgentTeamLearning)->runNumber = 0;
-
+	STATE(AgentTeamLearning)->returningFromRecovery = false;
 
 	// V2 team learning stuff
 	STATE(AgentTeamLearning)->round_number = 0;
@@ -563,6 +563,7 @@ int AgentTeamLearning::initiateNextRound() {
 
 			// Send the data
 			lds.reset();
+			lds.packUUID(this->getUUID());	//Sender id
 			lds.packInt32(this->new_round_number);  // Next round number
 			lds.packData(&this->round_start_time, sizeof(_timeb));  // Next round start time
 
@@ -836,8 +837,30 @@ int AgentTeamLearning::conProcessMessage(spConnection con, unsigned char message
 		// Record when we received this message
 		_ftime64_s(&this->round_info_receive_time);
 
-		lds.setData(data, len);
+		UUID sender;
+		int count = 1;
+		bool isSenderLast;
 
+		lds.setData(data, len);
+		lds.unpackUUID(&sender);
+
+
+		for (auto iter : this->TLAgents) {
+			//Log.log(0, " AgentTeamLearning::checkRoundStatus:: last agent iter %s", Log.formatUUID(0, &*iter));
+			// Stop counting once we've found sender
+			if (iter == sender) {
+				isSenderLast = (count == this->TLAgents.size());		
+				break;
+			}
+			count++;
+		}
+
+		if (!isSenderLast && !STATE(AgentTeamLearning)->returningFromRecovery && sender != *this->getUUID()) { //Not the last agent - erroneous next round msg from recovered agent. A newly recovered agent will accept anyway, since the round order will be incorrect
+			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning_MSGS::MSG_ROUND_INFO: Ignoring new round msg, booleans: %d %d %d", !isSenderLast, !STATE(AgentTeamLearning)->returningFromRecovery, sender != *this->getUUID());
+			lds.unlock();
+			break;
+		}
+		STATE(AgentTeamLearning)->returningFromRecovery = false;
 		int round = lds.unpackInt32();  // Next round number
 		this->new_round_number = round;
 		this->round_start_time = *(_timeb *)lds.unpackData(sizeof(_timeb)); // Next round start time
@@ -1436,6 +1459,9 @@ int	AgentTeamLearning::readState(DataStream *ds, bool top) {
 	round_info_set = ds->unpackBool();
 	last_agent = ds->unpackBool();
 
+
+
+
 	return AgentBase::readState(ds, false);
 }// end readState
 
@@ -1457,8 +1483,12 @@ int AgentTeamLearning::recoveryFinish() {
 	//sds.packBool(true);			   //true == send list of taskdatas, otherwise only info about a specific taskdata set
 	//this->sendMessage(this->hostCon, MSG_DDB_TASKDATAGETINFO, sds.stream(), sds.length());
 	//sds.unlock();
+
+
 	this->TLAgentData[STATE(AgentBase)->uuid].response = false;
 	this->checkRoundStatus();
+	this->initiateNextRound();
+	STATE(AgentTeamLearning)->returningFromRecovery = true;
 	
 	return 0;
 }// end recoveryFinish
@@ -1467,57 +1497,57 @@ int AgentTeamLearning::writeBackup(DataStream *ds) {
 
 	_WRITE_STATE(AgentTeamLearning);
 
-	ds->packUUID(&lAllianceObject.id);
-	ds->packTaskData(&lAllianceObject.myData);
+	//ds->packUUID(&lAllianceObject.id);
+	//ds->packTaskData(&lAllianceObject.myData);
 
 
-	//ds->packUUID(&lAllianceObject.myData.taskId);
-	//ds->packUUID(&lAllianceObject.myData.agentId);
-	//_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &lAllianceObject.myData.tau);
-	//_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &lAllianceObject.myData.motivation);
-	//_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &lAllianceObject.myData.impatience);
-	//_WRITE_STATE_MAP_LESS(UUID, int, UUIDless, &lAllianceObject.myData.attempts);
-	//_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &lAllianceObject.myData.mean);
-	//_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &lAllianceObject.myData.stddev);
-	//ds->packInt32(lAllianceObject.myData.psi);
-	//ds->packData(&lAllianceObject.myData.updateTime, sizeof(_timeb));
-	//ds->packInt32(lAllianceObject.myData.round_number);
+	////ds->packUUID(&lAllianceObject.myData.taskId);
+	////ds->packUUID(&lAllianceObject.myData.agentId);
+	////_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &lAllianceObject.myData.tau);
+	////_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &lAllianceObject.myData.motivation);
+	////_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &lAllianceObject.myData.impatience);
+	////_WRITE_STATE_MAP_LESS(UUID, int, UUIDless, &lAllianceObject.myData.attempts);
+	////_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &lAllianceObject.myData.mean);
+	////_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &lAllianceObject.myData.stddev);
+	////ds->packInt32(lAllianceObject.myData.psi);
+	////ds->packData(&lAllianceObject.myData.updateTime, sizeof(_timeb));
+	////ds->packInt32(lAllianceObject.myData.round_number);
 
-	ds->packInt32(lAllianceObject.teammatesData.size());
+	//ds->packInt32(lAllianceObject.teammatesData.size());
 
-	for (auto tmDataIter : lAllianceObject.teammatesData) {
-		//ds->packInt32((lAllianceObject.teammatesData.size()));
-		ds->packUUID(&(UUID)tmDataIter.first);
-		ds->packTaskData(&tmDataIter.second);
-		/*ds->packUUID(&tmDataIter.second.taskId);
-		ds->packUUID(&tmDataIter.second.agentId);
-		_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &tmDataIter.second.tau);
-		_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &tmDataIter.second.motivation);
-		_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &tmDataIter.second.impatience);
-		_WRITE_STATE_MAP_LESS(UUID, int, UUIDless, &tmDataIter.second.attempts);
-		_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &tmDataIter.second.mean);
-		_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &tmDataIter.second.stddev);
-		ds->packInt32(tmDataIter.second.psi);
-		ds->packData(&tmDataIter.second.updateTime, sizeof(_timeb));
-		ds->packInt32(tmDataIter.second.round_number);*/
-	}
-	ds->packInt32(mTaskList.size());
+	//for (auto tmDataIter : lAllianceObject.teammatesData) {
+	//	//ds->packInt32((lAllianceObject.teammatesData.size()));
+	//	ds->packUUID(&(UUID)tmDataIter.first);
+	//	ds->packTaskData(&tmDataIter.second);
+	//	/*ds->packUUID(&tmDataIter.second.taskId);
+	//	ds->packUUID(&tmDataIter.second.agentId);
+	//	_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &tmDataIter.second.tau);
+	//	_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &tmDataIter.second.motivation);
+	//	_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &tmDataIter.second.impatience);
+	//	_WRITE_STATE_MAP_LESS(UUID, int, UUIDless, &tmDataIter.second.attempts);
+	//	_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &tmDataIter.second.mean);
+	//	_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &tmDataIter.second.stddev);
+	//	ds->packInt32(tmDataIter.second.psi);
+	//	ds->packData(&tmDataIter.second.updateTime, sizeof(_timeb));
+	//	ds->packInt32(tmDataIter.second.round_number);*/
+	//}
+	//ds->packInt32(mTaskList.size());
 
-	for (auto taskIter : this->mTaskList) {
-		ds->packUUID(&(UUID)taskIter.first);
-		ds->packData(taskIter.second, sizeof(DDBTask));
-	}
-	ds->packUUID(&previousTaskId);
-	_WRITE_STATE_MAP_LESS(UUID, TLAgentDataStruct, UUIDless, &TLAgentData);
-	_WRITE_STATE_VECTOR(UUID, &TLAgents);
+	//for (auto taskIter : this->mTaskList) {
+	//	ds->packUUID(&(UUID)taskIter.first);
+	//	ds->packData(taskIter.second, sizeof(DDBTask));
+	//}
+	//ds->packUUID(&previousTaskId);
+	//_WRITE_STATE_MAP_LESS(UUID, TLAgentDataStruct, UUIDless, &TLAgentData);
+	//_WRITE_STATE_VECTOR(UUID, &TLAgents);
 
-	ds->packData(&round_start_time, sizeof(_timeb));
-	ds->packData(&last_response_time, sizeof(_timeb));
-	ds->packData(&round_info_receive_time, sizeof(_timeb));
+	//ds->packData(&round_start_time, sizeof(_timeb));
+	//ds->packData(&last_response_time, sizeof(_timeb));
+	//ds->packData(&round_info_receive_time, sizeof(_timeb));
 	ds->packInt32(new_round_number);
-	_WRITE_STATE_VECTOR(UUID, &new_round_order);
-	ds->packBool(round_info_set);
-	ds->packBool(last_agent);
+	//_WRITE_STATE_VECTOR(UUID, &new_round_order);
+	//ds->packBool(round_info_set);
+	//ds->packBool(last_agent);
 
 
 
@@ -1529,79 +1559,104 @@ int AgentTeamLearning::writeBackup(DataStream *ds) {
 
 int AgentTeamLearning::readBackup(DataStream *ds) {
 
-	DataStream lds;
-	Log.log(0, "AgentTeamLearning::readBackup : STATE WILL BE READ");
+	//DataStream lds;
+	//Log.log(0, "AgentTeamLearning::readBackup : STATE WILL BE READ");
 
 
 	 _READ_STATE(AgentTeamLearning);
 
-	Log.log(0, "AgentTeamLearning::readBackup : STATE WILL BE READ 1 ");
-	ds->unpackUUID(&lAllianceObject.id);
-	ds->unpackTaskData(&lAllianceObject.myData);
-	/*
-	ds->unpackUUID(&lAllianceObject.myData.taskId);
-	ds->unpackUUID(&lAllianceObject.myData.agentId);
-	_READ_STATE_MAP(UUID, float, &lAllianceObject.myData.tau);
-	_READ_STATE_MAP(UUID, float,  &lAllianceObject.myData.motivation);
-	_READ_STATE_MAP(UUID, float, &lAllianceObject.myData.impatience);
-	_READ_STATE_MAP(UUID, int,  &lAllianceObject.myData.attempts);
-	_READ_STATE_MAP(UUID, float,  &lAllianceObject.myData.mean);
-	_READ_STATE_MAP(UUID, float,  &lAllianceObject.myData.stddev);
-	lAllianceObject.myData.psi = ds->unpackInt32();
-	lAllianceObject.myData.updateTime =*(_timeb*)ds->unpackData(sizeof(_timeb));
-	lAllianceObject.myData.round_number = ds->unpackInt32();*/
+	//Log.log(0, "AgentTeamLearning::readBackup : STATE WILL BE READ 1 ");
+	//ds->unpackUUID(&lAllianceObject.id);
+	//ds->unpackTaskData(&lAllianceObject.myData);
+	///*
+	//ds->unpackUUID(&lAllianceObject.myData.taskId);
+	//ds->unpackUUID(&lAllianceObject.myData.agentId);
+	//_READ_STATE_MAP(UUID, float, &lAllianceObject.myData.tau);
+	//_READ_STATE_MAP(UUID, float,  &lAllianceObject.myData.motivation);
+	//_READ_STATE_MAP(UUID, float, &lAllianceObject.myData.impatience);
+	//_READ_STATE_MAP(UUID, int,  &lAllianceObject.myData.attempts);
+	//_READ_STATE_MAP(UUID, float,  &lAllianceObject.myData.mean);
+	//_READ_STATE_MAP(UUID, float,  &lAllianceObject.myData.stddev);
+	//lAllianceObject.myData.psi = ds->unpackInt32();
+	//lAllianceObject.myData.updateTime =*(_timeb*)ds->unpackData(sizeof(_timeb));
+	//lAllianceObject.myData.round_number = ds->unpackInt32();*/
 
-	Log.log(0, "AgentTeamLearning::readBackup : STATE WILL BE READ 2");
-	UUID tmId;	//Teammate id
-	DDBTaskData newTaskData;
+	//Log.log(0, "AgentTeamLearning::readBackup : STATE WILL BE READ 2");
+	//UUID tmId;	//Teammate id
+	//DDBTaskData newTaskData;
 
-	int tDSize = ds->unpackInt32();
-	Log.log(0, "AgentTeamLearning::readBackup : TDSIZE is %d", tDSize);
-	for (int i = 0; i < tDSize; i++) {
-		ds->unpackUUID(&tmId);
-		Log.log(0, "AgentTeamLearning::readBackup : tmId is %s", Log.formatUUID(0, &tmId));
-		ds->unpackTaskData(&newTaskData);
-		lAllianceObject.teammatesData[tmId] = newTaskData;
-	}
+	//int tDSize = ds->unpackInt32();
+	//Log.log(0, "AgentTeamLearning::readBackup : TDSIZE is %d", tDSize);
+	//for (int i = 0; i < tDSize; i++) {
+	//	ds->unpackUUID(&tmId);
+	//	Log.log(0, "AgentTeamLearning::readBackup : tmId is %s", Log.formatUUID(0, &tmId));
+	//	ds->unpackTaskData(&newTaskData);
+	//	lAllianceObject.teammatesData[tmId] = newTaskData;
+	//}
 
-	Log.log(0, "AgentTeamLearning::readBackup : STATE WILL BE READ 3");
-	UUID taskId;
-	int numTasks = ds->unpackInt32();
+	//Log.log(0, "AgentTeamLearning::readBackup : STATE WILL BE READ 3");
+	//UUID taskId;
+	//int numTasks = ds->unpackInt32();
 
-	for (int i = 0; i < numTasks; i++) {
+	//for (int i = 0; i < numTasks; i++) {
 
-		ds->unpackUUID(&taskId);
-		free(mTaskList[taskId]);
-		this->mTaskList[taskId] = (DDBTask *)malloc(sizeof(DDBTask));
-		DDBTask task = *(DDBTask*)ds->unpackData(sizeof(DDBTask));
-		this->mTaskList[taskId]->landmarkUUID = task.landmarkUUID;
-		this->mTaskList[taskId]->agentUUID = task.agentUUID;
-		this->mTaskList[taskId]->avatar = task.avatar;
-		this->mTaskList[taskId]->type = task.type;
-		this->mTaskList[taskId]->completed = task.completed;
-		Log.log(0, "AgentTeamLearning::readBackup : Task is: %s", Log.formatUUID(0, &taskId));
-	}
+	//	ds->unpackUUID(&taskId);
+	//	free(mTaskList[taskId]);
+	//	this->mTaskList[taskId] = (DDBTask *)malloc(sizeof(DDBTask));
+	//	DDBTask task = *(DDBTask*)ds->unpackData(sizeof(DDBTask));
+	//	this->mTaskList[taskId]->landmarkUUID = task.landmarkUUID;
+	//	this->mTaskList[taskId]->agentUUID = task.agentUUID;
+	//	this->mTaskList[taskId]->avatar = task.avatar;
+	//	this->mTaskList[taskId]->type = task.type;
+	//	this->mTaskList[taskId]->completed = task.completed;
+	//	Log.log(0, "AgentTeamLearning::readBackup : Task is: %s", Log.formatUUID(0, &taskId));
+	//}
 
-	ds->unpackUUID(&previousTaskId);
+	//ds->unpackUUID(&previousTaskId);
 
-	_READ_STATE_MAP(UUID, TLAgentDataStruct, &TLAgentData);
-	_READ_STATE_VECTOR(UUID, &TLAgents);
-	Log.log(0, "AgentTeamLearning::readBackup : STATE WILL BE READ 4");
-	round_start_time = *(_timeb*)ds->unpackData(sizeof(_timeb));
-	last_response_time = *(_timeb*)ds->unpackData(sizeof(_timeb));
-	round_info_receive_time = *(_timeb*)ds->unpackData(sizeof(_timeb));
+	//_READ_STATE_MAP(UUID, TLAgentDataStruct, &TLAgentData);
+	//_READ_STATE_VECTOR(UUID, &TLAgents);
+	//Log.log(0, "AgentTeamLearning::readBackup : STATE WILL BE READ 4");
+	//round_start_time = *(_timeb*)ds->unpackData(sizeof(_timeb));
+	//last_response_time = *(_timeb*)ds->unpackData(sizeof(_timeb));
+	//round_info_receive_time = *(_timeb*)ds->unpackData(sizeof(_timeb));
 	new_round_number = ds->unpackInt32();
-	_READ_STATE_VECTOR(UUID, &new_round_order);
-	round_info_set = ds->unpackBool();
-	last_agent = ds->unpackBool();
+	//_READ_STATE_VECTOR(UUID, &new_round_order);
+	//round_info_set = ds->unpackBool();
+	//last_agent = ds->unpackBool();
 
 
 
-	//this->readState(ds, true);
+	////this->readState(ds, true);
 
-	Log.log(0, "AgentTeamLearning::readBackup : STATE IS READ");
+	//Log.log(0, "AgentTeamLearning::readBackup : STATE IS READ");
+
+	DataStream sds;
+
+	// request list of tasks
+	UUID thread = this->conversationInitiate(AgentTeamLearning_CBR_convGetTaskList, DDB_REQUEST_TIMEOUT);
+	if (thread == nilUUID) {
+		return 1;
+	}
+	sds.reset();
+	sds.packUUID(this->getUUID()); // dummy id, getting the full list of tasks anyway
+	sds.packUUID(&thread);
+	sds.packBool(true);			   //true == send list of tasks, otherwise only info about a specific task
+	this->sendMessage(this->hostCon, MSG_DDB_TASKGETINFO, sds.stream(), sds.length());
+	sds.unlock();
 
 
+	// request list of taskdata
+	thread = this->conversationInitiate(AgentTeamLearning_CBR_convGetTaskDataList, DDB_REQUEST_TIMEOUT);
+	if (thread == nilUUID) {
+		return 1;
+	}
+	sds.reset();
+	sds.packUUID(this->getUUID()); // dummy id, getting the full list of task datas anyway
+	sds.packUUID(&thread);
+	sds.packBool(true);			   //true == send list of taskdatas, otherwise only info about a specific taskdata set
+	this->sendMessage(this->hostCon, MSG_DDB_TASKDATAGETINFO, sds.stream(), sds.length());
+	sds.unlock();
 
 
 	//if (STATE(AgentTeamLearning)->isSetupComplete) {

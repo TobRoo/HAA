@@ -243,10 +243,10 @@ int ExecutiveMission::start( char *missionFile ) {
 	STATE(AgentBase)->started = false;
 
 
-	if (!this->mapReveal)	//Only explore if map is not revealed, otherwise forage
+//	if (!this->mapReveal)	//Only explore if map is not revealed, otherwise forage
 		STATE(ExecutiveMission)->missionPhase = TASK_EXPLORE;
-	else
-		STATE(ExecutiveMission)->missionPhase = TASK_FORAGE;
+//	else
+//		STATE(ExecutiveMission)->missionPhase = TASK_FORAGE;
 
 
 	// watch regions;
@@ -595,7 +595,7 @@ int ExecutiveMission::allocateAvatars() {
 		}
 	}
 
-	if ( STATE(ExecutiveMission)->missionStatus == 1 && avatarIdle == this->avatars.size() && this->avatars.size() > 0 ) { // mission must be over!
+	if ( STATE(ExecutiveMission)->missionStatus == 1 && avatarIdle == this->avatars.size() && this->avatars.size() > 0 && !this->teamLearning && !this->individualLearning) { // mission must be over!
 		this->missionDone();
 	}
 

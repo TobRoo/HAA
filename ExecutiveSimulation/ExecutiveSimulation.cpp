@@ -2317,6 +2317,7 @@ int SimAvatar::doCollectLandmark( unsigned char code, float x, float y, UUID *th
 
 	SimLandmark *lm;
 	float dx, dy;
+	char successCode;
 
 	// find the landmark
 	std::list<SimLandmark*> *landmarks = sim->getLandmarkList();
@@ -2330,15 +2331,20 @@ int SimAvatar::doCollectLandmark( unsigned char code, float x, float y, UUID *th
 
 	if ( itSL == landmarks->end() || lm->collected ) {
 
-		if ( itSL == landmarks->end() )
-			Log->log( 0, "SimAvatar::doCollectLandmark: landmark not found (%d)", code );
+		if (itSL == landmarks->end())
+		{
+			Log->log(0, "SimAvatar::doCollectLandmark: landmark not found (%d)", code);
+			successCode = 0;
+		}
 		else
-			Log->log( 0, "SimAvatar::doCollectLandmark: landmark already collected (%d)", code );
-		
+		{
+			Log->log(0, "SimAvatar::doCollectLandmark: landmark already collected (%d)", code);
+			successCode = -1;
+		}
 		// pack data
 		this->output.packChar( ExecutiveSimulation_Defs::SAE_COLLECT );
 		this->output.packUChar( code );
-		this->output.packChar( 0 ); // fail
+		this->output.packChar( successCode ); // fail
 		this->output.packUUID( thread );
 
 		return 1; // not found
@@ -2377,6 +2383,8 @@ int SimAvatar::doDepositLandmark(unsigned char code, float x, float y, UUID *thr
 {
 
 	SimLandmark *lm;
+	char successCode;
+
 
 	// find the landmark
 	std::list<SimLandmark*> *landmarks = sim->getLandmarkList();
@@ -2390,15 +2398,20 @@ int SimAvatar::doDepositLandmark(unsigned char code, float x, float y, UUID *thr
 
 	if (itSL == landmarks->end() || !lm->collected) {
 
-		if (itSL == landmarks->end())
-			Log->log(0, "SimAvatar::doDepositLandmark: landmark not found (%d)", code);
+		if (itSL == landmarks->end()) 
+			{
+				Log->log(0, "SimAvatar::doDepositLandmark: landmark not found (%d)", code);
+				successCode = 0;
+			}
 		else
-			Log->log(0, "SimAvatar::doDepositLandmark: landmark not yet collected (%d)", code);
-
+			{
+				Log->log(0, "SimAvatar::doDepositLandmark: landmark not yet collected (%d)", code);
+				successCode = -1;
+			}
 		// pack data
 		this->output.packChar(ExecutiveSimulation_Defs::SAE_DEPOSIT);
 		this->output.packUChar(code);
-		this->output.packChar(0); // fail
+		this->output.packChar(successCode); // fail
 		this->output.packUUID(thread); 
 		this->output.packFloat32(x);
 		this->output.packFloat32(y);
@@ -2409,11 +2422,11 @@ int SimAvatar::doDepositLandmark(unsigned char code, float x, float y, UUID *thr
 
 	// deposit		
 		Log->log(0, "SimAvatar::doDepositLandmark: landmark deposited (%d)", code);
-
+		successCode = 1;
 		// pack data
 		this->output.packChar(ExecutiveSimulation_Defs::SAE_DEPOSIT);
 		this->output.packUChar(code);
-		this->output.packChar(1); // success
+		this->output.packChar(successCode); // success
 		this->output.packUUID(thread);
 		this->output.packFloat32(x);
 		this->output.packFloat32(y);

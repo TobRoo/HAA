@@ -31,6 +31,7 @@ enum ITEM_TYPES {
 	LIGHT_ITEM = 1,
 	HEAVY_ITEM = 2,
 	TYPE_PENDING = 3,	//Used as a placeholder when the exact type is not yet known
+	WALL = 4,
 };
 
 enum DATATYPES {

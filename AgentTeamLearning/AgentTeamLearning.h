@@ -39,6 +39,7 @@ public:
 
 
 		int runNumber;
+		bool returningFromRecovery;
 
 		int updateId;
 

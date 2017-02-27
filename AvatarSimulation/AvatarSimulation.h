@@ -23,7 +23,7 @@
 #define AvatarSimulation_SKIP_SONAR_COUNT	5 // only process every Nth reading from each sonar
 
 #define AvatarSimulation_IMAGECHECKPERIOD		1000 // ms
-#define AvatarSimulation_IMAGE_DELAY			0.003f //0.3f // seconds, delay this long before taking an image to make sure it is clear
+#define AvatarSimulation_IMAGE_DELAY			 0.03f //0.3f // seconds, delay this long before taking an image to make sure it is clear
 
 typedef std::map<int,UUID>  mapSensorId;
 

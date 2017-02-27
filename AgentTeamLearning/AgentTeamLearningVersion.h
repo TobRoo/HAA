@@ -21,7 +21,7 @@ namespace AgentTeamLearning_MSGS {
 		MSG_CONFIGURE = MSG_FIRST,	   // configure [UUID owner, int avatarInstance]
 		MSG_REQUEST_ACQUIESCENCE,	   // recAcq [UUID thread]
 		MSG_REQUEST_MOTRESET,	       // recAcq [UUID task]
-		MSG_ROUND_INFO,                // Information for the next round of learning/task allocation [int round_number, _timeb round_start_time, UUID agentId_1, UUID agentId_2, ...]
+		MSG_ROUND_INFO,                // Information for the next round of learning/task allocation [UUID sender, int round_number, _timeb round_start_time, UUID agentId_1, UUID agentId_2, ...]
 		MSG_LAST					   // last message id
 	};
 	

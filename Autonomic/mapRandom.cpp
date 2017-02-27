@@ -401,6 +401,8 @@ int generateRandomMap(char * misFile, char* newMisFile, char* newPathFile, char*
 	cout << "\nPaths: " << newLandmarkFile << " " << newTargetFile << " " << newPathFile;
 
 
+	int lmHigh = 0;
+
 	for (int i = 0; i < obstaclePos.size(); i++) {
 		outLM << "[obstacle]\n";
 		outLM << "id=" << i << "\n";
@@ -416,6 +418,7 @@ int generateRandomMap(char * misFile, char* newMisFile, char* newPathFile, char*
 		outObst << "width=2.0\n";
 		outObst << "colour=0.7529	0.3137	0.3020\n";
 		outObst << "solid=1\n";
+		lmHigh = lmHigh + i;
 	}
 
 	for (int i = 0; i < targetPos.size(); i++) {
@@ -423,7 +426,44 @@ int generateRandomMap(char * misFile, char* newMisFile, char* newPathFile, char*
 		outTarget << "id=" << 200 + i << "\n";
 		outTarget << "pose=" << (targetPos[i][0] - 0.125f) << " " << (targetPos[i][1] - 0.125f) << " " << "0.25	0.25 1\n";
 		outTarget << "landmark_type=" << i % 2 + 1<<"\n";	//Equal amounts of light and heavy objects
+		lmHigh = lmHigh + i;
 	}
+
+
+	//Add wall landmarks for better PF localization 
+	int idCount = lmHigh;
+
+	for (int i = 0; i < 11; i++) {	//
+		outLM << "[wall]\n";
+		outLM << "id=" << idCount  << "\n";
+		outLM << "pose=" << 0.0f << " " << i*1.0f << " " << "0.25	0.25 1\n";			//Left wall
+		outLM << "landmark_type=" << 4 << "\n";	//Wall
+
+		outLM << "[wall]\n";
+		outLM << "id=" << idCount + 1 << "\n";
+		outLM << "pose=" << 10.0f << " " << i*1.0f << " " << "0.25	0.25 1\n";			//Right wall
+		outLM << "landmark_type=" << 4 << "\n";	//Wall
+
+		if (i > 0 && i < 10) {	//Don't duplicate corners
+
+
+			outLM << "[wall]\n";
+			outLM << "id=" << idCount + 2 << "\n";
+			outLM << "pose=" << i*1.0f << " " << 0.0f << " " << "0.25	0.25 1\n";			//Top wall
+			outLM << "landmark_type=" << 4 << "\n";	//Wall
+
+			outLM << "[wall]\n";
+			outLM << "id=" << idCount + 3 << "\n";
+			outLM << "pose=" << i*1.0f << " " << 10.0f << " " << "0.25	0.25 1\n";			//Bottom wall
+			outLM << "landmark_type=" << 4 << "\n";	//Wall
+		}
+
+		idCount = idCount + 4;
+
+	}
+
+
+
 
 
 

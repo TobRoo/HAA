@@ -516,7 +516,7 @@ int AgentIndividualLearning::formAction() {
 
 		}
 		else {
-//			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: trying to drop off cargo...");
+			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: trying to drop off cargo...");
 			thread = this->conversationInitiate(AgentIndividualLearning_CBR_convDepositLandmark, -1, &avAgent, sizeof(UUID));
 			if (thread == nilUUID) {
 				return 1;
@@ -1856,7 +1856,7 @@ bool AgentIndividualLearning::convLandmarkInfo(void *vpConv) {
 			// Obstacle, cannot be collected
 			this->obstacleList[newLandmark.code] = newLandmark;
 			Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::convLandmarkInfo: Updating obstacle");
-		} else {
+		} else if (newLandmark.landmarkType != WALL) {
 			// Target
 			this->targetList[newLandmark.code] = newLandmark;
 			Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::convLandmarkInfo: Updating target");
@@ -2629,6 +2629,20 @@ int AgentIndividualLearning::readBackup(DataStream *ds) {
 
 		this->spawnAgentAdviceExchange();
 	}
+
+	DataStream sds;
+
+	// request avatar info
+	UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convGetAvatarInfo, DDB_REQUEST_TIMEOUT, &avatarId, sizeof(UUID));
+	if (thread == nilUUID) {
+		return 1;
+	}
+	sds.reset();
+	sds.packUUID((UUID *)&avatarId);
+	sds.packInt32(DDBAVATARINFO_RAGENT | DDBAVATARINFO_RPF | DDBAVATARINFO_RRADII | DDBAVATARINFO_RTIMECARD);
+	sds.packUUID(&thread);
+	this->sendMessage(this->hostCon, MSG_DDB_AVATARGETINFO, sds.stream(), sds.length());
+	sds.unlock();
 
     return AgentBase::readBackup(ds);
 }// end readBackup

@@ -610,7 +610,7 @@ int AvatarSimulation::parseAvatarOutput( DataStream *ds ) {
 				success = ds->unpackChar();
 				ds->unpackUUID( &thread );
 
-				if ( success ) {
+				if ( success == 1 ) {
 					// update avatar capacity
 					lds.reset();
 					lds.packUUID( &STATE(AvatarBase)->avatarUUID );
@@ -648,17 +648,17 @@ int AvatarSimulation::parseAvatarOutput( DataStream *ds ) {
 		{
 			Log.log(0, "AvatarSimulation::parseAvatarOutput: SAE_DEPOSIT");
 
-			unsigned char code, success;
+			unsigned char code, successCode;
 			float x, y;
 			UUID thread, initiator;
 			code = ds->unpackUChar();
-			success = ds->unpackChar();
+			successCode = ds->unpackChar();
 			ds->unpackUUID(&thread);
 			x = ds->unpackFloat32();
 			y = ds->unpackFloat32();
 			ds->unpackUUID(&initiator);
 
-			if (success) {
+			if (successCode == 2) {		//Success
 				// update avatar capacity
 				lds.reset();
 				lds.packUUID(&STATE(AvatarBase)->avatarUUID);
@@ -681,10 +681,10 @@ int AvatarSimulation::parseAvatarOutput( DataStream *ds ) {
 
 			// notify initiator
 
-				Log.log(0, "AvatarSimulation::parseAvatarOutput: deposit attempt finished, %d", success);
+				Log.log(0, "AvatarSimulation::parseAvatarOutput: deposit attempt finished, %d", successCode);
 				lds.reset();
 				lds.packUUID(&thread);
-				lds.packChar(success);
+				lds.packChar(successCode);
 				this->sendMessage(this->hostCon, MSG_RESPONSE, lds.stream(), lds.length(), &initiator);
 				lds.unlock();
 		}
