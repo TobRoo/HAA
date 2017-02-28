@@ -403,7 +403,7 @@ int AvatarBase::registerLandmark( UUID *id, unsigned char code, UUID *avatar, fl
 	lds.packFloat32( x ); 
 	lds.packFloat32( y ); 
 	lds.packChar( 0 );
-	lds.packInt32(0);	//ITEM_TYPES = NON_COLLECTABLE since it is an avatar
+	lds.packInt32((int)AVATAR);	//ITEM_TYPES = AVATAR since it is an avatar
 	this->sendMessage( this->hostCon, MSG_DDB_ADDLANDMARK, lds.stream(), lds.length() );
 	lds.unlock();
 

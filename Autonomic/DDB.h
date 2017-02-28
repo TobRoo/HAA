@@ -32,6 +32,7 @@ enum ITEM_TYPES {
 	HEAVY_ITEM = 2,
 	TYPE_PENDING = 3,	//Used as a placeholder when the exact type is not yet known
 	WALL = 4,
+	AVATAR = 5,
 };
 
 enum DATATYPES {
