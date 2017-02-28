@@ -129,6 +129,9 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
     //Set cargo flags
     this->hasCargo = false;
     this->hasDelivered = false;
+
+	STATE(AgentIndividualLearning)->collectRequestSent = false;
+	STATE(AgentIndividualLearning)->depositRequestSent = false;
 	
     // Prepare callbacks
     this->callback[AgentIndividualLearning_CBR_convAction] = NEW_MEMBER_CB(AgentIndividualLearning, convAction);
@@ -507,6 +510,10 @@ int AgentIndividualLearning::formAction() {
 					lds.packUUID(&thread);
 					this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_COLLECT_LANDMARK), lds.stream(), lds.length(), &avAgent);
 					lds.unlock();
+
+					STATE(AgentIndividualLearning)->collectRequestSent = true;
+					this->backup();
+
 				}
 
 			}
@@ -529,6 +536,9 @@ int AgentIndividualLearning::formAction() {
 			lds.packUUID(&thread);
 			this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_DEPOSIT_LANDMARK), lds.stream(), lds.length(), &avAgent);
 			lds.unlock();
+
+			STATE(AgentIndividualLearning)->depositRequestSent = true;
+			this->backup();
 
 		}
 
@@ -1478,7 +1488,7 @@ int AgentIndividualLearning::conProcessMessage(spConnection con, unsigned char m
 //-----------------------------------------------------------------------------
 // Callbacks
 
-/* convGetLandmarkList
+/* convAction
 *
 * Callback for response from AvatarSimulation with the result of the action. When the
 * action fails, it will be resent. When the action is a success, it proceeds to update
@@ -1730,7 +1740,7 @@ bool AgentIndividualLearning::convGetLandmarkList(void * vpConv) {
 				// This is an obstacle
 				this->obstacleList[landmark.code] = landmark;
 			}
-			else {
+			else if (landmark.landmarkType == HEAVY_ITEM || landmark.landmarkType == LIGHT_ITEM || landmark.landmarkType == TYPE_PENDING){
 				// This is a target
 				this->targetList[landmark.code] = landmark;
 			}
@@ -2007,6 +2017,10 @@ bool AgentIndividualLearning::convGetTaskInfo(void * vpConv) {
 					sds.packUUID(&thread);
 					this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_DEPOSIT_LANDMARK), sds.stream(), sds.length(), &this->avatarAgentId);
 					sds.unlock();
+
+					STATE(AgentIndividualLearning)->depositRequestSent = true;
+					this->backup();
+
 				}
 				else {
 					lds.unlock();
@@ -2046,6 +2060,9 @@ bool AgentIndividualLearning::convGetTaskInfo(void * vpConv) {
 					sds.packUUID(&thread);
 					this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_DEPOSIT_LANDMARK), sds.stream(), sds.length(), &this->avatarAgentId);
 					sds.unlock();
+
+					STATE(AgentIndividualLearning)->depositRequestSent = true;
+					this->backup();
 
 				}
 
@@ -2179,11 +2196,18 @@ bool AgentIndividualLearning::convCollectLandmark(void * vpConv) {
     success = lds.unpackChar();
     lds.unlock();
 
-    if (success) { // succeeded
+    if (success == 1) { // succeeded
         Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convCollectLandmark: success");
         this->hasCargo = true;
         this->backup(); // landmarkCollected
     }
+	else if (success == -1) {
+		if (STATE(AgentIndividualLearning)->collectRequestSent) { // We have sent a collectRequest - the landmark was collected, and we missed the confirmation - proceed as if success
+			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convCollectLandmark: already collected, but we have sent a collectRequest - proceeding as success");
+			this->hasCargo = true;
+			this->backup(); // landmarkCollected
+		}
+	}
     else {
         Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convCollectLandmark: failed");
     }
@@ -2207,7 +2231,7 @@ bool AgentIndividualLearning::convDepositLandmark(void * vpConv) {
 	success = lds.unpackChar();
 	lds.unlock();
 
-	if (success) { // succeeded
+	if (success == 1) { // succeeded
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convDepositLandmark: success");
 
 		//We have cargo, drop off	
@@ -2270,6 +2294,78 @@ bool AgentIndividualLearning::convDepositLandmark(void * vpConv) {
 
 		//}
 		this->backup(); // landmarkDeposited
+	}
+	else if (success == -1) {	//Not yet collected / already dropped off, but missed the confirmation message
+		if (STATE(AgentIndividualLearning)->depositRequestSent) { // We have sent a depositRequest - the landmark was dropped off, and we missed the confirmation - proceed as if success
+			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convDepositLandmark: not yet collected, but we have sent a depositRequest - proceeding as success");
+
+			//We have cargo, drop off	
+			this->hasCargo = false;
+			// drop off
+			std::map<UUID, DDBRegion, UUIDless>::iterator cRIter;
+
+			//	for ( auto cRIter : this->collectionRegions) {				//See if we are inside a collection region when dropping cargo
+
+			//for (cRIter = this->collectionRegions.begin(); cRIter != this->collectionRegions.end(); cRIter++) {				//See if we are inside a collection region when dropping cargo
+			//	float cR_x_high = cRIter->second.x + cRIter->second.w;
+			//	float cR_x_low = cRIter->second.x;
+			//	float cR_y_high = cRIter->second.y + cRIter->second.h;
+			//	float cR_y_low = cRIter->second.y;
+
+			//		if (cR_x_low <= STATE(AgentIndividualLearning)->prev_pos_x && STATE(AgentIndividualLearning)->prev_pos_x <= cR_x_high && cR_y_low <= STATE(AgentIndividualLearning)->prev_pos_y && STATE(AgentIndividualLearning)->prev_pos_y <= cR_y_high) {
+			//We delivered the cargo!
+			this->hasDelivered = true;
+			this->task.completed = true;
+
+			//Upload task completion info to DDB
+			DataStream sds;
+			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convDepositLandmark: task %s completed, uploading to DDB...", Log.formatUUID(LOG_LEVEL_NORMAL, &this->taskId));
+			sds.reset();
+			sds.packUUID(&this->taskId);		//Task id
+												//lds.packUUID(&this->task.agentUUID);						//Agent id
+												//lds.packUUID(&this->task.avatar);	//Avatar id
+			sds.packUUID(&nilUUID);						//Agent id
+			sds.packUUID(&nilUUID);						//Avatar id
+
+			sds.packBool(&this->task.completed);
+			this->sendMessage(this->hostCon, MSG_DDB_TASKSETINFO, sds.stream(), sds.length());
+
+			this->target.code = 0;
+			this->target.collected = false;
+			this->target.elevation = 0.0;
+			this->target.estimatedPos = this->target.estimatedPos;
+			this->target.height = 0.0;
+			this->target.landmarkType = NON_COLLECTABLE;
+			this->target.owner = nilUUID;
+			this->target.P = 0.0;
+			this->target.posInitialized = this->target.posInitialized;
+			this->target.trueX = 0.0;
+			this->target.trueY = 0.0;
+			this->target.x = 0.0;
+			this->target.y = 0.0;
+
+			this->taskId = nilUUID;
+			this->task.agentUUID = nilUUID;
+			this->task.avatar = nilUUID;
+			this->task.completed = this->task.completed;
+			this->task.landmarkUUID = nilUUID;
+			this->task.type = NON_COLLECTABLE;
+
+
+
+			sds.unlock();
+			//break;
+			//		}
+
+			//}
+			STATE(AgentIndividualLearning)->depositRequestSent = false;
+			this->backup(); // landmarkDeposited
+
+
+
+		}
+
+
 	}
 	else {
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convDepositLandmark: failed");

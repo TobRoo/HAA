@@ -109,6 +109,9 @@ public:
 		int runNumber;
 		bool hasReceivedRunNumber;
 
+		bool collectRequestSent;
+		bool depositRequestSent;
+
     };
 
 //-----------------------------------------------------------------------------

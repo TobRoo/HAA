@@ -57,7 +57,8 @@ public:
 
 protected:
 	LAlliance lAllianceObject;
-	UUID AgentTeamLearning_recoveryLock;
+	UUID AgentTeamLearning_recoveryLock1;
+	UUID AgentTeamLearning_recoveryLock2;
 	taskList  mTaskList;
 	UUID	  previousTaskId;
 

@@ -1119,6 +1119,8 @@ bool AgentTeamLearning::convGetTaskList(void * vpConv)
 		// TODO try again?
 	}
 
+	recoveryCheck(&this->AgentTeamLearning_recoveryLock1);
+
 	return 0;
 }
 
@@ -1177,7 +1179,7 @@ bool AgentTeamLearning::convGetTaskDataList(void * vpConv) {
 		lds.unlock();
 		// TODO try again?
 	}
-
+	recoveryCheck(&this->AgentTeamLearning_recoveryLock2);
 	return 0;
 }
 
@@ -1485,6 +1487,16 @@ int AgentTeamLearning::recoveryFinish() {
 	//sds.unlock();
 
 
+	for (auto& tmIter : this->lAllianceObject.teammatesData) {
+		Log.log(0, "Teammates round is: %d", tmIter.second.round_number);
+		if (tmIter.second.round_number > this->lAllianceObject.myData.round_number) {
+			Log.log(0, "Higher than mine, changing to the new number...");
+			this->lAllianceObject.myData.round_number = tmIter.second.round_number;
+		}
+
+	}
+
+
 	this->TLAgentData[STATE(AgentBase)->uuid].response = false;
 	this->checkRoundStatus();
 	this->initiateNextRound();
@@ -1645,6 +1657,9 @@ int AgentTeamLearning::readBackup(DataStream *ds) {
 	this->sendMessage(this->hostCon, MSG_DDB_TASKGETINFO, sds.stream(), sds.length());
 	sds.unlock();
 
+	// we have tasks to take care of before we can resume
+	apb->apbUuidCreate(&this->AgentTeamLearning_recoveryLock1);
+	this->recoveryLocks.push_back(this->AgentTeamLearning_recoveryLock1);
 
 	// request list of taskdata
 	thread = this->conversationInitiate(AgentTeamLearning_CBR_convGetTaskDataList, DDB_REQUEST_TIMEOUT);
@@ -1658,6 +1673,9 @@ int AgentTeamLearning::readBackup(DataStream *ds) {
 	this->sendMessage(this->hostCon, MSG_DDB_TASKDATAGETINFO, sds.stream(), sds.length());
 	sds.unlock();
 
+	// we have tasks to take care of before we can resume
+	apb->apbUuidCreate(&this->AgentTeamLearning_recoveryLock2);
+	this->recoveryLocks.push_back(this->AgentTeamLearning_recoveryLock2);
 
 	//if (STATE(AgentTeamLearning)->isSetupComplete) {
 	//	this->finishConfigureParameters();
