@@ -70,6 +70,8 @@ AgentTeamLearning::AgentTeamLearning(spAddressPort ap, UUID *ticket, int logLeve
 	this->callback[AgentTeamLearning_CBR_convReqAcquiescence] = NEW_MEMBER_CB(AgentTeamLearning, convReqAcquiescence);
 	this->callback[AgentTeamLearning_CBR_convReqMotReset] = NEW_MEMBER_CB(AgentTeamLearning, convReqMotReset);
 	this->callback[AgentTeamLearning_CBR_convGetRunNumber] = NEW_MEMBER_CB(AgentTeamLearning, convGetRunNumber);
+	this->callback[AgentTeamLearning_CBR_convGetRoundInfo] = NEW_MEMBER_CB(AgentTeamLearning, convGetRoundInfo);
+	
 }// end constructor
 
 //-----------------------------------------------------------------------------
@@ -583,6 +585,18 @@ int AgentTeamLearning::initiateNextRound() {
 
 
 
+			lds.reset();
+			lds.packUUID(this->getUUID());	//Sender id
+			lds.packInt32(this->new_round_number);  // Next round number
+			lds.packData(&this->round_start_time, sizeof(_timeb));  // Next round start time
+			lds.packInt32(this->TLAgents.size());
+
+																	// Pack the new (randomized) list
+			for (iter_inner = this->TLAgents.begin(); iter_inner != this->TLAgents.end(); ++iter_inner) {
+				lds.packUUID(&*iter_inner);
+			}
+			this->sendMessage(this->hostCon, MSG_DDB_TL_ROUND_INFO, lds.stream(), lds.length());
+			lds.unlock();
 
 
 
@@ -1338,6 +1352,40 @@ bool AgentTeamLearning::convGetRunNumber(void * vpConv)
 	return false;
 }
 
+bool AgentTeamLearning::convGetRoundInfo(void * vpConv)
+{
+	DataStream lds;
+	spConversation conv = (spConversation)vpConv;
+
+	if (conv->response == NULL) { // timed out
+		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRunNumber: timed out");
+		return 0; // end conversation
+	}
+
+	lds.setData(conv->response, conv->responseLen);
+	lds.unpackData(sizeof(UUID)); // discard thread
+	char response = lds.unpackChar();
+	if (response == DDBR_OK) { // succeeded
+		STATE(AgentTeamLearning)->round_number = lds.unpackInt32();
+		this->new_round_number = STATE(AgentTeamLearning)->round_number;
+		this->lAllianceObject.myData.round_number = STATE(AgentTeamLearning)->round_number;
+		this->round_start_time = *(_timeb*)lds.unpackData(sizeof(_timeb));
+		int count = lds.unpackInt32();
+		this->TLAgents.clear();
+		UUID newUUID;
+		for (int i = 0; i < count; i++) {
+			lds.unpackUUID(&newUUID);
+			this->TLAgents.push_back(newUUID);
+		}
+	}
+	lds.unlock();
+
+
+	recoveryCheck(&this->AgentTeamLearning_recoveryLock3);
+
+	return false;
+}
+
 //-----------------------------------------------------------------------------
 // State functions
 
@@ -1510,7 +1558,7 @@ int AgentTeamLearning::recoveryFinish() {
 
 	this->TLAgentData[STATE(AgentBase)->uuid].response = false;
 	this->checkRoundStatus();
-	this->initiateNextRound();
+	//this->initiateNextRound();
 	STATE(AgentTeamLearning)->returningFromRecovery = true;
 	
 	return 0;
@@ -1687,6 +1735,23 @@ int AgentTeamLearning::readBackup(DataStream *ds) {
 	// we have tasks to take care of before we can resume
 	apb->apbUuidCreate(&this->AgentTeamLearning_recoveryLock2);
 	this->recoveryLocks.push_back(this->AgentTeamLearning_recoveryLock2);
+
+	// request round info
+	thread = this->conversationInitiate(AgentTeamLearning_CBR_convGetRoundInfo, DDB_REQUEST_TIMEOUT);
+	if (thread == nilUUID) {
+		return 1;
+	}
+	sds.reset();
+	sds.packUUID(&thread);
+	this->sendMessage(this->hostCon, MSG_DDB_TL_GET_ROUND_INFO, sds.stream(), sds.length());
+	sds.unlock();
+
+	// we have tasks to take care of before we can resume
+	apb->apbUuidCreate(&this->AgentTeamLearning_recoveryLock3);
+	this->recoveryLocks.push_back(this->AgentTeamLearning_recoveryLock3);
+
+
+
 
 	//if (STATE(AgentTeamLearning)->isSetupComplete) {
 	//	this->finishConfigureParameters();

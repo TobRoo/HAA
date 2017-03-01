@@ -4979,6 +4979,35 @@ int DDBStore::GetTaskData(UUID *id, DataStream *ds, UUID *thread, bool enumTaskD
 	return 0;
 }
 
+
+int DDBStore::SetTLRoundInfo(RoundInfoStruct *newRoundInfo) {
+
+
+	this->DDBTLRoundInfo.roundNumber = newRoundInfo->roundNumber;
+	this->DDBTLRoundInfo.startTime = newRoundInfo->startTime;
+	this->DDBTLRoundInfo.TLAgents = newRoundInfo->TLAgents;
+
+	return 0;
+}
+
+
+int DDBStore::GetTLRoundInfo(DataStream *ds, UUID *thread) {
+
+	ds->reset();
+	ds->packUUID(thread);
+	
+	// send task data
+	ds->packChar(DDBR_OK);
+	ds->packInt32(this->DDBTLRoundInfo.roundNumber);
+	ds->packData(&this->DDBTLRoundInfo.startTime, sizeof(_timeb));
+	ds->packInt32(this->DDBTLRoundInfo.TLAgents.size());
+	for (auto tlAIter : this->DDBTLRoundInfo.TLAgents) {
+		ds->packUUID(&tlAIter);
+	}
+
+	return 0;
+}
+
 //Individual Q-learning value storage, for storing data between simulation runs
 
 bool DDBStore::AddQLearningData(bool onlyActions, char instance, long long totalActions, long long usefulActions, int tableSize, std::vector<float>* qTable, std::vector<unsigned int>* expTable)

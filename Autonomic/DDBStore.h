@@ -31,6 +31,8 @@ public:
 
 	unsigned long long DDBTotalSimSteps;		//Count of the total amount of simulation steps that have been taken
 
+	RoundInfoStruct DDBTLRoundInfo;		//Struct for the team learning round info
+
 	UUID nilUUID;
 
 	// DEBUG
@@ -139,6 +141,10 @@ public:
 	int RemoveTaskData(UUID * id);
 	int TaskDataSetInfo(UUID * id, DDBTaskData * data);
 	int GetTaskData(UUID * id, DataStream * ds, UUID * thread, bool enumTaskData);
+
+	int SetTLRoundInfo(RoundInfoStruct *newRoundInfo);
+
+	int GetTLRoundInfo(DataStream * ds, UUID * thread);
 
 	bool GetTaskId(UUID * id, UUID * foundId);
 	UUID GetTaskDataId(UUID * id);

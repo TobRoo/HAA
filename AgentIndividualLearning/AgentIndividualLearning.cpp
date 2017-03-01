@@ -458,27 +458,27 @@ int AgentIndividualLearning::formAction() {
 
 	// Form action
 	if (action == MOVE_FORWARD) {
-//		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action MOVE_FORWARD");
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action MOVE_FORWARD");
 		STATE(AgentIndividualLearning)->action.action = MOVE_FORWARD; //	AvatarBase_Defs::AA_MOVE;
 		STATE(AgentIndividualLearning)->action.val = STATE(AgentIndividualLearning)->maxLinear;
 	}
 	else if (action == MOVE_BACKWARD) {
-//		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action MOVE_BACKWARD");
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action MOVE_BACKWARD");
 		STATE(AgentIndividualLearning)->action.action = MOVE_BACKWARD; //AvatarBase_Defs::AA_MOVE;
 		STATE(AgentIndividualLearning)->action.val = STATE(AgentIndividualLearning)->maxLinear*this->backupFractionalSpeed;
 	}
 	else if (action == ROTATE_LEFT) {
-//		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action ROTATE_LEFT");
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action ROTATE_LEFT");
 		STATE(AgentIndividualLearning)->action.action = ROTATE_LEFT; // AvatarBase_Defs::AA_ROTATE;
 		STATE(AgentIndividualLearning)->action.val = STATE(AgentIndividualLearning)->maxRotation;
 	}
 	else if (action == ROTATE_RIGHT) {
-//		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action ROTATE_RIGHT");
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action ROTATE_RIGHT");
 		STATE(AgentIndividualLearning)->action.action = ROTATE_RIGHT;// AvatarBase_Defs::AA_ROTATE;
 		STATE(AgentIndividualLearning)->action.val = -STATE(AgentIndividualLearning)->maxRotation;
 	}
 	else if (action == INTERACT) {
-//		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action INTERACT");
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action INTERACT");
 		// TODO: Add interact capabilities
 		//If we have no cargo, pick up - first check if we can carry it (strength, capacity)
 		//If we have cargo, drop it
@@ -518,7 +518,7 @@ int AgentIndividualLearning::formAction() {
 
 			}
 			else {
-	//			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Cannot collect - booleans: %d %d %d", target.landmarkType != NON_COLLECTABLE, this->avatar.capacity >= target.landmarkType, !this->task.completed);
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Cannot collect - booleans: %d %d %d", target.landmarkType != NON_COLLECTABLE, this->avatar.capacity >= target.landmarkType, !this->task.completed);
 			}
 
 		}
@@ -549,7 +549,7 @@ int AgentIndividualLearning::formAction() {
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: No matching action, %d", action);
 	}// end form action if
 
-//	Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::formAction: Average action quality: %.3f", this->q_avg);
+	Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::formAction: Average action quality: %.3f", this->q_avg);
 
 	 // When the action is not valid retain the type, but zero the movement value
 	 // (so that it can still be used for learning)
@@ -572,7 +572,7 @@ int AgentIndividualLearning::learn() {
     // TODO: Adjust learning frequency based on experience
     if ((this->learning_iterations_ % this->learning_frequency_ == 0) && (STATE(AgentIndividualLearning)->action.action > 0)) {
         float reward = this->determineReward();
- //       Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::learn: Reward: %f", reward);
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::learn: Reward: %f", reward);
 
         this->q_learning_.learn(this->prevStateVector, this->stateVector, STATE(AgentIndividualLearning)->action.action, reward);
         this->learning_iterations_++;
@@ -757,7 +757,7 @@ int AgentIndividualLearning::getStateVector() {
 
     // Form output vector
     std::vector<unsigned int> state_vector{target_type, target_dist, target_angle, goal_dist, goal_angle, obst_dist, obst_angle};
-//	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateVector: target type %d, target dist %d, target angle %d, goal dist %d, goal angle %d, obst dist %d, obst angle %d", target_type, target_dist, target_angle, goal_dist, goal_angle, obst_dist, obst_angle);
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateVector: target type %d, target dist %d, target angle %d, goal dist %d, goal angle %d, obst dist %d, obst angle %d", target_type, target_dist, target_angle, goal_dist, goal_angle, obst_dist, obst_angle);
     // Check that state vector is valid
     for(int i = 0; i < this->num_state_vrbls_; i++) {
         if (state_vector[i] > this->state_resolution_[i]) {
@@ -801,7 +801,7 @@ int AgentIndividualLearning::policy(std::vector<float> &quality) {
     if (quality_sum == 0.0f) {
         random_actions_++;
         int action = (int)ceil(randomGenerator.Uniform01() * num_actions_);
-        //Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::policy: All zero quality, selecting a random action");
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::policy: All zero quality, selecting a random action");
         return action;
     }
     else {
@@ -1516,7 +1516,7 @@ bool AgentIndividualLearning::convAction(void *vpConv) {
 	lds.unlock();
 
     if (result == AAR_SUCCESS) {
-  //      Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convAction: Action successful, getting new action");
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convAction: Action successful, getting new action");
 
         // Begin getting new action
         this->updateStateData();
@@ -1992,7 +1992,7 @@ bool AgentIndividualLearning::convGetTaskInfo(void * vpConv) {
         lds.unpackUUID(&taskIdIn);
         DDBTask newTask = *(DDBTask *)lds.unpackData(sizeof(DDBTask));
 
-	//	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Received info about task %s assigned to %s, my current task is: %s.", Log.formatUUID(0, &taskIdIn), Log.formatUUID(0, &newTask.agentUUID), Log.formatUUID(0, &this->taskId));
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Received info about task %s assigned to %s, my current task is: %s.", Log.formatUUID(0, &taskIdIn), Log.formatUUID(0, &newTask.agentUUID), Log.formatUUID(0, &this->taskId));
 
 		// Make sure the task is assigned to this avatar
         if (newTask.avatar == STATE(AgentIndividualLearning)->ownerId) {	
@@ -2467,11 +2467,11 @@ bool AgentIndividualLearning::convRequestAdvice(void *vpConv) {
 	this->q_vals.clear();
 	for (int i = 0; i < this->num_actions_; i++) {
 		this->q_vals.push_back(lds.unpackFloat32());
-//		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAdvice: received q_val: %f", this->q_vals.back());
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAdvice: received q_val: %f", this->q_vals.back());
 	}
 	lds.unlock();
 
-//	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAdvice: Received advice.");
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAdvice: Received advice.");
 
 	// Proceed to form the next action
 	this->formAction();

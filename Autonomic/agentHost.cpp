@@ -10650,6 +10650,26 @@ int AgentHost::ddbGetTaskData(UUID *id, spConnection con, UUID *thread, bool enu
 	return 0;
 }
 
+int AgentHost::ddbTLRoundSetInfo(DataStream *lds) {
+
+	this->globalStateTransaction(OAC_DDB_TL_ROUND_INFO, lds->stream(), lds->length());
+
+	return 0;
+}
+
+int AgentHost::ddbTLRoundGetInfo(spConnection con, UUID *thread) {
+
+	this->dStore->GetTLRoundInfo(&this->ds, thread);
+
+	this->sendAgentMessage(&con->uuid, MSG_RESPONSE, this->ds.stream(), this->ds.length());
+
+	this->ds.unlock();
+
+	return 0;
+}
+
+
+
 int AgentHost::ddbAddQLearningData(bool onlyActions, char typeId, long long totalActions, long long usefulActions, int tableSize, std::vector<float>* qTable, std::vector<unsigned int>* expTable)
 {
 	this->ds.reset();
@@ -12398,6 +12418,25 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		this->ddbGetTaskData(&uuid, con, &thread, enumTaskData);
 	}
 	break;
+	case MSG_DDB_TL_ROUND_INFO:
+	{
+
+		lds.setData(data, len);
+		this->ddbTLRoundSetInfo(&lds);
+		lds.unlock();
+	}
+	break;
+	case MSG_DDB_TL_GET_ROUND_INFO:
+	{
+
+		UUID thread;
+		lds.setData(data, len);
+		lds.unpackUUID(&thread);
+		lds.unlock();
+
+		this->ddbTLRoundGetInfo(con, &thread);
+	}
+	break;
 	case MSG_DDB_QLEARNINGDATA:
 	{
 		//Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_QLEARNINGDATA ");
@@ -13738,6 +13777,31 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		}
 		this->globalStateChangeForward(message, data, len); // forward to mirrors and sponsees	
 	}
+		break;
+	case OAC_DDB_TL_ROUND_INFO:
+		{
+		UUID sender;
+		RoundInfoStruct newRoundInfo;
+
+		lds.setData(data, len);
+		lds.unpackUUID(&sender);
+
+		newRoundInfo.roundNumber = lds.unpackInt32();  // Next round number
+		newRoundInfo.startTime = *(_timeb *)lds.unpackData(sizeof(_timeb)); // Next round start time
+																			
+		int numberOfAgents = lds.unpackInt32();
+		UUID newAgentId;								// Unpack the new randomized list of agents
+		for (int i = 0; i < numberOfAgents; i++) {
+			lds.unpackUUID(&newAgentId);
+			newRoundInfo.TLAgents.push_back(newAgentId);
+		}
+
+		lds.unlock();
+		this->dStore->SetTLRoundInfo(&newRoundInfo);
+
+		this->_ddbNotifyWatchers(this->getUUID(), DDB_TL_ROUND_INFO, DDBE_UPDATE, &sender);
+		this->globalStateChangeForward(message, data, len); // forward to mirrors and sponsees
+		}
 		break;
 	case OAC_DDB_ADDQLEARNINGDATA:
 	{

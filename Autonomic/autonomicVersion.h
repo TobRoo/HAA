@@ -88,6 +88,7 @@ enum MSGS {
 	OAC_DDB_ADDTASKDATA, // add taskdata to DDB [UUID sender, UUID uuid, DDBTaskData data]
 	OAC_DDB_REMTASKDATA, // remove taskdata from DDB [UUID sender, UUID uuid]
 	OAC_DDB_TASKDATASETINFO, // set taskdata info [UUID sender, UUID uuid, DDBTaskData data]
+	OAC_DDB_TL_ROUND_INFO,	  // set next round info [UUID sender, int round number, _timeb start time, n*UUID agent_UUID]
 	OAC_DDB_ADDQLEARNINGDATA, //Upload learning data for next run [UUID sender, char instance, long long totalActions, long long usefulActions, int tableSize, <float>qTable, <unsigned int>expTable]
 	OAC_DDB_ADDADVICEDATA,	  //[UUID sender, char instance, float cq, float bq]
 	OAC_DDB_ADDSIMSTEPS,	// [unsigned long long totalSimSteps
@@ -214,6 +215,8 @@ enum MSGS {
 	MSG_DDB_REMTASKDATA,	 // remove taskdata from DDB [ UUID uuid]
 	MSG_DDB_TASKDATAGETINFO, // request taskdata info [UUID uuid, UUID thread, bool enumTaskData] (if enum is true, send all task data)
 	MSG_DDB_TASKDATASETINFO, // set taskdata info [UUID uuid, DDBTaskData data]
+	MSG_DDB_TL_ROUND_INFO,	 // set next round info [UUID sender, int round number, _timeb start time, n*UUID agent_UUID]
+	MSG_DDB_TL_GET_ROUND_INFO, // get round info [UUID thread]
 	MSG_DDB_QLEARNINGDATA,	 // upload individual learning data for next simulation run [UUID ownerId, char agentType.instance, long long totalActions, long long usefulActions, int table_size, float [table_size]qtable, float [table_size]exptable]
 	MSG_DDB_ADVICEDATA,		 // upload advice data for next simulation run [UUID avatarId, char avatarInstance, float cq, float bq]
 	MSG_DDB_SIMSTEPS,		 // upload total simstep count from ExecutiveSimulation [unsigned long long totalSimSteps]
@@ -325,6 +328,7 @@ static const unsigned int MSG_SIZE[] = { // array of message size by message id,
 	-2, //sizeof(UUID) * 2 + sizeof(DDBTaskData),	//OAC_DDB_ADDTASKDATA [UUID sender, UUID uuid, DDBTaskData data]
 	sizeof(UUID) * 2,				//OAC_DDB_REMTASKDATA [UUID sender, UUID uuid]
 	-2,								//sizeof(UUID) * 2 + sizeof(DDBTaskData),  //OAC_DDB_TASKDATASETINFO [UUID sender, UUID uuid, DDBTaskData data]
+	-2,								 // OAC_DDB_TL_ROUND_INFO set next round info [UUID sender, int round number, _timeb start time, n*UUID agent_UUID]
 	-2,												//					OAC_DDB_ADDQLEARNINGDATA
 	sizeof(UUID) + sizeof(char) + 2*sizeof(float),	//OAC_DDB_ADDADVICEDATA,	  //[UUID sender, char instance, float cq, float bq]
 	sizeof(unsigned long long),					//OAC_DDB_ADDSIMSTEPS
@@ -436,6 +440,8 @@ static const unsigned int MSG_SIZE[] = { // array of message size by message id,
 	sizeof(UUID),										//MSG_DDB_REMTASKDATA
 	sizeof(UUID) + sizeof(UUID) + sizeof(bool),			//MSG_DDB_TASKDATAGETINFO
 	-2,//sizeof(UUID) + sizeof(DDBTaskData),					//MSG_DDB_TASKDATASETINFO
+	-2,					//MSG_DDB_TL_ROUND_INFO
+	sizeof(UUID),		//MSG_DDB_TL_GET_ROUND_INFO
 	-2,					// MSG_DDB_QLEARNINGDATA
 	sizeof(UUID) + sizeof(char) + 2*sizeof(float),		//MSG_DDB_ADVICEDATA
 	sizeof(unsigned long long),		 // MSG_DDB_SIMSTEPS

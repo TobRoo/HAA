@@ -48,7 +48,8 @@ enum DATATYPES {
 	DDB_SENSOR_SIM_CAMERA	= 0x0001 << 8,
 	DDB_HOST_GROUP			= 0x0001 << 9,
 	DDB_TASK				= 0x0001 << 10,
-	DDB_TASKDATA			= 0x0001 << 11
+	DDB_TASKDATA			= 0x0001 << 11,
+	DDB_TL_ROUND_INFO		= 0x0001 << 12,
 };
 #define DDB_SENSORS	( DDB_SENSOR_SONAR | DDB_SENSOR_CAMERA | DDB_SENSOR_SIM_CAMERA )
 
@@ -558,6 +559,13 @@ struct AdviceStorage {
 
 typedef std::map<char, AdviceStorage> mapDDBAdviceData;
 
+//Struct for storing team learning round info
+
+struct RoundInfoStruct {
+	int roundNumber;
+	_timeb startTime;
+	std::vector<UUID> TLAgents;
+};
 
 
 #endif

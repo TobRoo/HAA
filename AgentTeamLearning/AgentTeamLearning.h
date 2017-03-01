@@ -59,6 +59,7 @@ protected:
 	LAlliance lAllianceObject;
 	UUID AgentTeamLearning_recoveryLock1;
 	UUID AgentTeamLearning_recoveryLock2;
+	UUID AgentTeamLearning_recoveryLock3;
 	taskList  mTaskList;
 	UUID	  previousTaskId;
 
@@ -123,6 +124,7 @@ public:
 		AgentTeamLearning_CBR_convReqAcquiescence,
 		AgentTeamLearning_CBR_convReqMotReset,
 		AgentTeamLearning_CBR_convGetRunNumber,
+		AgentTeamLearning_CBR_convGetRoundInfo,
 	};
 
 	// Define callback functions (make sure they match CallbackRef above and are added to this->callback during agent creation)
@@ -134,6 +136,7 @@ public:
 	bool convReqAcquiescence(void *vpConv);
 	bool convReqMotReset(void *vpConv);
 	bool convGetRunNumber(void *vpConv);
+	bool convGetRoundInfo(void *vpConv);
 
 protected:
 	virtual int	  freeze( UUID *ticket );
