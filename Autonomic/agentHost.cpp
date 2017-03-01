@@ -11012,12 +11012,12 @@ int AgentHost::WriteLearningData(DataStream *taskDataDS, DataStream *taskDS, map
 		tempLearningData << "id=" << instance <<"\n";
 		tempLearningData << "qTable=" << "\n";
 		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData:9.2");
-		for (auto& qtIter : QLIter.second.qTable) {
-			tempLearningData << &qtIter << "\n";
+		for (auto qtIter : QLIter.second.qTable) {
+			tempLearningData << qtIter << "\n";
 		}
 		tempLearningData << "\nexpTable=" << "\n";
-		for (auto& exptIter : QLIter.second.expTable) {
-			tempLearningData << &exptIter << "\n";
+		for (auto exptIter : QLIter.second.expTable) {
+			tempLearningData << exptIter << "\n";
 		}
 		tempLearningData << "\n";
 		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData:9.3");
