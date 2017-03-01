@@ -1616,7 +1616,7 @@ bool AgentIndividualLearning::convGetAvatarList(void *vpConv) {
         lds.unlock();
         // TODO try again?
     }
-
+	recoveryCheck(&this->AgentIndividualLearning_recoveryLock);
     return 0;
 }
 
@@ -2728,17 +2728,21 @@ int AgentIndividualLearning::readBackup(DataStream *ds) {
 
 	DataStream sds;
 
-	// request avatar info
-	UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convGetAvatarInfo, DDB_REQUEST_TIMEOUT, &avatarId, sizeof(UUID));
+	// request list of avatars
+	UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convGetAvatarList, DDB_REQUEST_TIMEOUT);
 	if (thread == nilUUID) {
 		return 1;
 	}
 	sds.reset();
-	sds.packUUID((UUID *)&avatarId);
-	sds.packInt32(DDBAVATARINFO_RAGENT | DDBAVATARINFO_RPF | DDBAVATARINFO_RRADII | DDBAVATARINFO_RTIMECARD);
+	sds.packUUID(this->getUUID()); // dummy id
+	sds.packInt32(DDBAVATARINFO_ENUM);
 	sds.packUUID(&thread);
 	this->sendMessage(this->hostCon, MSG_DDB_AVATARGETINFO, sds.stream(), sds.length());
 	sds.unlock();
+
+	// we have tasks to take care of before we can resume
+	apb->apbUuidCreate(&this->AgentIndividualLearning_recoveryLock);
+	this->recoveryLocks.push_back(this->AgentIndividualLearning_recoveryLock);
 
     return AgentBase::readBackup(ds);
 }// end readBackup
