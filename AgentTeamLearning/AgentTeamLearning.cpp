@@ -577,30 +577,29 @@ int AgentTeamLearning::initiateNextRound() {
 				lds.packUUID(&*iter_inner);
 			}
 
-			this->sendMessageEx(this->hostCon, MSGEX(AgentTeamLearning_MSGS, MSG_ROUND_INFO), lds.stream(), lds.length(), &*iter_outer);
+	//		this->sendMessageEx(this->hostCon, MSGEX(AgentTeamLearning_MSGS, MSG_ROUND_INFO), lds.stream(), lds.length(), &*iter_outer);
 			lds.unlock();
 		/*}*/
 
 			//Try DDB upload for better reliability in case of failures
 
-
-
-			lds.reset();
-			lds.packUUID(this->getUUID());	//Sender id
-			lds.packInt32(this->new_round_number);  // Next round number
-			lds.packData(&this->round_start_time, sizeof(_timeb));  // Next round start time
-			lds.packInt32(this->TLAgents.size());
-
-																	// Pack the new (randomized) list
-			for (iter_inner = this->TLAgents.begin(); iter_inner != this->TLAgents.end(); ++iter_inner) {
-				lds.packUUID(&*iter_inner);
-			}
-			this->sendMessage(this->hostCon, MSG_DDB_TL_ROUND_INFO, lds.stream(), lds.length());
-			lds.unlock();
-
-
-
 	}
+
+	lds.reset();
+	lds.packUUID(this->getUUID());	//Sender id
+	lds.packInt32(STATE(AgentTeamLearning)->round_number);		//Current round number
+	lds.packInt32(this->new_round_number);  // Next round number
+	lds.packData(&this->round_start_time, sizeof(_timeb));  // Next round start time
+	lds.packInt32(this->TLAgents.size());
+
+	// Pack the new (randomized) list
+	for (iter_inner = this->TLAgents.begin(); iter_inner != this->TLAgents.end(); ++iter_inner) {
+		lds.packUUID(&*iter_inner);
+	}
+	this->sendMessage(this->hostCon, MSG_DDB_TL_ROUND_INFO, lds.stream(), lds.length());
+	lds.unlock();
+
+
 
 	return 0;
 }
@@ -825,6 +824,21 @@ int AgentTeamLearning::ddbNotification(char *data, int len) {
 		else if (evt == DDBE_REM) {
 			// TODO
 		}
+	}
+	if (type == DDB_TL_ROUND_INFO) {
+		if (evt == DDBE_UPDATE) {
+			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::DDB_TL_ROUND_INFO");
+			// request round info
+			UUID thread = this->conversationInitiate(AgentTeamLearning_CBR_convGetRoundInfo, DDB_REQUEST_TIMEOUT);
+			if (thread == nilUUID) {
+				return 1;
+			}
+			sds.reset();
+			sds.packUUID(&thread);
+			this->sendMessage(this->hostCon, MSG_DDB_TL_GET_ROUND_INFO, sds.stream(), sds.length());
+			sds.unlock();
+		}
+
 	}
 	lds.unlock();
 
@@ -1356,29 +1370,98 @@ bool AgentTeamLearning::convGetRoundInfo(void * vpConv)
 {
 	DataStream lds;
 	spConversation conv = (spConversation)vpConv;
-
+	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo");
 	if (conv->response == NULL) { // timed out
-		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRunNumber: timed out");
+		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo: timed out");
 		return 0; // end conversation
 	}
+
+	// The round number and agent order will be updated in the step method, once the timeout time has passed
+	this->round_info_set = false;
+
+	// Record when we received this message
+	_ftime64_s(&this->round_info_receive_time);
+
+
 
 	lds.setData(conv->response, conv->responseLen);
 	lds.unpackData(sizeof(UUID)); // discard thread
 	char response = lds.unpackChar();
 	if (response == DDBR_OK) { // succeeded
 		STATE(AgentTeamLearning)->round_number = lds.unpackInt32();
-		this->new_round_number = STATE(AgentTeamLearning)->round_number;
+		this->new_round_number = lds.unpackInt32();
 		this->lAllianceObject.myData.round_number = STATE(AgentTeamLearning)->round_number;
 		this->round_start_time = *(_timeb*)lds.unpackData(sizeof(_timeb));
 		int count = lds.unpackInt32();
 		this->TLAgents.clear();
 		UUID newUUID;
+
+		int pos;
+
 		for (int i = 0; i < count; i++) {
 			lds.unpackUUID(&newUUID);
 			this->TLAgents.push_back(newUUID);
+			// Initialize to no response for the next round
+			this->TLAgentData[newUUID].response = false;
+			if (newUUID == STATE(AgentBase)->uuid)
+				pos = i + 1;
+
 		}
+
+		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::conProcessMessage: Round %d: Received info for new round, our position is %d.", STATE(AgentTeamLearning)->round_number, pos);
+
+
 	}
 	lds.unlock();
+
+
+
+
+	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+	// This message contains the information about the next round
+	//   -New round number
+	//   -Round start time
+	//   -Agent order
+
+
+	//int round = lds.unpackInt32();  // Next round number
+	//this->new_round_number = round;
+	//this->round_start_time = *(_timeb *)lds.unpackData(sizeof(_timeb)); // Next round start time
+	//																	// Unpack the new randomized list of agents
+	//this->TLAgents.clear();
+	//int pos;
+	//UUID new_id;
+	//std::vector<UUID>::iterator iter;
+	//for (int i = 0; i < this->TLAgentData.size(); i++) {
+	//	lds.unpackUUID(&new_id);
+	//	this->TLAgents.push_back(new_id);
+
+
+
+	//	// For logging
+	//	if (new_id == STATE(AgentBase)->uuid)
+	//		pos = i + 1;
+
+	//}
+	//lds.unlock();
+
+
+	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 	recoveryCheck(&this->AgentTeamLearning_recoveryLock3);

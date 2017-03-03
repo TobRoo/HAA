@@ -13786,7 +13786,8 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		lds.setData(data, len);
 		lds.unpackUUID(&sender);
 
-		newRoundInfo.roundNumber = lds.unpackInt32();  // Next round number
+		newRoundInfo.roundNumber = lds.unpackInt32();  // Current round number
+		newRoundInfo.newRoundNumber = lds.unpackInt32();  // Next round number
 		newRoundInfo.startTime = *(_timeb *)lds.unpackData(sizeof(_timeb)); // Next round start time
 																			
 		int numberOfAgents = lds.unpackInt32();
