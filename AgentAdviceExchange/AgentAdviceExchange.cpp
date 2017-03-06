@@ -114,6 +114,12 @@ int AgentAdviceExchange::configure() {
 		Log.setLogMode(LOG_MODE_COUT);
 		Log.setLogMode(LOG_MODE_FILE, logName);
 		Log.setLogLevel(LOG_LEVEL_VERBOSE);
+
+#ifdef	NO_LOGGING
+		Log.setLogMode(LOG_MODE_OFF);
+		Log.setLogLevel(LOG_LEVEL_NONE);
+#endif
+
 		Log.log(0, "AgentAdviceExchange %.2d.%.2d.%.5d.%.2d", AgentAdviceExchange_MAJOR, AgentAdviceExchange_MINOR, AgentAdviceExchange_BUILDNO, AgentAdviceExchange_EXTEND);
 	}// end if
 

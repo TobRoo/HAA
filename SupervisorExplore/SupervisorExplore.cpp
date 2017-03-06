@@ -117,6 +117,12 @@ int SupervisorExplore::configure() {
 		Log.setLogMode( LOG_MODE_COUT );
 		Log.setLogMode( LOG_MODE_FILE, logName );
 		Log.setLogLevel( LOG_LEVEL_VERBOSE );
+
+#ifdef	NO_LOGGING
+		Log.setLogMode(LOG_MODE_OFF);
+		Log.setLogLevel(LOG_LEVEL_NONE);
+#endif
+
 		Log.log( 0, "SupervisorExplore %.2d.%.2d.%.5d.%.2d", SupervisorExplore_MAJOR, SupervisorExplore_MINOR, SupervisorExplore_BUILDNO, SupervisorExplore_EXTEND );
 	}
 

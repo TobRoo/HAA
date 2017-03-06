@@ -106,6 +106,13 @@ int AgentTeamLearning::configure() {
 		Log.setLogMode(LOG_MODE_COUT);
 		Log.setLogMode(LOG_MODE_FILE, logName);
 		Log.setLogLevel(LOG_LEVEL_VERBOSE);
+
+#ifdef	NO_LOGGING
+		Log.setLogMode(LOG_MODE_OFF);
+		Log.setLogLevel(LOG_LEVEL_NONE);
+#endif
+
+
 		Log.log(0, "AgentTeamLearning %.2d.%.2d.%.5d.%.2d", AgentTeamLearning_MAJOR, AgentTeamLearning_MINOR, AgentTeamLearning_BUILDNO, AgentTeamLearning_EXTEND);
 	}// end if
 
@@ -126,6 +133,19 @@ int AgentTeamLearning::configureParameters(DataStream *ds) {
 	this->lAllianceObject.myData.agentId = *this->getUUID();
 	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::configureParameters: ownerId %s", Log.formatUUID(LOG_LEVEL_NORMAL, &STATE(AgentTeamLearning)->ownerId));
 	STATE(AgentTeamLearning)->isSetupComplete = false; // need taskdata info and task info
+
+	// register as round info watcher
+	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::start: registering as agent watcher");
+	lds.reset();
+	lds.packUUID(&STATE(AgentBase)->uuid);
+	lds.packInt32(DDB_TL_ROUND_INFO);
+	this->sendMessage(this->hostCon, MSG_DDB_WATCH_TYPE, lds.stream(), lds.length());
+	lds.unlock();
+	// NOTE: we request a list of agents once DDBE_WATCH_TYPE notification is received
+
+
+
+
 
 	// register as agent watcher
 	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::start: registering as agent watcher");
@@ -434,6 +454,7 @@ int AgentTeamLearning::step() {
 * round (i.e. distributing a new randomized round order) by calling initiateNextRound.
 */
 int AgentTeamLearning::checkRoundStatus() {
+	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus");
 	// Only proceed if we have not participated in this round yet
 	if (this->TLAgentData[STATE(AgentBase)->uuid].response)
 		return 0;
@@ -748,6 +769,21 @@ int AgentTeamLearning::ddbNotification(char *data, int len) {
 			this->sendMessage(this->hostCon, MSG_DDB_TASKDATAGETINFO, sds.stream(), sds.length());
 			sds.unlock();
 		}
+		//else if (type == DDB_TL_ROUND_INFO) {
+		//	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::DDB_TL_ROUND_INFO");
+		//	// request round info
+		//	UUID thread = this->conversationInitiate(AgentTeamLearning_CBR_convGetRoundInfo, DDB_REQUEST_TIMEOUT);
+		//	if (thread == nilUUID) {
+		//		return 1;
+		//	}
+		//	sds.reset();
+		//	sds.packUUID(&thread);
+		//	this->sendMessage(this->hostCon, MSG_DDB_TL_GET_ROUND_INFO, sds.stream(), sds.length());
+		//	sds.unlock();
+		//}
+
+
+
 	}
 	if (type == DDB_TASK) {
 		if (evt == DDBE_ADD) {
@@ -1387,28 +1423,40 @@ bool AgentTeamLearning::convGetRoundInfo(void * vpConv)
 	lds.setData(conv->response, conv->responseLen);
 	lds.unpackData(sizeof(UUID)); // discard thread
 	char response = lds.unpackChar();
+	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 1");
 	if (response == DDBR_OK) { // succeeded
+		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 2");
 		STATE(AgentTeamLearning)->round_number = lds.unpackInt32();
+		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 3");
 		this->new_round_number = lds.unpackInt32();
+		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 4");
 		this->lAllianceObject.myData.round_number = STATE(AgentTeamLearning)->round_number;
+		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 5");
 		this->round_start_time = *(_timeb*)lds.unpackData(sizeof(_timeb));
+		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 6");
 		int count = lds.unpackInt32();
+		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 7");
 		this->TLAgents.clear();
+		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 8");
 		UUID newUUID;
-
+		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 9");
 		int pos;
-
+		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 10");
 		for (int i = 0; i < count; i++) {
+			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 11.%d",i);
 			lds.unpackUUID(&newUUID);
+			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 12.%d", i);
 			this->TLAgents.push_back(newUUID);
 			// Initialize to no response for the next round
+			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 13.%d", i);
 			this->TLAgentData[newUUID].response = false;
+			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 14.%d", i);
 			if (newUUID == STATE(AgentBase)->uuid)
 				pos = i + 1;
 
 		}
 
-		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::conProcessMessage: Round %d: Received info for new round, our position is %d.", STATE(AgentTeamLearning)->round_number, pos);
+		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo: Round %d: Received info for new round %d, our position is %d.", STATE(AgentTeamLearning)->round_number, this->new_round_number, pos);
 
 
 	}

@@ -76,6 +76,12 @@ int ExecutiveSimulation::configure() {
 		Log.setLogMode( LOG_MODE_COUT );
 		Log.setLogMode( LOG_MODE_FILE, logName );
 		Log.setLogLevel( LOG_LEVEL_VERBOSE );
+
+#ifdef	NO_LOGGING
+		Log.setLogMode(LOG_MODE_OFF);
+		Log.setLogLevel(LOG_LEVEL_NONE);
+#endif
+
 		Log.log( 0, "ExecutiveSimulation %.2d.%.2d.%.5d.%.2d", ExecutiveSimulation_MAJOR, ExecutiveSimulation_MINOR, ExecutiveSimulation_BUILDNO, ExecutiveSimulation_EXTEND );
 	}
 
@@ -2353,8 +2359,8 @@ int SimAvatar::doCollectLandmark( unsigned char code, float x, float y, UUID *th
 	// see if we can pick it up
 	dx = state.x - lm->wx;
 	dy = state.y - lm->wy;
-//	if ( dx*dx + dy*dy < 0.4f*0.4f ) { // close enough
-	if (dx*dx + dy*dy < 9.0f*9.0f) { // close enough		
+	if ( dx*dx + dy*dy < 0.4f*0.4f ) { // close enough
+//	if (dx*dx + dy*dy < 9.0f*9.0f) { // close enough		
 		Log->log( 0, "SimAvatar::doCollectLandmark: landmark collected (%d)", code );
 
 		// pack data

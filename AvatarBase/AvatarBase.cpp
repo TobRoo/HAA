@@ -150,6 +150,13 @@ int AvatarBase::configure() {
 		Log.setLogMode( LOG_MODE_COUT );
 		Log.setLogMode( LOG_MODE_FILE, logName );
 		Log.setLogLevel( LOG_LEVEL_NORMAL );
+
+#ifdef	NO_LOGGING
+		Log.setLogMode(LOG_MODE_OFF);
+		Log.setLogLevel(LOG_LEVEL_NONE);
+#endif
+
+
 		Log.log( 0, "AvatarBase %.2d.%.2d.%.5d.%.2d", AvatarBase_MAJOR, AvatarBase_MINOR, AvatarBase_BUILDNO, AvatarBase_EXTEND );
 	}
 

@@ -276,6 +276,12 @@ int AgentHost::configure( char *configPath ) {
 		Log.setLogMode( LOG_MODE_COUT );
 		Log.setLogMode( LOG_MODE_FILE, logName );
 		Log.setLogLevel( LOG_LEVEL_ALL ); 
+
+#ifdef	NO_LOGGING
+		Log.setLogMode(LOG_MODE_OFF);
+		Log.setLogLevel(LOG_LEVEL_NONE);
+#endif
+
 		Log.log( 0, "AgentHost %.2d.%.2d.%.2d", AUTONOMIC_MAJOR_VERSION, AUTONOMIC_MINOR_VERSION, AUTONOMIC_SUB_VERSION );
 	}
 
@@ -13780,6 +13786,7 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		break;
 	case OAC_DDB_TL_ROUND_INFO:
 		{
+		Log.log(0, "YEAH!");
 		UUID sender;
 		RoundInfoStruct newRoundInfo;
 
@@ -13795,12 +13802,15 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		for (int i = 0; i < numberOfAgents; i++) {
 			lds.unpackUUID(&newAgentId);
 			newRoundInfo.TLAgents.push_back(newAgentId);
+			Log.log(0, "New round info: Agent %s has position %d",Log.formatUUID(0, &newAgentId), i+1);
+
 		}
 
 		lds.unlock();
 		this->dStore->SetTLRoundInfo(&newRoundInfo);
+		Log.log(0, "Sending new round info: Current round number %d, new round number %d.", newRoundInfo.roundNumber, newRoundInfo.newRoundNumber);
 
-		this->_ddbNotifyWatchers(this->getUUID(), DDB_TL_ROUND_INFO, DDBE_UPDATE, &sender);
+		this->_ddbNotifyWatchers(this->getUUID(), DDB_TL_ROUND_INFO, DDBE_UPDATE, &nilUUID);
 		this->globalStateChangeForward(message, data, len); // forward to mirrors and sponsees
 		}
 		break;

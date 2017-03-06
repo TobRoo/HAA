@@ -35,8 +35,8 @@
 //#include <boost/filesystem/operations.hpp>
 //#include <boost/filesystem/path.hpp>
 
-#define COLLECTION_THRESHOLD 9.15f // m
-#define DELIVERY_THRESHOLD 9.15f // m
+#define COLLECTION_THRESHOLD 0.3f // m
+#define DELIVERY_THRESHOLD 0.3f // m
 
 using namespace AvatarBase_Defs;
 
@@ -188,6 +188,13 @@ int AgentIndividualLearning::configure() {
         Log.setLogMode(LOG_MODE_COUT);
         Log.setLogMode(LOG_MODE_FILE, logName);
         Log.setLogLevel(LOG_LEVEL_VERBOSE);
+
+#ifdef	NO_LOGGING
+		Log.log(0, "Setting log mode to off.");
+		Log.setLogLevel(LOG_LEVEL_NONE);
+		Log.setLogMode(LOG_MODE_OFF);
+#endif
+
         Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning %.2d.%.2d.%.5d.%.2d", AgentIndividualLearning_MAJOR, AgentIndividualLearning_MINOR, AgentIndividualLearning_BUILDNO, AgentIndividualLearning_EXTEND);
     }// end if
 
@@ -2239,15 +2246,15 @@ bool AgentIndividualLearning::convDepositLandmark(void * vpConv) {
 		// drop off
 		std::map<UUID, DDBRegion, UUIDless>::iterator cRIter;
 
-	//	for ( auto cRIter : this->collectionRegions) {				//See if we are inside a collection region when dropping cargo
+		for ( auto& cRIter : this->collectionRegions) {				//See if we are inside a collection region when dropping cargo
 
 		//for (cRIter = this->collectionRegions.begin(); cRIter != this->collectionRegions.end(); cRIter++) {				//See if we are inside a collection region when dropping cargo
-		//	float cR_x_high = cRIter->second.x + cRIter->second.w;
-		//	float cR_x_low = cRIter->second.x;
-		//	float cR_y_high = cRIter->second.y + cRIter->second.h;
-		//	float cR_y_low = cRIter->second.y;
+			float cR_x_high = cRIter.second.x + cRIter.second.w;
+			float cR_x_low = cRIter.second.x;
+			float cR_y_high = cRIter.second.y + cRIter.second.h;
+			float cR_y_low = cRIter.second.y;
 
-		//		if (cR_x_low <= STATE(AgentIndividualLearning)->prev_pos_x && STATE(AgentIndividualLearning)->prev_pos_x <= cR_x_high && cR_y_low <= STATE(AgentIndividualLearning)->prev_pos_y && STATE(AgentIndividualLearning)->prev_pos_y <= cR_y_high) {
+				if (cR_x_low <= STATE(AgentIndividualLearning)->prev_pos_x && STATE(AgentIndividualLearning)->prev_pos_x <= cR_x_high && cR_y_low <= STATE(AgentIndividualLearning)->prev_pos_y && STATE(AgentIndividualLearning)->prev_pos_y <= cR_y_high) {
 		//We delivered the cargo!
 		this->hasDelivered = true;
 		this->task.completed = true;
@@ -2289,10 +2296,10 @@ bool AgentIndividualLearning::convDepositLandmark(void * vpConv) {
 
 
 		sds.unlock();
-		//break;
-		//		}
+		break;
+				}
 
-		//}
+		}
 		this->backup(); // landmarkDeposited
 	}
 	else if (success == -1) {	//Not yet collected / already dropped off, but missed the confirmation message
@@ -2304,15 +2311,15 @@ bool AgentIndividualLearning::convDepositLandmark(void * vpConv) {
 			// drop off
 			std::map<UUID, DDBRegion, UUIDless>::iterator cRIter;
 
-			//	for ( auto cRIter : this->collectionRegions) {				//See if we are inside a collection region when dropping cargo
+				for ( auto& cRIter : this->collectionRegions) {				//See if we are inside a collection region when dropping cargo
 
 			//for (cRIter = this->collectionRegions.begin(); cRIter != this->collectionRegions.end(); cRIter++) {				//See if we are inside a collection region when dropping cargo
-			//	float cR_x_high = cRIter->second.x + cRIter->second.w;
-			//	float cR_x_low = cRIter->second.x;
-			//	float cR_y_high = cRIter->second.y + cRIter->second.h;
-			//	float cR_y_low = cRIter->second.y;
+				float cR_x_high = cRIter.second.x + cRIter.second.w;
+				float cR_x_low = cRIter.second.x;
+				float cR_y_high = cRIter.second.y + cRIter.second.h;
+				float cR_y_low = cRIter.second.y;
 
-			//		if (cR_x_low <= STATE(AgentIndividualLearning)->prev_pos_x && STATE(AgentIndividualLearning)->prev_pos_x <= cR_x_high && cR_y_low <= STATE(AgentIndividualLearning)->prev_pos_y && STATE(AgentIndividualLearning)->prev_pos_y <= cR_y_high) {
+					if (cR_x_low <= STATE(AgentIndividualLearning)->prev_pos_x && STATE(AgentIndividualLearning)->prev_pos_x <= cR_x_high && cR_y_low <= STATE(AgentIndividualLearning)->prev_pos_y && STATE(AgentIndividualLearning)->prev_pos_y <= cR_y_high) {
 			//We delivered the cargo!
 			this->hasDelivered = true;
 			this->task.completed = true;
@@ -2354,10 +2361,10 @@ bool AgentIndividualLearning::convDepositLandmark(void * vpConv) {
 
 
 			sds.unlock();
-			//break;
-			//		}
+			break;
+					}
 
-			//}
+			}
 			STATE(AgentIndividualLearning)->depositRequestSent = false;
 			this->backup(); // landmarkDeposited
 

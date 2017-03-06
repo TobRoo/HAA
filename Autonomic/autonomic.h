@@ -14,6 +14,9 @@
 #define AgentBase_TRANSFER_PENALTY 1
 #define AgentBase_RESOURCE_REQUIREMENTS ""
 
+
+#define NO_LOGGING		//Shuts off logging for running machine learning experiments (would otherwise fill the disk)
+
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
