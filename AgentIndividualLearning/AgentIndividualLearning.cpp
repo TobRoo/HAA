@@ -85,8 +85,8 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
 
     // Learning parameters
     this->learning_frequency_ = 1;
-    this->num_state_vrbls_ = 7;
-    this->state_resolution_ = {3, 3, 5, 3, 5, 3, 5};
+    this->num_state_vrbls_ = 8;
+    this->state_resolution_ = {3, 3, 5, 3, 5, 3, 5, 1};
     this->look_ahead_dist_ = 2.0;
     this->stateVector.resize(this->num_state_vrbls_, 0);
     this->prevStateVector.resize(this->num_state_vrbls_, 0);
@@ -189,11 +189,11 @@ int AgentIndividualLearning::configure() {
         Log.setLogMode(LOG_MODE_FILE, logName);
         Log.setLogLevel(LOG_LEVEL_VERBOSE);
 
-#ifdef	NO_LOGGING
-		Log.log(0, "Setting log mode to off.");
-		Log.setLogLevel(LOG_LEVEL_NONE);
-		Log.setLogMode(LOG_MODE_OFF);
-#endif
+//#ifdef	NO_LOGGING
+//		Log.log(0, "Setting log mode to off.");
+//		Log.setLogLevel(LOG_LEVEL_NONE);
+//		Log.setLogMode(LOG_MODE_OFF);
+//#endif
 
         Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning %.2d.%.2d.%.5d.%.2d", AgentIndividualLearning_MAJOR, AgentIndividualLearning_MINOR, AgentIndividualLearning_BUILDNO, AgentIndividualLearning_EXTEND);
     }// end if
@@ -377,7 +377,7 @@ int AgentIndividualLearning::updateStateData() {
 
     // Only update if avatar is ready
     if (!this->avatar.ready) {
-        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateData: Avatar not ready, sending wait action");
+//        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateData: Avatar not ready, sending wait action");
         ActionPair action;
         action.action = AvatarBase_Defs::AA_WAIT;
         this->sendAction(action);
@@ -465,27 +465,27 @@ int AgentIndividualLearning::formAction() {
 
 	// Form action
 	if (action == MOVE_FORWARD) {
-		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action MOVE_FORWARD");
+//		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action MOVE_FORWARD");
 		STATE(AgentIndividualLearning)->action.action = MOVE_FORWARD; //	AvatarBase_Defs::AA_MOVE;
 		STATE(AgentIndividualLearning)->action.val = STATE(AgentIndividualLearning)->maxLinear;
 	}
 	else if (action == MOVE_BACKWARD) {
-		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action MOVE_BACKWARD");
+//		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action MOVE_BACKWARD");
 		STATE(AgentIndividualLearning)->action.action = MOVE_BACKWARD; //AvatarBase_Defs::AA_MOVE;
 		STATE(AgentIndividualLearning)->action.val = STATE(AgentIndividualLearning)->maxLinear*this->backupFractionalSpeed;
 	}
 	else if (action == ROTATE_LEFT) {
-		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action ROTATE_LEFT");
+//		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action ROTATE_LEFT");
 		STATE(AgentIndividualLearning)->action.action = ROTATE_LEFT; // AvatarBase_Defs::AA_ROTATE;
 		STATE(AgentIndividualLearning)->action.val = STATE(AgentIndividualLearning)->maxRotation;
 	}
 	else if (action == ROTATE_RIGHT) {
-		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action ROTATE_RIGHT");
+//		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action ROTATE_RIGHT");
 		STATE(AgentIndividualLearning)->action.action = ROTATE_RIGHT;// AvatarBase_Defs::AA_ROTATE;
 		STATE(AgentIndividualLearning)->action.val = -STATE(AgentIndividualLearning)->maxRotation;
 	}
 	else if (action == INTERACT) {
-		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action INTERACT");
+//		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action INTERACT");
 		// TODO: Add interact capabilities
 		//If we have no cargo, pick up - first check if we can carry it (strength, capacity)
 		//If we have cargo, drop it
@@ -496,59 +496,61 @@ int AgentIndividualLearning::formAction() {
 		UUID avId = this->avatarId;
 		UUID thread;
 
-		if (!this->hasCargo) {
-//			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: No cargo, trying to collect");
-			if (target.landmarkType != NON_COLLECTABLE && this->avatar.capacity >= target.landmarkType && !this->task.completed) {	//Check that we can carry the item, and that the task is not completed (do not collect delivered targets)
-				// see if we are within range of the landmark
-				dx = STATE(AgentIndividualLearning)->prev_pos_x - this->target.x;
-				dy = STATE(AgentIndividualLearning)->prev_pos_y - this->target.y;
 
-				if (dx*dx + dy*dy < COLLECTION_THRESHOLD*COLLECTION_THRESHOLD) { // should be close enough
-					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: collecting landmark at %f %f", this->target.x, this->target.y);
-					thread = this->conversationInitiate(AgentIndividualLearning_CBR_convCollectLandmark, -1, &avAgent, sizeof(UUID));
-					if (thread == nilUUID) {
-						return 1;
+		if(!(STATE(AgentIndividualLearning)->collectRequestSent || STATE(AgentIndividualLearning)->depositRequestSent) ){		//Request is not yet answered
+			if (!this->hasCargo ) {
+	//			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: No cargo, trying to collect");
+				if (target.landmarkType != NON_COLLECTABLE && this->avatar.capacity >= target.landmarkType && !this->task.completed) {	//Check that we can carry the item, and that the task is not completed (do not collect delivered targets)
+					// see if we are within range of the landmark
+					dx = STATE(AgentIndividualLearning)->prev_pos_x - this->target.x;
+					dy = STATE(AgentIndividualLearning)->prev_pos_y - this->target.y;
+
+					if (dx*dx + dy*dy < COLLECTION_THRESHOLD*COLLECTION_THRESHOLD) { // should be close enough
+						Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: collecting landmark at %f %f", this->target.x, this->target.y);
+						thread = this->conversationInitiate(AgentIndividualLearning_CBR_convCollectLandmark, -1, &avAgent, sizeof(UUID));
+						if (thread == nilUUID) {
+							return 1;
+						}
+						lds.reset();
+						lds.packUChar(this->target.code);
+						lds.packFloat32(this->target.x);
+						lds.packFloat32(this->target.y);
+						lds.packUUID(this->getUUID());
+						lds.packUUID(&thread);
+						this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_COLLECT_LANDMARK), lds.stream(), lds.length(), &avAgent);
+						lds.unlock();
+
+						STATE(AgentIndividualLearning)->collectRequestSent = true;
+						this->backup();
+
 					}
-					lds.reset();
-					lds.packUChar(this->target.code);
-					lds.packFloat32(this->target.x);
-					lds.packFloat32(this->target.y);
-					lds.packUUID(this->getUUID());
-					lds.packUUID(&thread);
-					this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_COLLECT_LANDMARK), lds.stream(), lds.length(), &avAgent);
-					lds.unlock();
 
-					STATE(AgentIndividualLearning)->collectRequestSent = true;
-					this->backup();
-
+				}
+				else {
+	//				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Cannot collect - booleans: %d %d %d", target.landmarkType != NON_COLLECTABLE, this->avatar.capacity >= target.landmarkType, !this->task.completed);
 				}
 
 			}
 			else {
-				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Cannot collect - booleans: %d %d %d", target.landmarkType != NON_COLLECTABLE, this->avatar.capacity >= target.landmarkType, !this->task.completed);
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: trying to drop off cargo...");
+				thread = this->conversationInitiate(AgentIndividualLearning_CBR_convDepositLandmark, -1, &avAgent, sizeof(UUID));
+				if (thread == nilUUID) {
+					return 1;
+				}
+				lds.reset();
+				lds.packUChar(this->target.code);
+				lds.packFloat32(this->target.x);
+				lds.packFloat32(this->target.y);
+				lds.packUUID(this->getUUID());
+				lds.packUUID(&thread);
+				this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_DEPOSIT_LANDMARK), lds.stream(), lds.length(), &avAgent);
+				lds.unlock();
+
+				STATE(AgentIndividualLearning)->depositRequestSent = true;
+				this->backup();
+
 			}
-
 		}
-		else {
-			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: trying to drop off cargo...");
-			thread = this->conversationInitiate(AgentIndividualLearning_CBR_convDepositLandmark, -1, &avAgent, sizeof(UUID));
-			if (thread == nilUUID) {
-				return 1;
-			}
-			lds.reset();
-			lds.packUChar(this->target.code);
-			lds.packFloat32(this->target.x);
-			lds.packFloat32(this->target.y);
-			lds.packUUID(this->getUUID());
-			lds.packUUID(&thread);
-			this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_DEPOSIT_LANDMARK), lds.stream(), lds.length(), &avAgent);
-			lds.unlock();
-
-			STATE(AgentIndividualLearning)->depositRequestSent = true;
-			this->backup();
-
-		}
-
 		STATE(AgentIndividualLearning)->action.action = INTERACT;//AvatarBase_Defs::AA_WAIT;
 		STATE(AgentIndividualLearning)->action.val = 0.0;
 	}
@@ -556,7 +558,7 @@ int AgentIndividualLearning::formAction() {
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: No matching action, %d", action);
 	}// end form action if
 
-	Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::formAction: Average action quality: %.3f", this->q_avg);
+//	Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::formAction: Average action quality: %.3f", this->q_avg);
 
 	 // When the action is not valid retain the type, but zero the movement value
 	 // (so that it can still be used for learning)
@@ -579,7 +581,7 @@ int AgentIndividualLearning::learn() {
     // TODO: Adjust learning frequency based on experience
     if ((this->learning_iterations_ % this->learning_frequency_ == 0) && (STATE(AgentIndividualLearning)->action.action > 0)) {
         float reward = this->determineReward();
-        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::learn: Reward: %f", reward);
+ //       Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::learn: Reward: %f", reward);
 
         this->q_learning_.learn(this->prevStateVector, this->stateVector, STATE(AgentIndividualLearning)->action.action, reward);
         this->learning_iterations_++;
@@ -763,8 +765,8 @@ int AgentIndividualLearning::getStateVector() {
     unsigned int obst_angle = (unsigned int)floor((obst_angle_raw /(2 * M_PI))*this->state_resolution_[6]);
 
     // Form output vector
-    std::vector<unsigned int> state_vector{target_type, target_dist, target_angle, goal_dist, goal_angle, obst_dist, obst_angle};
-	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateVector: target type %d, target dist %d, target angle %d, goal dist %d, goal angle %d, obst dist %d, obst angle %d", target_type, target_dist, target_angle, goal_dist, goal_angle, obst_dist, obst_angle);
+    std::vector<unsigned int> state_vector{target_type, target_dist, target_angle, goal_dist, goal_angle, obst_dist, obst_angle, (unsigned int)this->hasCargo};
+//	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateVector: target type %d, target dist %d, target angle %d, goal dist %d, goal angle %d, obst dist %d, obst angle %d", target_type, target_dist, target_angle, goal_dist, goal_angle, obst_dist, obst_angle);
     // Check that state vector is valid
     for(int i = 0; i < this->num_state_vrbls_; i++) {
         if (state_vector[i] > this->state_resolution_[i]) {
@@ -808,7 +810,7 @@ int AgentIndividualLearning::policy(std::vector<float> &quality) {
     if (quality_sum == 0.0f) {
         random_actions_++;
         int action = (int)ceil(randomGenerator.Uniform01() * num_actions_);
-        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::policy: All zero quality, selecting a random action");
+//        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::policy: All zero quality, selecting a random action");
         return action;
     }
     else {
@@ -956,14 +958,14 @@ bool AgentIndividualLearning::validAction(ActionPair &action) {
     // Check X world boundaries
     if ((new_pos_x - this->avatar.outerRadius) < STATE(AgentIndividualLearning)->missionRegion.x ||
         new_pos_x + this->avatar.outerRadius > (STATE(AgentIndividualLearning)->missionRegion.x + STATE(AgentIndividualLearning)->missionRegion.w)) {
-        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Invalid action (world X boundary)");
+//        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Invalid action (world X boundary)");
         return false;
     }
 
     // Check Y world boundaries
     if ((new_pos_y - this->avatar.outerRadius) < STATE(AgentIndividualLearning)->missionRegion.y ||
         new_pos_y + this->avatar.outerRadius > (STATE(AgentIndividualLearning)->missionRegion.y + STATE(AgentIndividualLearning)->missionRegion.h)) {
-        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Invalid action (world Y boundary)");
+ //       Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Invalid action (world Y boundary)");
         return false;
     }
 
@@ -985,7 +987,7 @@ bool AgentIndividualLearning::validAction(ActionPair &action) {
 
         if (abs(new_pos_y - avatarIter->second.y) < (this->avatar.outerRadius + avatarIter->second.outerRadius) &&
             abs(new_pos_x - avatarIter->second.x) < (this->avatar.outerRadius + avatarIter->second.outerRadius)) {
-            Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Invalid action (avatar collision)");
+//            Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Invalid action (avatar collision)");
             return false;
         }
     }
@@ -1008,7 +1010,7 @@ bool AgentIndividualLearning::validAction(ActionPair &action) {
 		float obst_y_low_diff = rel_obst_y_low - (new_pos_y + this->avatar.outerRadius);
         
 		if ((obst_x_high_diff < 0) && (obst_x_low_diff < 0) && (obst_y_high_diff < 0) && (obst_y_low_diff < 0)) {
-            Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Invalid action (obstacle boundary)");
+ //           Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Invalid action (obstacle boundary)");
             return false;
         }
     }
@@ -1523,7 +1525,7 @@ bool AgentIndividualLearning::convAction(void *vpConv) {
 	lds.unlock();
 
     if (result == AAR_SUCCESS) {
-        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convAction: Action successful, getting new action");
+//        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convAction: Action successful, getting new action");
 
         // Begin getting new action
         this->updateStateData();
@@ -1821,7 +1823,7 @@ bool AgentIndividualLearning::convRequestAvatarLoc(void *vpConv) {
 			//Update target location, actual landmark will be updated when cargo is dropped off
 
 			if (this->hasCargo) {	
-				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAvatarLoc: UPDATING CARGO POS");
+//				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAvatarLoc: UPDATING CARGO POS");
 				this->target.x = this->avatar.x;
 				this->target.y = this->avatar.y;
 			}
@@ -1872,11 +1874,11 @@ bool AgentIndividualLearning::convLandmarkInfo(void *vpConv) {
 		if (newLandmark.landmarkType == NON_COLLECTABLE) {			
 			// Obstacle, cannot be collected
 			this->obstacleList[newLandmark.code] = newLandmark;
-			Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::convLandmarkInfo: Updating obstacle");
+//			Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::convLandmarkInfo: Updating obstacle");
 		} else if (newLandmark.landmarkType != WALL) {
 			// Target
 			this->targetList[newLandmark.code] = newLandmark;
-			Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::convLandmarkInfo: Updating target");
+//			Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::convLandmarkInfo: Updating target");
 		}
     }
     else {
@@ -1999,7 +2001,7 @@ bool AgentIndividualLearning::convGetTaskInfo(void * vpConv) {
         lds.unpackUUID(&taskIdIn);
         DDBTask newTask = *(DDBTask *)lds.unpackData(sizeof(DDBTask));
 
-		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Received info about task %s assigned to %s, my current task is: %s.", Log.formatUUID(0, &taskIdIn), Log.formatUUID(0, &newTask.agentUUID), Log.formatUUID(0, &this->taskId));
+//		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Received info about task %s assigned to %s, my current task is: %s.", Log.formatUUID(0, &taskIdIn), Log.formatUUID(0, &newTask.agentUUID), Log.formatUUID(0, &this->taskId));
 
 		// Make sure the task is assigned to this avatar
         if (newTask.avatar == STATE(AgentIndividualLearning)->ownerId) {	
@@ -2009,7 +2011,7 @@ bool AgentIndividualLearning::convGetTaskInfo(void * vpConv) {
 				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Received new task assignment: %s.", Log.formatUUID(0, &taskIdIn));
 
 				// Drop the cargo if we get a new task assigned
-                if (this->hasCargo) { 
+                if (this->hasCargo && !STATE(AgentIndividualLearning)->depositRequestSent) {
 					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Dropping our current cargo");
 					DataStream sds;
 					UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convDepositLandmark, -1, &this->avatarAgentId, sizeof(UUID));
@@ -2052,7 +2054,7 @@ bool AgentIndividualLearning::convGetTaskInfo(void * vpConv) {
 			if (taskIdIn == this->taskId && taskIdIn != nilUUID) {
 				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: My task %s has a different avatar than me: %s", Log.formatUUID(0, &taskIdIn), Log.formatUUID(0, &newTask.avatar));
 				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: I should acquiesce...");
-				if (this->hasCargo) {
+				if (this->hasCargo && !STATE(AgentIndividualLearning)->depositRequestSent) {
 					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Dropping our current cargo");
 					DataStream sds;
 					UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convDepositLandmark, -1, &this->avatarAgentId, sizeof(UUID));
@@ -2206,19 +2208,22 @@ bool AgentIndividualLearning::convCollectLandmark(void * vpConv) {
     if (success == 1) { // succeeded
         Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convCollectLandmark: success");
         this->hasCargo = true;
+		STATE(AgentIndividualLearning)->collectRequestSent = false;
         this->backup(); // landmarkCollected
     }
 	else if (success == -1) {
 		if (STATE(AgentIndividualLearning)->collectRequestSent) { // We have sent a collectRequest - the landmark was collected, and we missed the confirmation - proceed as if success
 			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convCollectLandmark: already collected, but we have sent a collectRequest - proceeding as success");
 			this->hasCargo = true;
+			STATE(AgentIndividualLearning)->collectRequestSent = false;
 			this->backup(); // landmarkCollected
 		}
 	}
     else {
         Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convCollectLandmark: failed");
     }
-
+	STATE(AgentIndividualLearning)->collectRequestSent = false;
+	return 0;
 }
 
 bool AgentIndividualLearning::convDepositLandmark(void * vpConv) {
@@ -2378,6 +2383,8 @@ bool AgentIndividualLearning::convDepositLandmark(void * vpConv) {
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convDepositLandmark: failed");
 	}
 
+	STATE(AgentIndividualLearning)->depositRequestSent = false;
+	return 0;
 }
 
 
@@ -2474,11 +2481,11 @@ bool AgentIndividualLearning::convRequestAdvice(void *vpConv) {
 	this->q_vals.clear();
 	for (int i = 0; i < this->num_actions_; i++) {
 		this->q_vals.push_back(lds.unpackFloat32());
-		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAdvice: received q_val: %f", this->q_vals.back());
+//		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAdvice: received q_val: %f", this->q_vals.back());
 	}
 	lds.unlock();
 
-	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAdvice: Received advice.");
+//	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAdvice: Received advice.");
 
 	// Proceed to form the next action
 	this->formAction();

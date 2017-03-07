@@ -277,17 +277,17 @@ int AgentHost::configure( char *configPath ) {
 		Log.setLogMode( LOG_MODE_FILE, logName );
 		Log.setLogLevel( LOG_LEVEL_ALL ); 
 
-#ifdef	NO_LOGGING
-		Log.setLogMode(LOG_MODE_OFF);
-		Log.setLogLevel(LOG_LEVEL_NONE);
-#endif
+
 
 		Log.log( 0, "AgentHost %.2d.%.2d.%.2d", AUTONOMIC_MAJOR_VERSION, AUTONOMIC_MINOR_VERSION, AUTONOMIC_SUB_VERSION );
 	}
 
 	if ( AgentBase::configure() )
 		return 1;
-
+#ifdef	NO_LOGGING
+	Log.setLogMode(LOG_MODE_OFF);
+	Log.setLogLevel(LOG_LEVEL_NONE);
+#endif
 	STATE(AgentBase)->configured = false;
 	
 	// look for config  file

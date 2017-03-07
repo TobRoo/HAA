@@ -4539,7 +4539,7 @@ bool AgentBase::cbUpdateCpuUsage( void *NA ) {
 	this->cpuUsageTotalUsed += usedMillis;
 	this->cpuUsageTotalElapsed += elapsedMillis;
 
-	Log.log( 0, "AgentBase::cbUpdateCpuUsage: used %d, elapsed %d, %%%f", usedMillis, elapsedMillis, usedMillis/(float)elapsedMillis );
+//	Log.log( 0, "AgentBase::cbUpdateCpuUsage: used %d, elapsed %d, %%%f", usedMillis, elapsedMillis, usedMillis/(float)elapsedMillis );
 
 	this->cpuUsageLastUpdate = endTime;
 	this->cpuUsageKernalStart = ftThreadKernelEnd;
@@ -5286,7 +5286,7 @@ int AgentBase::backup() {
 
 	apb->apbUuidCreate( &ticket );
 
-	Log.log( 0, "AgentBase::backup: starting backup %s", Log.formatUUID(0,&ticket) );
+//	Log.log( 0, "AgentBase::backup: starting backup %s", Log.formatUUID(0,&ticket) );
 
 	// get current time and start package
 	apb->apb_ftime_s( &tb );
@@ -5297,7 +5297,7 @@ int AgentBase::backup() {
 	// write state
 	this->writeBackup( &sds );
 	
-	Log.log( 0, "AgentBase::backup: got backup, %d bytes", sds.length() );
+//	Log.log( 0, "AgentBase::backup: got backup, %d bytes", sds.length() );
 
 	lds.packUInt32( sds.length() );
 	lds.packData( sds.stream(), sds.length() );
@@ -5392,9 +5392,9 @@ int	AgentBase::recoveryCheck( UUID *key ) {
 		}
 	}
 
-	
-	Log.log( 0, "AgentBase::recoveryCheck: %d locks", (int)this->recoveryLocks.size() );
-
+	if ((int)this->recoveryLocks.size() > 0) {
+		//	Log.log( 0, "AgentBase::recoveryCheck: %d locks", (int)this->recoveryLocks.size() );
+	}
 	if ( this->recoveryLocks.empty() ) {
 		DataStream lds;
 
@@ -5405,7 +5405,7 @@ int	AgentBase::recoveryCheck( UUID *key ) {
 		this->sendMessage( this->hostCon, MSG_AGENT_RECOVERED, lds.stream(), lds.length() );
 		lds.unlock();
 		
-		Log.log( 0, "AgentBase::recoveryCheck: recovery ready" );
+//		Log.log( 0, "AgentBase::recoveryCheck: recovery ready" );
 	}
 
 	return 0;

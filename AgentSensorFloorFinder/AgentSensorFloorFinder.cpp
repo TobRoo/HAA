@@ -167,17 +167,17 @@ int AgentSensorFloorFinder::configure() {
 		Log.setLogMode( LOG_MODE_FILE, logName );
 		Log.setLogLevel( LOG_LEVEL_VERBOSE );
 
-#ifdef	NO_LOGGING
-		Log.setLogMode(LOG_MODE_OFF);
-		Log.setLogLevel(LOG_LEVEL_NONE);
-#endif
+
 
 		Log.log( 0, "AgentSensorFloorFinder %.2d.%.2d.%.5d.%.2d", AgentSensorFloorFinder_MAJOR, AgentSensorFloorFinder_MINOR, AgentSensorFloorFinder_BUILDNO, AgentSensorFloorFinder_EXTEND );
 	}
 
 	if ( AgentBase::configure() ) 
 		return 1;
-	
+#ifdef	NO_LOGGING
+	Log.setLogMode(LOG_MODE_OFF);
+	Log.setLogLevel(LOG_LEVEL_NONE);
+#endif	
 	return 0;
 }
 
@@ -219,7 +219,7 @@ int AgentSensorFloorFinder::start( char *missionFile ) {
 	lds.unlock();
 
 	STATE(AgentBase)->started = true;
-	
+
 	return 0;
 }
 

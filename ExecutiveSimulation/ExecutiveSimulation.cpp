@@ -77,10 +77,7 @@ int ExecutiveSimulation::configure() {
 		Log.setLogMode( LOG_MODE_FILE, logName );
 		Log.setLogLevel( LOG_LEVEL_VERBOSE );
 
-#ifdef	NO_LOGGING
-		Log.setLogMode(LOG_MODE_OFF);
-		Log.setLogLevel(LOG_LEVEL_NONE);
-#endif
+
 
 		Log.log( 0, "ExecutiveSimulation %.2d.%.2d.%.5d.%.2d", ExecutiveSimulation_MAJOR, ExecutiveSimulation_MINOR, ExecutiveSimulation_BUILDNO, ExecutiveSimulation_EXTEND );
 	}
@@ -109,7 +106,10 @@ int ExecutiveSimulation::parseMF_HandlePathFile( char *fileName ) {
 // Start
 
 int ExecutiveSimulation::start( char *missionFile ) {
-
+#ifdef	NO_LOGGING
+	Log.setLogMode(LOG_MODE_OFF);
+	Log.setLogLevel(LOG_LEVEL_NONE);
+#endif
 	if ( AgentBase::start( missionFile ) ) 
 		return 1;
 

@@ -84,17 +84,17 @@ int SupervisorSLAM::configure() {
 		Log.setLogMode( LOG_MODE_FILE, logName );
 		Log.setLogLevel( LOG_LEVEL_VERBOSE );
 
-#ifdef	NO_LOGGING
-		Log.setLogMode(LOG_MODE_OFF);
-		Log.setLogLevel(LOG_LEVEL_NONE);
-#endif
+
 
 		Log.log( 0, "SupervisorSLAM %.2d.%.2d.%.5d.%.2d", SupervisorSLAM_MAJOR, SupervisorSLAM_MINOR, SupervisorSLAM_BUILDNO, SupervisorSLAM_EXTEND );
 	}
 
 	if ( AgentBase::configure() ) 
 		return 1;
-	
+#ifdef	NO_LOGGING
+	Log.setLogMode(LOG_MODE_OFF);
+	Log.setLogLevel(LOG_LEVEL_NONE);
+#endif
 	return 0;
 }
 

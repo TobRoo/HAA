@@ -115,10 +115,7 @@ int AgentAdviceExchange::configure() {
 		Log.setLogMode(LOG_MODE_FILE, logName);
 		Log.setLogLevel(LOG_LEVEL_VERBOSE);
 
-#ifdef	NO_LOGGING
-		Log.setLogMode(LOG_MODE_OFF);
-		Log.setLogLevel(LOG_LEVEL_NONE);
-#endif
+
 
 		Log.log(0, "AgentAdviceExchange %.2d.%.2d.%.5d.%.2d", AgentAdviceExchange_MAJOR, AgentAdviceExchange_MINOR, AgentAdviceExchange_BUILDNO, AgentAdviceExchange_EXTEND);
 	}// end if
@@ -126,7 +123,10 @@ int AgentAdviceExchange::configure() {
 	if (AgentBase::configure()) {
 		return 1;
 	}// end if
-
+#ifdef	NO_LOGGING
+	Log.setLogMode(LOG_MODE_OFF);
+	Log.setLogLevel(LOG_LEVEL_NONE);
+#endif	
 	return 0;
 }// end configure
 
@@ -198,7 +198,7 @@ int AgentAdviceExchange::start(char *missionFile) {
 
 	STATE(AgentBase)->started = false;
 
-	
+
 
 	STATE(AgentBase)->started = true;
 	return 0;
