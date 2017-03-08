@@ -456,7 +456,7 @@ int AgentIndividualLearning::preActionUpdate() {
  * makes the call to send the action.
  */
 int AgentIndividualLearning::formAction() {
-
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: TOP");
 	// Select action based quality
 	int action = this->policy(this->q_vals);
 
@@ -465,27 +465,27 @@ int AgentIndividualLearning::formAction() {
 
 	// Form action
 	if (action == MOVE_FORWARD) {
-//		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action MOVE_FORWARD");
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action MOVE_FORWARD");
 		STATE(AgentIndividualLearning)->action.action = MOVE_FORWARD; //	AvatarBase_Defs::AA_MOVE;
 		STATE(AgentIndividualLearning)->action.val = STATE(AgentIndividualLearning)->maxLinear;
 	}
 	else if (action == MOVE_BACKWARD) {
-//		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action MOVE_BACKWARD");
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action MOVE_BACKWARD");
 		STATE(AgentIndividualLearning)->action.action = MOVE_BACKWARD; //AvatarBase_Defs::AA_MOVE;
 		STATE(AgentIndividualLearning)->action.val = STATE(AgentIndividualLearning)->maxLinear*this->backupFractionalSpeed;
 	}
 	else if (action == ROTATE_LEFT) {
-//		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action ROTATE_LEFT");
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action ROTATE_LEFT");
 		STATE(AgentIndividualLearning)->action.action = ROTATE_LEFT; // AvatarBase_Defs::AA_ROTATE;
 		STATE(AgentIndividualLearning)->action.val = STATE(AgentIndividualLearning)->maxRotation;
 	}
 	else if (action == ROTATE_RIGHT) {
-//		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action ROTATE_RIGHT");
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action ROTATE_RIGHT");
 		STATE(AgentIndividualLearning)->action.action = ROTATE_RIGHT;// AvatarBase_Defs::AA_ROTATE;
 		STATE(AgentIndividualLearning)->action.val = -STATE(AgentIndividualLearning)->maxRotation;
 	}
 	else if (action == INTERACT) {
-//		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action INTERACT");
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action INTERACT");
 		// TODO: Add interact capabilities
 		//If we have no cargo, pick up - first check if we can carry it (strength, capacity)
 		//If we have cargo, drop it
@@ -1875,7 +1875,7 @@ bool AgentIndividualLearning::convLandmarkInfo(void *vpConv) {
 			// Obstacle, cannot be collected
 			this->obstacleList[newLandmark.code] = newLandmark;
 //			Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::convLandmarkInfo: Updating obstacle");
-		} else if (newLandmark.landmarkType != WALL) {
+		} else if (newLandmark.landmarkType == HEAVY_ITEM || newLandmark.landmarkType == LIGHT_ITEM || newLandmark.landmarkType == TYPE_PENDING) {
 			// Target
 			this->targetList[newLandmark.code] = newLandmark;
 //			Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::convLandmarkInfo: Updating target");
