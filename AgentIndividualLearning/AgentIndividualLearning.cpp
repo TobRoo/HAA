@@ -35,8 +35,8 @@
 //#include <boost/filesystem/operations.hpp>
 //#include <boost/filesystem/path.hpp>
 
-#define COLLECTION_THRESHOLD 0.3f // m
-#define DELIVERY_THRESHOLD 0.3f // m
+#define COLLECTION_THRESHOLD 0.5f // m
+#define DELIVERY_THRESHOLD 0.5f // m
 
 using namespace AvatarBase_Defs;
 
@@ -442,7 +442,7 @@ int AgentIndividualLearning::preActionUpdate() {
     // Learn from the previous action
     this->learn();
     // Get quality from state vector
-    std::vector<float> q_vals = this->q_learning_.getElements(this->stateVector);
+    this->q_vals = this->q_learning_.getElements(this->stateVector);
 	for (auto& valIter: q_vals) {
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::preActionUpdate: received q_val: %f",q_vals);
 	}
@@ -464,7 +464,9 @@ int AgentIndividualLearning::formAction() {
 	int action = this->policy(this->q_vals);
 	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: TOP: action is %d", action);
 	// Update average quality
-	//Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: TOP: q_vals[action -1] is %f", this->q_vals[action - 1]);
+	for (auto& valIter : q_vals) {
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: q_val: %f", valIter);
+	}
 	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: TOP: this->totalActions is %lu", this->totalActions);
 	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: TOP: this->q_avg is %f", this->q_avg);
 	this->q_avg = (this->q_vals[action - 1] + (float)this->totalActions*this->q_avg) / ((float)this->totalActions + 1);
@@ -505,7 +507,7 @@ int AgentIndividualLearning::formAction() {
 
 		if(!(STATE(AgentIndividualLearning)->collectRequestSent || STATE(AgentIndividualLearning)->depositRequestSent) ){		//Request is not yet answered
 			if (!this->hasCargo ) {
-	//			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: No cargo, trying to collect");
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: No cargo, trying to collect");
 				if (target.landmarkType != NON_COLLECTABLE && this->avatar.capacity >= target.landmarkType && !this->task.completed) {	//Check that we can carry the item, and that the task is not completed (do not collect delivered targets)
 					// see if we are within range of the landmark
 					dx = STATE(AgentIndividualLearning)->prev_pos_x - this->target.x;
@@ -513,7 +515,7 @@ int AgentIndividualLearning::formAction() {
 
 					if (dx*dx + dy*dy < COLLECTION_THRESHOLD*COLLECTION_THRESHOLD) { // should be close enough
 						Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: collecting landmark at %f %f", this->target.x, this->target.y);
-						thread = this->conversationInitiate(AgentIndividualLearning_CBR_convCollectLandmark, -1, &avAgent, sizeof(UUID));
+						thread = this->conversationInitiate(AgentIndividualLearning_CBR_convCollectLandmark, -1, &avAgent, sizeof(UUID));	//CONTINUE HERE - Timeouts for these???
 						if (thread == nilUUID) {
 							return 1;
 						}
@@ -533,7 +535,7 @@ int AgentIndividualLearning::formAction() {
 
 				}
 				else {
-	//				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Cannot collect - booleans: %d %d %d", target.landmarkType != NON_COLLECTABLE, this->avatar.capacity >= target.landmarkType, !this->task.completed);
+					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Cannot collect - booleans: %d %d %d", target.landmarkType != NON_COLLECTABLE, this->avatar.capacity >= target.landmarkType, !this->task.completed);
 				}
 
 			}
@@ -592,6 +594,7 @@ int AgentIndividualLearning::formAction() {
 
 	this->totalActions++;
 	uploadQLearningData(true);	//Upload action counts to DDB
+	this->backup();
 	return 0;
 }// end formAction
 
@@ -769,7 +772,7 @@ int AgentIndividualLearning::getStateVector() {
 
     float obst_dist_raw = (float)sqrt(pow(rel_obst_x, 2) + pow(rel_obst_y, 2));
 	obst_dist_raw = min(obst_dist_raw, this->look_ahead_dist_ - delta);
-    unsigned int obst_dist = (unsigned int)floor((obst_dist_raw /this->look_ahead_dist_)*this->state_resolution_[3]);
+    unsigned int obst_dist = (unsigned int)floor((obst_dist_raw /this->look_ahead_dist_)*this->state_resolution_[5]);
 
     // Get relative angles of targets/goal/obstacles, offset by half of resolution
     // (so that straight forward is the centre of a quadrant), then convert to the proper
@@ -2243,8 +2246,12 @@ bool AgentIndividualLearning::convCollectLandmark(void * vpConv) {
 			this->backup(); // landmarkCollected
 		}
 	}
+	else if (success == -2) {
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convCollectLandmark: failed: landmark not found!"); 
+	}
+
     else {
-        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convCollectLandmark: failed");
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convCollectLandmark: failed: landmark out of reach");
     }
 	STATE(AgentIndividualLearning)->collectRequestSent = false;
 	return 0;

@@ -56,7 +56,7 @@ AgentTeamLearning::AgentTeamLearning(spAddressPort ap, UUID *ticket, int logLeve
 	this->lAllianceObject.myData.round_number = 0;
 	this->round_info_set = true;
 	this->delta_learn_time = 3000; // [ms]
-	this->round_timout = 100;  // [ms]
+	this->round_timout = 200;  // [ms]
 	this->last_agent = false;
 
 	this->tempCounter = -300;

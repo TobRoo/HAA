@@ -17,6 +17,8 @@
 #define new DEBUG_NEW
 #endif
 
+#define ADVICE_REQUEST_TIMEOUT 1000
+
 //*****************************************************************************
 // AgentAdviceExchange
 
@@ -262,7 +264,7 @@ int AgentAdviceExchange::askAdviser() {
 	}
 
 	// Send state vector to the adviser, to receive their advice in return
-	this->adviserData[this->adviser].queryConv = this->conversationInitiate(AgentAdviceExchange_CBR_convAdviceQuery, DDB_REQUEST_TIMEOUT);
+	this->adviserData[this->adviser].queryConv = this->conversationInitiate(AgentAdviceExchange_CBR_convAdviceQuery, ADVICE_REQUEST_TIMEOUT);
 	if (this->adviserData[this->adviser].queryConv == nilUUID) {
 		return 1;
 	}
@@ -335,7 +337,7 @@ int AgentAdviceExchange::formAdvice() {
 	}
 	this->sendMessage(this->hostCon, MSG_RESPONSE, lds.stream(), lds.length(), &STATE(AgentAdviceExchange)->ownerId);
 	lds.unlock();
-
+	this->backup();
 	return 0;
 }
 
@@ -651,6 +653,7 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 		// Proceed to ask adviser for advice
 	    this->askAdviser();
 		//this->formAdvice();
+		this->backup();
 	}
 	break;
 	case AgentAdviceExchange_MSGS::MSG_REQUEST_CAPACITY:
@@ -908,7 +911,6 @@ bool AgentAdviceExchange::convAdviceQuery(void *vpConv) {
 
 	// Proceed to form advice
 	this->formAdvice();
-
 	return 0;
 }
 
