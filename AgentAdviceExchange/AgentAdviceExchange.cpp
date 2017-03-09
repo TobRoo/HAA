@@ -123,10 +123,10 @@ int AgentAdviceExchange::configure() {
 	if (AgentBase::configure()) {
 		return 1;
 	}// end if
-#ifdef	NO_LOGGING
-	Log.setLogMode(LOG_MODE_OFF);
-	Log.setLogLevel(LOG_LEVEL_NONE);
-#endif	
+//#ifdef	NO_LOGGING
+//	Log.setLogMode(LOG_MODE_OFF);
+//	Log.setLogLevel(LOG_LEVEL_NONE);
+//#endif	
 	return 0;
 }// end configure
 

@@ -85,8 +85,8 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
 
     // Learning parameters
     this->learning_frequency_ = 1;
-    this->num_state_vrbls_ = 8;
-    this->state_resolution_ = {3, 3, 5, 3, 5, 3, 5, 1};
+    this->num_state_vrbls_ = 7;
+    this->state_resolution_ = {3, 3, 5, 3, 5, 3, 5};
     this->look_ahead_dist_ = 2.0;
     this->stateVector.resize(this->num_state_vrbls_, 0);
     this->prevStateVector.resize(this->num_state_vrbls_, 0);
@@ -443,6 +443,9 @@ int AgentIndividualLearning::preActionUpdate() {
     this->learn();
     // Get quality from state vector
     std::vector<float> q_vals = this->q_learning_.getElements(this->stateVector);
+	for (auto& valIter: q_vals) {
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::preActionUpdate: received q_val: %f",q_vals);
+	}
 	// Get advice
 	this->requestAdvice(q_vals, this->stateVector);
 
@@ -461,7 +464,10 @@ int AgentIndividualLearning::formAction() {
 	int action = this->policy(this->q_vals);
 	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: TOP: action is %d", action);
 	// Update average quality
-	this->q_avg = (this->q_vals[action - 1] + this->totalActions*this->q_avg) / (this->totalActions + 1);
+	//Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: TOP: q_vals[action -1] is %f", this->q_vals[action - 1]);
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: TOP: this->totalActions is %lu", this->totalActions);
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: TOP: this->q_avg is %f", this->q_avg);
+	this->q_avg = (this->q_vals[action - 1] + (float)this->totalActions*this->q_avg) / ((float)this->totalActions + 1);
 
 	// Form action
 	if (action == MOVE_FORWARD) {
@@ -781,7 +787,7 @@ int AgentIndividualLearning::getStateVector() {
     unsigned int obst_angle = (unsigned int)floor((obst_angle_raw /(2 * M_PI))*this->state_resolution_[6]);
 
     // Form output vector
-    std::vector<unsigned int> state_vector{target_type, target_dist, target_angle, goal_dist, goal_angle, obst_dist, obst_angle, (unsigned int)this->hasCargo};
+    std::vector<unsigned int> state_vector{target_type, target_dist, target_angle, goal_dist, goal_angle, obst_dist, obst_angle};
 //	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateVector: target type %d, target dist %d, target angle %d, goal dist %d, goal angle %d, obst dist %d, obst angle %d", target_type, target_dist, target_angle, goal_dist, goal_angle, obst_dist, obst_angle);
     // Check that state vector is valid
     for(int i = 0; i < this->num_state_vrbls_; i++) {
@@ -825,8 +831,10 @@ int AgentIndividualLearning::policy(std::vector<float> &quality) {
 	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: POLICY 1");
     if (quality_sum == 0.0f) {
         random_actions_++;
-        int action = (int)ceil(randomGenerator.Uniform01() * num_actions_);
-        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::policy: All zero quality, selecting a random action");
+		srand(time(NULL));
+       // int action = (int)ceil(randomGenerator.Uniform01() * num_actions_);
+		action = rand() % 5 + 1;
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::policy: All zero quality, selecting a random action");
         return action;
     }
     else {
@@ -2497,11 +2505,11 @@ bool AgentIndividualLearning::convRequestAdvice(void *vpConv) {
 	this->q_vals.clear();
 	for (int i = 0; i < this->num_actions_; i++) {
 		this->q_vals.push_back(lds.unpackFloat32());
-//		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAdvice: received q_val: %f", this->q_vals.back());
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAdvice: received q_val: %f", this->q_vals.back());
 	}
 	lds.unlock();
 
-//	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAdvice: Received advice.");
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAdvice: Received advice.");
 
 	// Proceed to form the next action
 	this->formAction();
