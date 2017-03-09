@@ -459,7 +459,7 @@ int AgentIndividualLearning::formAction() {
 	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: TOP");
 	// Select action based quality
 	int action = this->policy(this->q_vals);
-
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: TOP: action is %d", action);
 	// Update average quality
 	this->q_avg = (this->q_vals[action - 1] + this->totalActions*this->q_avg) / (this->totalActions + 1);
 
@@ -532,22 +532,38 @@ int AgentIndividualLearning::formAction() {
 
 			}
 			else {
-				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: trying to drop off cargo...");
-				thread = this->conversationInitiate(AgentIndividualLearning_CBR_convDepositLandmark, -1, &avAgent, sizeof(UUID));
-				if (thread == nilUUID) {
-					return 1;
-				}
-				lds.reset();
-				lds.packUChar(this->target.code);
-				lds.packFloat32(this->target.x);
-				lds.packFloat32(this->target.y);
-				lds.packUUID(this->getUUID());
-				lds.packUUID(&thread);
-				this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_DEPOSIT_LANDMARK), lds.stream(), lds.length(), &avAgent);
-				lds.unlock();
 
-				STATE(AgentIndividualLearning)->depositRequestSent = true;
-				this->backup();
+				for (auto& cRIter : this->collectionRegions) {				//See if we are inside a collection region when dropping cargo, otherwise no dropping cargo
+
+	//for (cRIter = this->collectionRegions.begin(); cRIter != this->collectionRegions.end(); cRIter++) {				//See if we are inside a collection region when dropping cargo
+					float cR_x_high = cRIter.second.x + cRIter.second.w;
+					float cR_x_low = cRIter.second.x;
+					float cR_y_high = cRIter.second.y + cRIter.second.h;
+					float cR_y_low = cRIter.second.y;
+
+					if (cR_x_low <= STATE(AgentIndividualLearning)->prev_pos_x && STATE(AgentIndividualLearning)->prev_pos_x <= cR_x_high && cR_y_low <= STATE(AgentIndividualLearning)->prev_pos_y && STATE(AgentIndividualLearning)->prev_pos_y <= cR_y_high) {
+
+
+						Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: trying to drop off cargo...");
+						thread = this->conversationInitiate(AgentIndividualLearning_CBR_convDepositLandmark, -1, &avAgent, sizeof(UUID));
+						if (thread == nilUUID) {
+							return 1;
+						}
+						lds.reset();
+						lds.packUChar(this->target.code);
+						lds.packFloat32(this->target.x);
+						lds.packFloat32(this->target.y);
+						lds.packUUID(this->getUUID());
+						lds.packUUID(&thread);
+						this->sendMessageEx(this->hostCon, MSGEX(AvatarSimulation_MSGS, MSG_DEPOSIT_LANDMARK), lds.stream(), lds.length(), &avAgent);
+						lds.unlock();
+
+						STATE(AgentIndividualLearning)->depositRequestSent = true;
+						this->backup();
+
+					}
+				}
+
 
 			}
 		}
@@ -798,7 +814,7 @@ int AgentIndividualLearning::getStateVector() {
 */
 int AgentIndividualLearning::policy(std::vector<float> &quality) {
     int action = 1;     // Default to one
-
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: POLICY");
     // Maybe add error check for empty quality_vals?
 
     // Get the sum of all quality
@@ -806,11 +822,11 @@ int AgentIndividualLearning::policy(std::vector<float> &quality) {
     for (int i = 0; i < quality.size(); ++i) {
         quality_sum += quality[i];
     }
-
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: POLICY 1");
     if (quality_sum == 0.0f) {
         random_actions_++;
         int action = (int)ceil(randomGenerator.Uniform01() * num_actions_);
-//        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::policy: All zero quality, selecting a random action");
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::policy: All zero quality, selecting a random action");
         return action;
     }
     else {
@@ -827,7 +843,7 @@ int AgentIndividualLearning::policy(std::vector<float> &quality) {
 
     // Softmax action selection [Girard, 2015]
     // Determine temp from experience (form of function is 1 minus a sigmoid function)
-
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: POLICY 2");
     // Find exponents and sums for softmax distribution
     std::vector<float> exponents(num_actions_);
     float exponents_sum = 0;
@@ -859,7 +875,7 @@ int AgentIndividualLearning::policy(std::vector<float> &quality) {
         }
     }
 
-
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: POLICY 3");
     return action;
 }
 
@@ -1030,7 +1046,7 @@ int AgentIndividualLearning::requestAdvice(std::vector<float> &q_vals, std::vect
 //	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getAdvice: Sending request for advice");
 
 	// Start the conversation
-	STATE(AgentIndividualLearning)->adviceRequestConv = this->conversationInitiate(AgentIndividualLearning_CBR_convRequestAdvice, DDB_REQUEST_TIMEOUT);
+	STATE(AgentIndividualLearning)->adviceRequestConv = this->conversationInitiate(AgentIndividualLearning_CBR_convRequestAdvice, ADVICE_REQUEST_TIMEOUT);
 	if (STATE(AgentIndividualLearning)->adviceRequestConv == nilUUID) {
 		return 1;
 	}
@@ -1625,7 +1641,7 @@ bool AgentIndividualLearning::convGetAvatarList(void *vpConv) {
         lds.unlock();
         // TODO try again?
     }
-	recoveryCheck(&this->AgentIndividualLearning_recoveryLock);
+	recoveryCheck(&this->AgentIndividualLearning_recoveryLock1);
     return 0;
 }
 
@@ -1967,7 +1983,7 @@ bool AgentIndividualLearning::convMissionRegion(void *vpConv) {
         lds.unlock();
         // TODO try again?
     }
-
+	recoveryCheck(&this->AgentIndividualLearning_recoveryLock3);
     return 0;
 }
 
@@ -2448,7 +2464,7 @@ bool AgentIndividualLearning::convRequestAgentAdviceExchange(void *vpConv) {
 		lds.unlock();
 		// TODO try again?
 	}
-
+	recoveryCheck(&this->AgentIndividualLearning_recoveryLock4);
 	return 0;
 }
 
@@ -2508,6 +2524,7 @@ bool AgentIndividualLearning::convGetRunNumber(void * vpConv)
 	STATE(AgentIndividualLearning)->runNumber = lds.unpackInt32();
 	Log.log(0, "My run number is: %d", STATE(AgentIndividualLearning)->runNumber);
 	STATE(AgentIndividualLearning)->hasReceivedRunNumber = true;
+	recoveryCheck(&this->AgentIndividualLearning_recoveryLock2);
 	return false;
 }
 
@@ -2609,6 +2626,9 @@ int AgentIndividualLearning::recoveryFinish() {
     if (AgentBase::recoveryFinish())
         return 1;
 
+	int action = (int)ceil(randomGenerator.Uniform01() * num_actions_);
+	Log.log(0, "RecoveryFinish actionTest: num_actions_ %d", num_actions_);
+	Log.log(0, "RecoveryFinish actionTest: %d", action);
 	this->updateStateData();
 
     return 0;
@@ -2696,6 +2716,9 @@ int AgentIndividualLearning::readBackup(DataStream *ds) {
 	this->totalActions = *(unsigned long*)ds->unpackData(sizeof(unsigned long));
 	this->usefulActions = *(unsigned long*)ds->unpackData(sizeof(unsigned long));
 
+	this->randomGenerator = *new RandomGenerator();
+
+
 	if (!STATE(AgentIndividualLearning)->hasReceivedRunNumber) {
 		// request run number info
 		UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convGetRunNumber, DDB_REQUEST_TIMEOUT);
@@ -2707,6 +2730,10 @@ int AgentIndividualLearning::readBackup(DataStream *ds) {
 		//lds.packUUID(&STATE(AgentBase)->uuid);
 		this->sendMessage(this->hostCon, MSG_RRUNNUMBER, lds.stream(), lds.length());
 		lds.unlock();
+
+		// we have tasks to take care of before we can resume
+		apb->apbUuidCreate(&this->AgentIndividualLearning_recoveryLock2);
+		this->recoveryLocks.push_back(this->AgentIndividualLearning_recoveryLock2);
 	}
 
     if (STATE(AgentIndividualLearning)->missionRegionReceived && STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned) {
@@ -2724,6 +2751,11 @@ int AgentIndividualLearning::readBackup(DataStream *ds) {
         lds.packUUID(&thread);
         this->sendMessage(this->hostCon, MSG_DDB_RREGION, lds.stream(), lds.length());
         lds.unlock();
+
+		// we have tasks to take care of before we can resume
+		apb->apbUuidCreate(&this->AgentIndividualLearning_recoveryLock3);
+		this->recoveryLocks.push_back(this->AgentIndividualLearning_recoveryLock3);
+
     }
 	else {		//Need both mission region and agentAdviceExchange
 		// get mission region
@@ -2737,7 +2769,16 @@ int AgentIndividualLearning::readBackup(DataStream *ds) {
 		this->sendMessage(this->hostCon, MSG_DDB_RREGION, lds.stream(), lds.length());
 		lds.unlock();
 
+		// we have tasks to take care of before we can resume
+		apb->apbUuidCreate(&this->AgentIndividualLearning_recoveryLock3);
+		this->recoveryLocks.push_back(this->AgentIndividualLearning_recoveryLock3);
+
 		this->spawnAgentAdviceExchange();
+
+		// we have tasks to take care of before we can resume
+		apb->apbUuidCreate(&this->AgentIndividualLearning_recoveryLock4);
+		this->recoveryLocks.push_back(this->AgentIndividualLearning_recoveryLock4);
+
 	}
 
 	DataStream sds;
@@ -2755,8 +2796,8 @@ int AgentIndividualLearning::readBackup(DataStream *ds) {
 	sds.unlock();
 
 	// we have tasks to take care of before we can resume
-	apb->apbUuidCreate(&this->AgentIndividualLearning_recoveryLock);
-	this->recoveryLocks.push_back(this->AgentIndividualLearning_recoveryLock);
+	apb->apbUuidCreate(&this->AgentIndividualLearning_recoveryLock1);
+	this->recoveryLocks.push_back(this->AgentIndividualLearning_recoveryLock1);
 
     return AgentBase::readBackup(ds);
 }// end readBackup

@@ -39,6 +39,9 @@
 #include "..\\autonomic\\DDB.h"
 #include "QLearning.h"
 
+#define ADVICE_REQUEST_TIMEOUT	1000	//Wait one second for advice, otherwise proceed with own values
+
+
 struct ActionPair {
     int action;
     float val;
@@ -118,7 +121,13 @@ public:
 // Non-state member variables
 
 protected:
-    UUID AgentIndividualLearning_recoveryLock;
+    UUID AgentIndividualLearning_recoveryLock1;
+	UUID AgentIndividualLearning_recoveryLock2;
+	UUID AgentIndividualLearning_recoveryLock3;
+	UUID AgentIndividualLearning_recoveryLock4;
+	UUID AgentIndividualLearning_recoveryLock5;
+
+
     DataStream ds; // shared DataStream object, for temporary, single thread, use only!
 
     std::map<UUID, DDBRegion, UUIDless> collectionRegions;
