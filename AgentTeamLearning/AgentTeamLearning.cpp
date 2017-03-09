@@ -1357,8 +1357,8 @@ bool AgentTeamLearning::convGetTaskDataInfo(void * vpConv) {
 
 			if (taskData.round_number >= STATE(AgentTeamLearning)->round_number) {
 
-				//if (taskData.round_number > STATE(AgentTeamLearning)->round_number)
-				//	STATE(AgentTeamLearning)->round_number = taskData.round_number;		//If we receive a higher round number, we are lagging behind, update...
+				if (taskData.round_number > STATE(AgentTeamLearning)->round_number)
+					STATE(AgentTeamLearning)->round_number = taskData.round_number;		//If we receive a higher round number, we are lagging behind, update...
 
 				// Valid data
 				lAllianceObject.teammatesData[avatarId] = taskData;
@@ -1697,7 +1697,7 @@ int AgentTeamLearning::recoveryFinish() {
 	//this->TLAgentData[STATE(AgentBase)->uuid].response = false;
 	//this->checkRoundStatus();
 	////this->initiateNextRound();
-	STATE(AgentTeamLearning)->returningFromRecovery = true;
+	//STATE(AgentTeamLearning)->returningFromRecovery = true;
 	
 	return 0;
 }// end recoveryFinish
