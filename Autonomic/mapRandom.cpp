@@ -425,7 +425,8 @@ int generateRandomMap(char * misFile, char* newMisFile, char* newPathFile, char*
 		outTarget << "[forage]\n";
 		outTarget << "id=" << 200 + i << "\n";
 		outTarget << "pose=" << (targetPos[i][0] - 0.125f) << " " << (targetPos[i][1] - 0.125f) << " " << "0.25	0.25 1\n";
-		outTarget << "landmark_type=" << i % 2 + 1<<"\n";	//Equal amounts of light and heavy objects
+		//outTarget << "landmark_type=" << i % 2 + 1<<"\n";	//Equal amounts of light and heavy objects
+		outTarget << "landmark_type=" << 1 << "\n";	//Equal amounts of light and heavy objects
 		lmHigh = lmHigh + i;
 	}
 

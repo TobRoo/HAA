@@ -449,7 +449,8 @@ int AgentIndividualLearning::preActionUpdate() {
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::preActionUpdate: received q_val: %f",q_vals);
 	}
 	// Get advice
-	this->requestAdvice(q_vals, this->stateVector);
+	//this->requestAdvice(q_vals, this->stateVector);
+	formAction();
 
     return 0;
 }// end preActionUpdate
