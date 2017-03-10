@@ -597,7 +597,7 @@ int AgentIndividualLearning::formAction() {
 
 	this->totalActions++;
 	uploadQLearningData(true);	//Upload action counts to DDB
-	this->backup();
+	//this->backup();
 	return 0;
 }// end formAction
 
