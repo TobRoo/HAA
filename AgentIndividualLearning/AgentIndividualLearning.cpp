@@ -914,14 +914,14 @@ float AgentIndividualLearning::determineReward() {
     float delta_goal_dist = goal_dist - prev_goal_dist;
 
 	// Reward moving closer to goal area, to encourage waiting there until a task is received
-    if (this->task.landmarkUUID == nilUUID) {
+   // if (this->task.landmarkUUID == nilUUID) {
         if (delta_goal_dist < -reward_activation_dist_) {
             return 1.0f;
         }
         else {
             return empty_reward_value_;
         }
-    }
+  //  }
 
     // Now handle the cases where the robot has a target
     this->usefulActions++;
