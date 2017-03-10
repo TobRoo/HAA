@@ -35,8 +35,8 @@
 //#include <boost/filesystem/operations.hpp>
 //#include <boost/filesystem/path.hpp>
 
-#define COLLECTION_THRESHOLD 0.5f // m
-#define DELIVERY_THRESHOLD 0.5f // m
+#define COLLECTION_THRESHOLD 10.0f //0.5f // m
+#define DELIVERY_THRESHOLD 10.0f //0.5f // m
 
 #define CARGO_REQUEST_TIMEOUT 200	
 
@@ -446,7 +446,7 @@ int AgentIndividualLearning::preActionUpdate() {
     // Get quality from state vector
     this->q_vals = this->q_learning_.getElements(this->stateVector);
 	for (auto& valIter: q_vals) {
-		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::preActionUpdate: received q_val: %f",q_vals);
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::preActionUpdate: received q_val: %f", valIter);
 	}
 	// Get advice
 	//this->requestAdvice(q_vals, this->stateVector);
@@ -914,14 +914,14 @@ float AgentIndividualLearning::determineReward() {
     float delta_goal_dist = goal_dist - prev_goal_dist;
 
 	// Reward moving closer to goal area, to encourage waiting there until a task is received
-   // if (this->task.landmarkUUID == nilUUID) {
+    if (this->task.landmarkUUID == nilUUID) {
         if (delta_goal_dist < -reward_activation_dist_) {
             return 1.0f;
         }
         else {
             return empty_reward_value_;
         }
-  //  }
+    }
 
     // Now handle the cases where the robot has a target
     this->usefulActions++;
