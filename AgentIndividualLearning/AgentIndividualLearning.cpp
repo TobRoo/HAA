@@ -38,6 +38,8 @@
 #define COLLECTION_THRESHOLD 0.5f // m
 #define DELIVERY_THRESHOLD 0.5f // m
 
+#define CARGO_REQUEST_TIMEOUT 200	
+
 using namespace AvatarBase_Defs;
 
 #ifdef _DEBUG
@@ -515,7 +517,7 @@ int AgentIndividualLearning::formAction() {
 
 					if (dx*dx + dy*dy < COLLECTION_THRESHOLD*COLLECTION_THRESHOLD) { // should be close enough
 						Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: collecting landmark at %f %f", this->target.x, this->target.y);
-						thread = this->conversationInitiate(AgentIndividualLearning_CBR_convCollectLandmark, -1, &avAgent, sizeof(UUID));	//CONTINUE HERE - Timeouts for these???
+						thread = this->conversationInitiate(AgentIndividualLearning_CBR_convCollectLandmark, CARGO_REQUEST_TIMEOUT, &avAgent, sizeof(UUID));	//CONTINUE HERE - Timeouts for these???
 						if (thread == nilUUID) {
 							return 1;
 						}
@@ -553,7 +555,7 @@ int AgentIndividualLearning::formAction() {
 
 
 						Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: trying to drop off cargo...");
-						thread = this->conversationInitiate(AgentIndividualLearning_CBR_convDepositLandmark, -1, &avAgent, sizeof(UUID));
+						thread = this->conversationInitiate(AgentIndividualLearning_CBR_convDepositLandmark, CARGO_REQUEST_TIMEOUT, &avAgent, sizeof(UUID));
 						if (thread == nilUUID) {
 							return 1;
 						}
@@ -2041,7 +2043,7 @@ bool AgentIndividualLearning::convGetTaskInfo(void * vpConv) {
                 if (this->hasCargo && !STATE(AgentIndividualLearning)->depositRequestSent) {
 					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Dropping our current cargo");
 					DataStream sds;
-					UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convDepositLandmark, -1, &this->avatarAgentId, sizeof(UUID));
+					UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convDepositLandmark, CARGO_REQUEST_TIMEOUT, &this->avatarAgentId, sizeof(UUID));
 					if (thread == nilUUID) {
 						return 1;
 					}
@@ -2084,7 +2086,7 @@ bool AgentIndividualLearning::convGetTaskInfo(void * vpConv) {
 				if (this->hasCargo && !STATE(AgentIndividualLearning)->depositRequestSent) {
 					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTaskInfo: Dropping our current cargo");
 					DataStream sds;
-					UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convDepositLandmark, -1, &this->avatarAgentId, sizeof(UUID));
+					UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convDepositLandmark, CARGO_REQUEST_TIMEOUT, &this->avatarAgentId, sizeof(UUID));
 					if (thread == nilUUID) {
 						return 1;
 					}
