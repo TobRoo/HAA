@@ -612,11 +612,14 @@ int AvatarSimulation::parseAvatarOutput( DataStream *ds ) {
 			Log.log(0, "AvatarSimulation::parseAvatarOutput: SAE_COLLECT");
 			unsigned char code, success;
 				UUID thread;
+				float x, y;
 				code = ds->unpackUChar();
 				success = ds->unpackChar();
 				ds->unpackUUID( &thread );
 
 				if ( success == 1 ) {
+					x = ds->unpackFloat32();		//Collection point - as robots have reach
+					y = ds->unpackFloat32();		//Collection point - as robots have reach
 					// update avatar capacity
 					lds.reset();
 					lds.packUUID( &STATE(AvatarBase)->avatarUUID );
@@ -631,6 +634,8 @@ int AvatarSimulation::parseAvatarOutput( DataStream *ds ) {
 					lds.reset();
 					lds.packUChar( code );
 					lds.packInt32( DDBLANDMARKINFO_COLLECTED );
+					lds.packFloat32(x);
+					lds.packFloat32(y);
 					this->sendMessage( this->hostCon, MSG_DDB_LANDMARKSETINFO, lds.stream(), lds.length() );
 					lds.unlock();
 				}
@@ -641,6 +646,8 @@ int AvatarSimulation::parseAvatarOutput( DataStream *ds ) {
 					lds.reset();
 					lds.packUUID( &thread );
 					lds.packChar( success );
+					lds.packFloat32(x);
+					lds.packFloat32(y);
 					this->sendMessage( this->hostCon, MSG_RESPONSE, lds.stream(), lds.length(), &this->collectionTask.front().initiator );
 					lds.unlock();
 					this->collectionTask.pop_front();

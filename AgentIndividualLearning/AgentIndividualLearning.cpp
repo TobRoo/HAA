@@ -609,7 +609,7 @@ int AgentIndividualLearning::learn() {
     // TODO: Adjust learning frequency based on experience
     if ((this->learning_iterations_ % this->learning_frequency_ == 0) && (STATE(AgentIndividualLearning)->action.action > 0)) {
         float reward = this->determineReward();
- //       Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::learn: Reward: %f", reward);
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::learn: Reward: %f", reward);
 
         this->q_learning_.learn(this->prevStateVector, this->stateVector, STATE(AgentIndividualLearning)->action.action, reward);
         this->learning_iterations_++;
@@ -742,11 +742,20 @@ int AgentIndividualLearning::getStateVector() {
     float pos_y = this->avatar.y - STATE(AgentIndividualLearning)->missionRegion.y;
     float orient = this->avatar.r;
 
+
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateVector: pos_x %f, pos_y %f, prev_pos_x %f, prev_pos_y %f, distance travelled %f", pos_x, pos_y, STATE(AgentIndividualLearning)->prev_pos_x, STATE(AgentIndividualLearning)->prev_pos_y, sqrt(pow(pos_x - STATE(AgentIndividualLearning)->prev_pos_x, 2) + pow(pos_y - STATE(AgentIndividualLearning)->prev_pos_y, 2) ) );
+
+
     // Calculate relative distances
     float rel_target_x = this->target.x - this->avatar.x;
     float rel_target_y = this->target.y - this->avatar.y;
     float rel_goal_x = STATE(AgentIndividualLearning)->goal_x - this->avatar.x;
     float rel_goal_y = STATE(AgentIndividualLearning)->goal_y - this->avatar.y;
+
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateVector: rel_obst_x %f, rel_obst_y %f, dist_rel_obst_x %f, dist_rel_obst_y %f, rel_border_x %f, rel_border_y %f", rel_obst_x, rel_obst_y, dist_rel_obst_x, dist_rel_obst_y, rel_border_x, rel_border_y);
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateVector: pos_x %f, pos_y %f, this->avatar.x %f, this->avatar.y %f, STATE(AgentIndividualLearning)->missionRegion.x %f, STATE(AgentIndividualLearning)->missionRegion.y %f", pos_x, pos_y, this->avatar.x, this->avatar.y, STATE(AgentIndividualLearning)->missionRegion.x, STATE(AgentIndividualLearning)->missionRegion.y);
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateVector: rel_target_x %f, rel_target_y %f, rel_goal_x %f, rel_goal_y %f", rel_target_x, rel_target_y, rel_goal_x, rel_goal_y);
+
 
     // State vector will consist of:
     //   target_type
@@ -794,7 +803,8 @@ int AgentIndividualLearning::getStateVector() {
 
     // Form output vector
     std::vector<unsigned int> state_vector{target_type, target_dist, target_angle, goal_dist, goal_angle, obst_dist, obst_angle};
-//	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateVector: target type %d, target dist %d, target angle %d, goal dist %d, goal angle %d, obst dist %d, obst angle %d", target_type, target_dist, target_angle, goal_dist, goal_angle, obst_dist, obst_angle);
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateVector: target type %d, target dist raw %f, target angle raw %f, goal dist raw  %f, goal angle raw  %f, obst dist raw  %f, obst angle raw  %f", target_type, target_dist_raw, target_angle_raw, goal_dist_raw, goal_angle_raw, obst_dist_raw, obst_angle_raw);
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateVector: target type %d, target dist %d, target angle %d, goal dist %d, goal angle %d, obst dist %d, obst angle %d", target_type, target_dist, target_angle, goal_dist, goal_angle, obst_dist, obst_angle);
     // Check that state vector is valid
     for(int i = 0; i < this->num_state_vrbls_; i++) {
         if (state_vector[i] > this->state_resolution_[i]) {
@@ -928,6 +938,7 @@ float AgentIndividualLearning::determineReward() {
 
     // When the target is returned
     if (this->hasDelivered == true) {
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::determineReward: Delivered the target, return_reward_");
         // Item has been returned
         this->hasDelivered = false;	//Set back to false in preparation for new task
         return return_reward_;
@@ -946,25 +957,33 @@ float AgentIndividualLearning::determineReward() {
                                              + (float)pow(STATE(AgentIndividualLearning)->prev_target_y - STATE(AgentIndividualLearning)->prev_pos_y, 2));
     float delta_robot_item_dist = robot_item_dist - prev_robot_item_dist;
 
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::determineReward: item_goal_dist %f, prev_item_goal_dist %f,  delta_item_goal_dist %f,  robot_item_dist %f,  prev_robot_item_dist %f,  delta_robot_item_dist %f, reward_activation_dist_ %f", item_goal_dist, prev_item_goal_dist, delta_item_goal_dist, robot_item_dist, prev_robot_item_dist, delta_robot_item_dist, reward_activation_dist_);
+
+
     // Rewards depend on if the robot is going to an item, or carrying one
     if (this->hasCargo && delta_item_goal_dist < -this->reward_activation_dist_) {
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::determineReward: Have cargo, moved closer to goal");
         // Item has moved closer
         return this->item_closer_reward_;
     }
     else if (this->hasCargo && delta_item_goal_dist > this->reward_activation_dist_) {
-        // Item has moved further away
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::determineReward: Have cargo, moved farther from goal");
+        // Item has moved farther away
         return this->item_further_reward_;
     }
     else if (!this->hasCargo && delta_robot_item_dist < -this->reward_activation_dist_) {
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::determineReward: Have no cargo, moved closer to target");
         // Robot moved closer to item
         return this->robot_closer_reward_;
     }
     else if (!this->hasCargo && delta_robot_item_dist > this->reward_activation_dist_) {
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::determineReward: Have no cargo, moved farther from target");
         // Robot moved further away from item
         return this->robot_further_reward_;
     }
     else {
         // Penalize for not getting any reward
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::determineReward: Received no reward");
         return empty_reward_value_;
     }// end reward if
 }
@@ -2233,9 +2252,11 @@ bool AgentIndividualLearning::convCollectLandmark(void * vpConv) {
     lds.unpackData(sizeof(UUID)); // discard thread
 
     success = lds.unpackChar();
-    lds.unlock();
+
 
     if (success == 1) { // succeeded
+		this->target.x = lds.unpackFloat32();
+		this->target.y = lds.unpackFloat32();
         Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convCollectLandmark: success");
         this->hasCargo = true;
 		STATE(AgentIndividualLearning)->collectRequestSent = false;
@@ -2257,6 +2278,7 @@ bool AgentIndividualLearning::convCollectLandmark(void * vpConv) {
         Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convCollectLandmark: failed: landmark out of reach");
     }
 	STATE(AgentIndividualLearning)->collectRequestSent = false;
+	lds.unlock();
 	return 0;
 }
 

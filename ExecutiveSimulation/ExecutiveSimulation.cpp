@@ -2376,9 +2376,13 @@ int SimAvatar::doCollectLandmark( unsigned char code, float x, float y, UUID *th
 		this->output.packUChar( code );
 		this->output.packChar( 1 ); // success
 		this->output.packUUID( thread );
+		this->output.packFloat32(x);
+		this->output.packFloat32(y);
 
 		// flag as collected
 		lm->collected = true;
+		lm->wx = state.x;
+		lm->wy = state.y;
 
 	} else { // failed
 		Log->log( 0, "SimAvatar::doCollectLandmark: landmark out of reach (%d)", code );
