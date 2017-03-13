@@ -2360,7 +2360,8 @@ int SimAvatar::doCollectLandmark( unsigned char code, float x, float y, UUID *th
 		this->output.packUChar( code );
 		this->output.packChar( successCode ); // fail
 		this->output.packUUID( thread );
-
+		this->output.packFloat32(-1);
+		this->output.packFloat32(-1);
 		return 1; // not found
 	}
 
@@ -2392,6 +2393,8 @@ int SimAvatar::doCollectLandmark( unsigned char code, float x, float y, UUID *th
 		this->output.packUChar( code );
 		this->output.packChar( 0 ); // fail
 		this->output.packUUID( thread );
+		this->output.packFloat32(-1);
+		this->output.packFloat32(-1);
 	}
 
 	return 0;

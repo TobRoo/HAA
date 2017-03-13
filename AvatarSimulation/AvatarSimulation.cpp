@@ -111,10 +111,10 @@ int AvatarSimulation::configure() {
 
 	if ( AvatarBase::configure() ) 
 		return 1;
-#ifdef	NO_LOGGING
-	Log.setLogMode(LOG_MODE_OFF);
-	Log.setLogLevel(LOG_LEVEL_NONE);
-#endif
+//#ifdef	NO_LOGGING
+//	Log.setLogMode(LOG_MODE_OFF);
+//	Log.setLogLevel(LOG_LEVEL_NONE);
+//#endif
 	return 0;
 }
 
@@ -783,7 +783,7 @@ int AvatarSimulation::nextAction() {
 				millis = (unsigned short)(1000 * (accT + decT));
 			}
 
-//			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::nextAction: AA_MOVE start %.3f est millis=%d", D, millis );
+			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::nextAction: AA_MOVE start %.3f est millis=%d", D, millis );
 
 			STATE(AvatarSimulation)->moveDone = false;
 			STATE(AvatarSimulation)->moveId++;

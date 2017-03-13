@@ -1007,14 +1007,14 @@ bool AgentIndividualLearning::validAction(ActionPair &action) {
     // Check X world boundaries
     if ((new_pos_x - this->avatar.outerRadius) < STATE(AgentIndividualLearning)->missionRegion.x ||
         new_pos_x + this->avatar.outerRadius > (STATE(AgentIndividualLearning)->missionRegion.x + STATE(AgentIndividualLearning)->missionRegion.w)) {
-//        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Invalid action (world X boundary)");
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Invalid action (world X boundary)");
         return false;
     }
 
     // Check Y world boundaries
     if ((new_pos_y - this->avatar.outerRadius) < STATE(AgentIndividualLearning)->missionRegion.y ||
         new_pos_y + this->avatar.outerRadius > (STATE(AgentIndividualLearning)->missionRegion.y + STATE(AgentIndividualLearning)->missionRegion.h)) {
- //       Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Invalid action (world Y boundary)");
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Invalid action (world Y boundary)");
         return false;
     }
 
@@ -1036,7 +1036,7 @@ bool AgentIndividualLearning::validAction(ActionPair &action) {
 
         if (abs(new_pos_y - avatarIter->second.y) < (this->avatar.outerRadius + avatarIter->second.outerRadius) &&
             abs(new_pos_x - avatarIter->second.x) < (this->avatar.outerRadius + avatarIter->second.outerRadius)) {
-//            Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Invalid action (avatar collision)");
+            Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Invalid action (avatar collision)");
             return false;
         }
     }
@@ -1059,7 +1059,7 @@ bool AgentIndividualLearning::validAction(ActionPair &action) {
 		float obst_y_low_diff = rel_obst_y_low - (new_pos_y + this->avatar.outerRadius);
         
 		if ((obst_x_high_diff < 0) && (obst_x_low_diff < 0) && (obst_y_high_diff < 0) && (obst_y_low_diff < 0)) {
- //           Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Invalid action (obstacle boundary)");
+            Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Invalid action (obstacle boundary)");
             return false;
         }
     }
@@ -1872,9 +1872,13 @@ bool AgentIndividualLearning::convRequestAvatarLoc(void *vpConv) {
 			//Update target location, actual landmark will be updated when cargo is dropped off
 
 			if (this->hasCargo) {	
-//				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAvatarLoc: UPDATING CARGO POS");
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAvatarLoc: UPDATING CARGO POS");
+				STATE(AgentIndividualLearning)->prev_target_x = this->target.x;
+				STATE(AgentIndividualLearning)->prev_target_y = this->target.y;
 				this->target.x = this->avatar.x;
 				this->target.y = this->avatar.y;
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::determineReward: prev_target_x %f, prev_target_y %f, this->target.x %f, this->target.y %f", STATE(AgentIndividualLearning)->prev_target_x, STATE(AgentIndividualLearning)->prev_target_y, this->target.x, this->target.y);
+
 			}
 
             this->preActionUpdate();
@@ -1970,6 +1974,8 @@ bool AgentIndividualLearning::convGetTargetInfo(void *vpConv) {
 			STATE(AgentIndividualLearning)->prev_target_x = this->target.x;
 			STATE(AgentIndividualLearning)->prev_target_y = this->target.y;
 			this->target = *(DDBLandmark *)lds.unpackData(sizeof(DDBLandmark));
+			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTargetInfo: prev_target_x %f, prev_target_y %f, this->target.x %f, this->target.y %f", STATE(AgentIndividualLearning)->prev_target_x, STATE(AgentIndividualLearning)->prev_target_y, this->target.x, this->target.y);
+
 		}
 		lds.unlock();
 		
@@ -2255,9 +2261,12 @@ bool AgentIndividualLearning::convCollectLandmark(void * vpConv) {
 
 
     if (success == 1) { // succeeded
-		this->target.x = lds.unpackFloat32();
-		this->target.y = lds.unpackFloat32();
-        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convCollectLandmark: success");
+	//	this->target.x = lds.unpackFloat32();
+	//	this->target.y = lds.unpackFloat32();
+		this->target.x = this->avatar.x;
+		this->target.y = this->avatar.y;
+
+        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convCollectLandmark: success: landmark now at x %f y %f, avatar at x %f y %f", this->target.x, this->target.y, this->avatar.x, this->avatar.y);
         this->hasCargo = true;
 		STATE(AgentIndividualLearning)->collectRequestSent = false;
         this->backup(); // landmarkCollected
