@@ -2894,6 +2894,7 @@ int AgentBase::conversationResponse( UUID *thread, spConnection con, char *respo
 
 	if ( iterC == this->conversations.end() ) { // we don't know this conversation?!
 		Log.log( 0, "AgentBase::conversationResponse: received response in unknown conversation (%s)", Log.formatUUID(0,thread) );
+		Log.log(0, "AgentBase::conversationResponse: sent from agent %s", Log.formatUUID(0, &con->uuid));
 		return 1;
 	}
 	

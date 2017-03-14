@@ -783,6 +783,8 @@ int AvatarSimulation::nextAction() {
 				millis = (unsigned short)(1000 * (accT + decT));
 			}
 
+			millis = AvatarSimulation_SIMWAKE_PERIOD;
+
 			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::nextAction: AA_MOVE start %.3f est millis=%d", D, millis );
 
 			STATE(AvatarSimulation)->moveDone = false;
@@ -841,7 +843,9 @@ int AvatarSimulation::nextAction() {
 				millis = (unsigned short)(1000 * (accT + decT));
 			}
 
-//			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::nextAction: AA_ROTATE start %.3f est millis=%d", *pAD, millis );
+			millis = AvatarSimulation_SIMWAKE_PERIOD;
+
+			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::nextAction: AA_ROTATE start %.3f est millis=%d", *pAD, millis );
 		
 			STATE(AvatarSimulation)->moveDone = false;
 			STATE(AvatarSimulation)->moveId++;
@@ -991,7 +995,7 @@ bool AvatarSimulation::cbActionStep( void *vpdata ) {
 			float dD = sqrt(dX*dX + dY*dY);
 			
 			apb->apb_ftime_s( &tb );
-//			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::cbActionStep: AA_MOVE finished (dD=%f, tb=%d.%d)", dD, tb.time, (int)tb.millitm );
+			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::cbActionStep: AA_MOVE finished (dD=%f, tb=%d.%d)", dD, tb.time, (int)tb.millitm );
 			STATE(AvatarBase)->actionTimeout = nilUUID;
 			this->nextAction();
 		} else {
@@ -1000,7 +1004,7 @@ bool AvatarSimulation::cbActionStep( void *vpdata ) {
 			  || tb.time == STATE(AvatarSimulation)->actionGiveupTime.time && tb.millitm < STATE(AvatarSimulation)->actionGiveupTime.millitm ) 
 				return 1; // keep waiting
 			// give up
-//			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::cbActionStep: AA_MOVE failed!" );
+			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::cbActionStep: AA_MOVE failed!" );
 			this->abortActions();
 		}
 		return 0;
@@ -1009,7 +1013,7 @@ bool AvatarSimulation::cbActionStep( void *vpdata ) {
 			float dR = STATE(AvatarSimulation)->lastUpdatePosR - STATE(AvatarSimulation)->moveStartR;
 
 			apb->apb_ftime_s( &tb );
-//			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::cbActionStep: AA_ROTATE finished (dR=%f, tb=%d.%d)", dR, tb.time, (int)tb.millitm );
+			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::cbActionStep: AA_ROTATE finished (dR=%f, tb=%d.%d)", dR, tb.time, (int)tb.millitm );
 			STATE(AvatarBase)->actionTimeout = nilUUID;
 			this->nextAction();
 		} else {
@@ -1018,7 +1022,7 @@ bool AvatarSimulation::cbActionStep( void *vpdata ) {
 			  || tb.time == STATE(AvatarSimulation)->actionGiveupTime.time && tb.millitm < STATE(AvatarSimulation)->actionGiveupTime.millitm ) 
 				return 1; // keep waiting
 			// give up
-//			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::cbActionStep: AA_ROTATE failed!" );
+			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::cbActionStep: AA_ROTATE failed!" );
 			this->abortActions();
 		}
 		return 0;

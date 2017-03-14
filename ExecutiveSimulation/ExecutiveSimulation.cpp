@@ -106,10 +106,10 @@ int ExecutiveSimulation::parseMF_HandlePathFile( char *fileName ) {
 // Start
 
 int ExecutiveSimulation::start( char *missionFile ) {
-#ifdef	NO_LOGGING
-	Log.setLogMode(LOG_MODE_OFF);
-	Log.setLogLevel(LOG_LEVEL_NONE);
-#endif
+//#ifdef	NO_LOGGING
+//	Log.setLogMode(LOG_MODE_OFF);
+//	Log.setLogLevel(LOG_LEVEL_NONE);
+//#endif
 	if ( AgentBase::start( missionFile ) ) 
 		return 1;
 
@@ -977,6 +977,7 @@ int ExecutiveSimulation::conProcessMessage( spConnection con, unsigned char mess
 			}
 
 			// reply
+			//Log.log(0, "ExecutiveSimulation_MSGS::MSG_RAVATAR_OUTPUT:: conversation thread id: %s", Log.formatUUID(0, &thread));
 			this->sendMessage( this->hostCon, MSG_RESPONSE, lds.stream(), lds.length(), &owner );
 			lds.unlock();
 		}
