@@ -35,8 +35,8 @@
 //#include <boost/filesystem/operations.hpp>
 //#include <boost/filesystem/path.hpp>
 
-#define COLLECTION_THRESHOLD 10.0f //0.5f // m
-#define DELIVERY_THRESHOLD 10.0f //0.5f // m
+#define COLLECTION_THRESHOLD 0.5f // m
+#define DELIVERY_THRESHOLD 0.5f // m
 
 #define CARGO_REQUEST_TIMEOUT 200	
 
@@ -231,7 +231,7 @@ int AgentIndividualLearning::configureParameters(DataStream *ds) {
 
 	// Set the reward activation distance
 	// (must move at least at a 45 degree angle relative to target or goal)
-	this->reward_activation_dist_ = 0.707f*STATE(AgentIndividualLearning)->maxLinear;
+	this->reward_activation_dist_ = 0.707f*STATE(AgentIndividualLearning)->maxLinear*0.2;	//0.2 is set in AvatarSimulation, as opposed to 1.0
 
 
     Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::configureParameters: ownerId %s", Log.formatUUID(LOG_LEVEL_NORMAL, &STATE(AgentIndividualLearning)->ownerId));
@@ -924,7 +924,7 @@ float AgentIndividualLearning::determineReward() {
     float delta_goal_dist = goal_dist - prev_goal_dist;
 
 	// Reward moving closer to goal area, to encourage waiting there until a task is received
-    if (this->task.landmarkUUID == nilUUID) {
+    if (this->task.landmarkUUID == nilUUID && !this->hasDelivered) {	//Also check that the last action was not delivery (which sets the task to nilUUID if no other tasks are available)
         if (delta_goal_dist < -reward_activation_dist_) {
             return 1.0f;
         }
@@ -937,7 +937,7 @@ float AgentIndividualLearning::determineReward() {
     this->usefulActions++;
 
     // When the target is returned
-    if (this->hasDelivered == true) {
+    if (this->hasDelivered) {
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::determineReward: Delivered the target, return_reward_");
         // Item has been returned
         this->hasDelivered = false;	//Set back to false in preparation for new task
@@ -1024,9 +1024,9 @@ bool AgentIndividualLearning::validAction(ActionPair &action) {
         // Must ignore robots in the goal area
         bool inGoalArea = false;
         std::map<UUID, DDBRegion, UUIDless>::iterator goalIter;
-        for (goalIter = this->collectionRegions.begin(); goalIter != this->collectionRegions.end(); goalIter++) {
-            if (avatarIter->second.x >= goalIter->second.x && avatarIter->second.x <= (goalIter->second.x + goalIter->second.w) &&
-                avatarIter->second.y >= goalIter->second.y && avatarIter->second.y <= (goalIter->second.y + goalIter->second.h)) {
+        for (goalIter = this->collectionRegions.begin(); goalIter != this->collectionRegions.end(); goalIter++) {	//Add 0.5 margins outside of goal area to decrease traffic jam risks
+            if (avatarIter->second.x >= goalIter->second.x - 0.5 && avatarIter->second.x <= (goalIter->second.x + goalIter->second.w + 0.5) &&
+                avatarIter->second.y >= goalIter->second.y - 0.5 && avatarIter->second.y <= (goalIter->second.y + goalIter->second.h + 0.5)) {
                 inGoalArea = true;
                 break;
             }
@@ -1160,13 +1160,13 @@ int AgentIndividualLearning::uploadQLearningData(bool onlyActions)
 
 		for (auto qIter : this->q_learning_.q_table_) {
 			lds.packFloat32(qIter);						//Pack all values in q-table
-	//		if (qIter > 0.0f)
-	//			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Uploading qVal: %f", qIter);
+			if (qIter > 0.0f)
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Uploading qVal: %f", qIter);
 		}
 		for (auto expIter : this->q_learning_.exp_table_) {
-			lds.packInt32(expIter);						//Pack all values in exp-table
-	//		if (expIter > 0)
-	//			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Uploading expVal: %d", expIter);
+			lds.packUInt32(expIter);						//Pack all values in exp-table
+			if (expIter > 0)
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Uploading expVal: %d", expIter);
 		}
 	}
     this->sendMessage(this->hostCon, MSG_DDB_QLEARNINGDATA, lds.stream(), lds.length());

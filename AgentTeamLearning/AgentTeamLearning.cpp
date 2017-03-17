@@ -273,6 +273,7 @@ int AgentTeamLearning::parseLearningData()
 							if (taskIter.second->type == landmark_type) {				//Find one with the same landmark type
 								lAllianceObject.myData.tau.at(taskIter.first) = tauVal;	//Set the stored tau value for the task
 								tempTaskList.erase(taskIter.first);						//Remove the task from the temporary task list to avoid dual assignments
+								break;
 							}
 						/*	if (taskIter == tempTaskList.end())
 								Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData:reached end of task list, the task config has changed between runs.");*/
@@ -281,6 +282,11 @@ int AgentTeamLearning::parseLearningData()
 				}
 				if (id == STATE(AgentTeamLearning)->avatarInstance) { //The data belongs to this agent, no need to parse further...
 					Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: found this agent's id, parsing complete, stopping parsing process...");
+					for (auto& tauIter : lAllianceObject.myData.tau) {
+						Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: Task %s now has tau %f", Log.formatUUID(0,&(UUID)tauIter.first), tauIter.second);
+					}
+
+
 					break;
 				}
 			}

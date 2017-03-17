@@ -10676,7 +10676,7 @@ int AgentHost::ddbTLRoundGetInfo(spConnection con, UUID *thread) {
 
 
 
-int AgentHost::ddbAddQLearningData(bool onlyActions, char typeId, long long totalActions, long long usefulActions, int tableSize, std::vector<float>* qTable, std::vector<unsigned int>* expTable)
+int AgentHost::ddbAddQLearningData(bool onlyActions, char typeId, long long totalActions, long long usefulActions, int tableSize, std::vector<float> qTable, std::vector<unsigned int> expTable)
 {
 	this->ds.reset();
 	this->ds.packUUID(this->getUUID());
@@ -10689,14 +10689,18 @@ int AgentHost::ddbAddQLearningData(bool onlyActions, char typeId, long long tota
 	if (!onlyActions) {
 		this->ds.packInt32(tableSize);		//Size of value tables to store
 
-		for (auto qIter : *qTable) {
+		for (auto qIter : qTable) {
 			this->ds.packFloat32(qIter);						//Pack all values in q-table
+			//if (qIter > 0.0f)
+				//Log.log(LOG_LEVEL_NORMAL, "AgentHost::ddbAddQLearningData:packing qVal: %f", qIter);
 		}
-		for (auto expIter : *expTable) {
-			this->ds.packInt32(expIter);						//Pack all values in exp-table
+		for (auto expIter : expTable) {
+			this->ds.packUInt32(expIter);						//Pack all values in exp-table
 		}
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::ddbAddQLearningData: stream length is %d", this->ds.length());
 	}
 	this->globalStateTransaction(OAC_DDB_ADDQLEARNINGDATA, this->ds.stream(), this->ds.length());
+
 	this->ds.unlock();
 	return 0;
 }
@@ -11019,10 +11023,14 @@ int AgentHost::WriteLearningData(DataStream *taskDataDS, DataStream *taskDS, map
 		tempLearningData << "qTable=" << "\n";
 		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData:9.2");
 		for (auto qtIter : QLIter.second.qTable) {
+			if (qtIter > 0.0f)
+				Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: Saving qVal %f", qtIter);
 			tempLearningData << qtIter << "\n";
 		}
 		tempLearningData << "\nexpTable=" << "\n";
 		for (auto exptIter : QLIter.second.expTable) {
+			if (exptIter > 0)
+				Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: Saving expVal %f", exptIter);
 			tempLearningData << exptIter << "\n";
 		}
 		tempLearningData << "\n";
@@ -12445,7 +12453,7 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 	break;
 	case MSG_DDB_QLEARNINGDATA:
 	{
-		//Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_QLEARNINGDATA ");
+		Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_QLEARNINGDATA ");
 
 		UUID ownerId;
 		char instance;	//Type of avatar, stored in the mission file
@@ -12460,24 +12468,31 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		lds.setData(data, len);
 		lds.unpackUUID(&ownerId);		//Avatar id (owner of the data set)
 		instance = lds.unpackChar();
+		onlyActions = lds.unpackBool();
 		totalActions = lds.unpackInt64();
 		usefulActions = lds.unpackInt64();
-		onlyActions = lds.unpackBool();
 		if (!onlyActions) {
 			tableSize = lds.unpackInt32();
 
-			qTable.resize(tableSize, 0);
-			expTable.resize(tableSize, 0);
+			/*qTable.resize(tableSize, 0);
+			expTable.resize(tableSize, 0);*/
 
-			for (auto qIter : qTable) {
-				qIter = lds.unpackFloat32();						//Pack all values in q-table
+			qTable.clear();
+			expTable.clear();
+
+			for (int i = 0; i < tableSize; i++) {
+				qTable.push_back(lds.unpackFloat32());						//Pack all values in q-table
+				//if (qTable.back() > 0.0f)
+				//	Log.log(LOG_LEVEL_NORMAL, "AgentHost::conProcessMessage::MSG_DDB_QLEARNINGDATA:received qVal: %f", qTable.back());
 			}
-			for (auto expIter : expTable) {
-				expIter = lds.unpackInt32();						//Pack all values in exp-table
+			for (int i = 0; i < tableSize; i++) {
+				expTable.push_back(lds.unpackUInt32());						//Pack all values in exp-table
+				//if (expTable.back() > 0)
+				//	Log.log(LOG_LEVEL_NORMAL, "AgentHost::conProcessMessage::MSG_DDB_QLEARNINGDATA:received expVal: %d", expTable.back());
 			}
 		}
 		lds.unlock();
-		this->ddbAddQLearningData(onlyActions, instance, totalActions, usefulActions, tableSize, &qTable, &expTable);
+		this->ddbAddQLearningData(onlyActions, instance, totalActions, usefulActions, tableSize, qTable, expTable);
 	}
 	break;
 	case MSG_DDB_ADVICEDATA:
@@ -13817,8 +13832,8 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 	case OAC_DDB_ADDQLEARNINGDATA:
 	{
 
-		//Log.log(0, "AgentHost::conProcessMessage: OAC_DDB_ADDQLEARNINGDATA");
 
+		int qCount, expCount = 0;
 		UUID sender;
 		char instance;
 		long long totalActions;
@@ -13838,20 +13853,32 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		usefulActions = lds.unpackInt64();
 
 		if (!onlyActions) {
+
+			Log.log(0, "AgentHost::conProcessMessage: OAC_DDB_ADDQLEARNINGDATA");
+			Log.log(LOG_LEVEL_NORMAL, "AgentHost::conProcessMessage: OAC_DDB_ADDQLEARNINGDATA: stream length is %d", lds.length());
 			tableSize = lds.unpackInt32();
+			Log.log(0, "AgentHost::conProcessMessage: OAC_DDB_ADDQLEARNINGDATA:: tableSize is %d", tableSize);
+		/*	qTable.resize(tableSize, 0);
+			expTable.resize(tableSize, 0);*/
+			qTable.clear();
+			expTable.clear();
 
-			qTable.resize(tableSize, 0);
-			expTable.resize(tableSize, 0);
-
-			for (auto qIter : qTable) {
-				qIter = lds.unpackFloat32();						//Unpack all values in q-table
+			for (int i = 0; i < tableSize; i++) {
+				qTable.push_back(lds.unpackFloat32());						//Pack all values in q-table
+				//if (qTable.back() > 0.0f)
+				//	Log.log(LOG_LEVEL_NORMAL, "AgentHost::conProcessMessage::MSG_DDB_QLEARNINGDATA:received qVal: %f", qTable.back());
+				qCount++;
 			}
-			for (auto expIter : expTable) {
-				expIter = lds.unpackInt32();						//Unpack all values in exp-table
+			for (int i = 0; i < tableSize; i++) {
+				expTable.push_back(lds.unpackUInt32());						//Pack all values in exp-table
+				//if (expTable.back() > 0)
+				//	Log.log(LOG_LEVEL_NORMAL, "AgentHost::conProcessMessage::MSG_DDB_QLEARNINGDATA:received expVal: %d", expTable.back());
+				expCount++;
 			}
+			Log.log(0, "AgentHost::conProcessMessage: OAC_DDB_ADDQLEARNINGDATA:: qCount is %d, expCount is %d", qCount, expCount);
 		}
-
-		this->dStore->AddQLearningData(onlyActions, instance, totalActions, usefulActions, tableSize, &qTable, &expTable);
+		
+		this->dStore->AddQLearningData(onlyActions, instance, totalActions, usefulActions, tableSize, qTable, expTable);
 
 		lds.unlock();
 	}

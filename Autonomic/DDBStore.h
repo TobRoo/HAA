@@ -149,7 +149,7 @@ public:
 	bool GetTaskId(UUID * id, UUID * foundId);
 	UUID GetTaskDataId(UUID * id);
 
-	bool AddQLearningData(bool onlyActions, char instance, long long totalActions, long long usefulActions, int tableSize, std::vector<float> *qTable, std::vector<unsigned int> *expTable);
+	bool AddQLearningData(bool onlyActions, char instance, long long totalActions, long long usefulActions, int tableSize, std::vector<float> qTable, std::vector<unsigned int> expTable);
 	bool AddAdviceData(char instance, float cq, float bq);
 	bool AddSimSteps(unsigned long long totalSimSteps);
 	unsigned long long GetSimSteps();

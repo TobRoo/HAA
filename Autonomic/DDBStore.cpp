@@ -5015,7 +5015,7 @@ int DDBStore::GetTLRoundInfo(DataStream *ds, UUID *thread) {
 
 //Individual Q-learning value storage, for storing data between simulation runs
 
-bool DDBStore::AddQLearningData(bool onlyActions, char instance, long long totalActions, long long usefulActions, int tableSize, std::vector<float>* qTable, std::vector<unsigned int>* expTable)
+bool DDBStore::AddQLearningData(bool onlyActions, char instance, long long totalActions, long long usefulActions, int tableSize, std::vector<float> qTable, std::vector<unsigned int> expTable)
 {
 
 	if (onlyActions) {
@@ -5035,8 +5035,8 @@ bool DDBStore::AddQLearningData(bool onlyActions, char instance, long long total
 			this->DDBQLearningDatas[instance].totalActions = totalActions;	//Only update if our number is greater, otherwise we have missed updates while crashed
 		if (usefulActions > this->DDBQLearningDatas[instance].usefulActions)
 			this->DDBQLearningDatas[instance].usefulActions = usefulActions;	//Only update if our number is greater, otherwise we have missed updates while crashed
-		this->DDBQLearningDatas[instance].qTable = *qTable;
-		this->DDBQLearningDatas[instance].expTable = *expTable;
+		this->DDBQLearningDatas[instance].qTable = qTable;
+		this->DDBQLearningDatas[instance].expTable = expTable;
 	}
 
 	

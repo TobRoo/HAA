@@ -977,7 +977,7 @@ int ExecutiveSimulation::conProcessMessage( spConnection con, unsigned char mess
 			}
 
 			// reply
-			//Log.log(0, "ExecutiveSimulation_MSGS::MSG_RAVATAR_OUTPUT:: conversation thread id: %s", Log.formatUUID(0, &thread));
+		//	Log.log(0, "ExecutiveSimulation_MSGS::MSG_RAVATAR_OUTPUT:: conversation thread id: %s", Log.formatUUID(0, &thread));
 			this->sendMessage( this->hostCon, MSG_RESPONSE, lds.stream(), lds.length(), &owner );
 			lds.unlock();
 		}
@@ -2369,8 +2369,8 @@ int SimAvatar::doCollectLandmark( unsigned char code, float x, float y, UUID *th
 	// see if we can pick it up
 	dx = state.x - lm->wx;
 	dy = state.y - lm->wy;
-//	if ( dx*dx + dy*dy < 0.6f*0.6f ) { // close enough
-	if (dx*dx + dy*dy < 9.0f*9.0f) { // close enough		
+	if ( dx*dx + dy*dy < 0.6f*0.6f ) { // close enough
+//	if (dx*dx + dy*dy < 9.0f*9.0f) { // close enough		
 		Log->log( 0, "SimAvatar::doCollectLandmark: landmark collected (%d)", code );
 
 		// pack data

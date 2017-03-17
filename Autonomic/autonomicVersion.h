@@ -329,7 +329,7 @@ static const unsigned int MSG_SIZE[] = { // array of message size by message id,
 	sizeof(UUID) * 2,				//OAC_DDB_REMTASKDATA [UUID sender, UUID uuid]
 	-2,								//sizeof(UUID) * 2 + sizeof(DDBTaskData),  //OAC_DDB_TASKDATASETINFO [UUID sender, UUID uuid, DDBTaskData data]
 	-2,								 // OAC_DDB_TL_ROUND_INFO set next round info [UUID sender, int round number, _timeb start time, n*UUID agent_UUID]
-	-2,												//					OAC_DDB_ADDQLEARNINGDATA
+	-3,												//					OAC_DDB_ADDQLEARNINGDATA
 	sizeof(UUID) + sizeof(char) + 2*sizeof(float),	//OAC_DDB_ADDADVICEDATA,	  //[UUID sender, char instance, float cq, float bq]
 	sizeof(unsigned long long),					//OAC_DDB_ADDSIMSTEPS
 
@@ -442,7 +442,7 @@ static const unsigned int MSG_SIZE[] = { // array of message size by message id,
 	-2,//sizeof(UUID) + sizeof(DDBTaskData),					//MSG_DDB_TASKDATASETINFO
 	-2,					//MSG_DDB_TL_ROUND_INFO
 	sizeof(UUID),		//MSG_DDB_TL_GET_ROUND_INFO
-	-2,					// MSG_DDB_QLEARNINGDATA
+	-3,					// MSG_DDB_QLEARNINGDATA
 	sizeof(UUID) + sizeof(char) + 2*sizeof(float),		//MSG_DDB_ADVICEDATA
 	sizeof(unsigned long long),		 // MSG_DDB_SIMSTEPS
 	sizeof(UUID),		// MSG_DDB_RHOSTGROUPSIZE

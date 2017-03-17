@@ -45,7 +45,7 @@ struct ParticleFilter_Prediction {
 //#define AVATAR_TANGENTIALV_SIG_EST	0.0000002f  // m/s
 //#define AVATAR_ROTATIONALV_SIG_EST	0.0000002f  // rad/s
 
-#define PFUPDATE_PERIOD		500 // ms
+#define PFUPDATE_PERIOD		60 // ms
 #define PFNOCHANGE_PERIOD	(PFUPDATE_PERIOD+100) // ms, this should be larger than PFUPDATE_PERIOD
 
 struct READING_TYPE {
