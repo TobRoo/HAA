@@ -161,10 +161,10 @@ int AvatarBase::configure() {
 		return 1;
 
 	Log.log( 0, "AvatarBase::configure: avatarUUID %s, pfId %s", Log.formatUUID(0,&STATE(AvatarBase)->avatarUUID), Log.formatUUID(0,&STATE(AvatarBase)->pfId) );
-//#ifdef	NO_LOGGING
-//	Log.setLogMode(LOG_MODE_OFF);
-//	Log.setLogLevel(LOG_LEVEL_NONE);
-//#endif
+#ifdef	NO_LOGGING
+	Log.setLogMode(LOG_MODE_OFF);
+	Log.setLogLevel(LOG_LEVEL_NONE);
+#endif
 	return 0;
 }
 

@@ -106,10 +106,10 @@ int ExecutiveSimulation::parseMF_HandlePathFile( char *fileName ) {
 // Start
 
 int ExecutiveSimulation::start( char *missionFile ) {
-//#ifdef	NO_LOGGING
-//	Log.setLogMode(LOG_MODE_OFF);
-//	Log.setLogLevel(LOG_LEVEL_NONE);
-//#endif
+#ifdef	NO_LOGGING
+	Log.setLogMode(LOG_MODE_OFF);
+	Log.setLogLevel(LOG_LEVEL_NONE);
+#endif
 	if ( AgentBase::start( missionFile ) ) 
 		return 1;
 
@@ -1227,8 +1227,8 @@ int SimAvatar::SimPreStep( _timeb *simTime, int dt ) {
 	dL = fdt*(this->state.vL + this->state.vR)/2;
 	dA = fdt*(this->state.vR - this->state.vL)/this->wheelBase;
 
-	dL = this->moveTargetL;
-	dA = this->moveTargetA;
+	//dL = this->moveTargetL;
+	//dA = this->moveTargetA;
 
 	sn = sin( this->state.r );
 	cs = cos( this->state.r );
@@ -1264,8 +1264,8 @@ int SimAvatar::SimStep( _timeb *simTime, int dt ) {
 	dL = fdt*(this->stateEst.vL + this->stateEst.vR)/2;
 	dA = fdt*(this->stateEst.vR - this->stateEst.vL)/this->wheelBaseEst;
 
-	dL = this->moveTargetL;
-	dA = this->moveTargetA;
+	/*dL = this->moveTargetL;
+	dA = this->moveTargetA;*/
 
 	sn = sin( this->stateEst.r );
 	cs = cos( this->stateEst.r );

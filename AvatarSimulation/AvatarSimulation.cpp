@@ -111,10 +111,10 @@ int AvatarSimulation::configure() {
 
 	if ( AvatarBase::configure() ) 
 		return 1;
-//#ifdef	NO_LOGGING
-//	Log.setLogMode(LOG_MODE_OFF);
-//	Log.setLogLevel(LOG_LEVEL_NONE);
-//#endif
+#ifdef	NO_LOGGING
+	Log.setLogMode(LOG_MODE_OFF);
+	Log.setLogLevel(LOG_LEVEL_NONE);
+#endif
 	return 0;
 }
 

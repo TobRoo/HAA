@@ -191,11 +191,11 @@ int AgentIndividualLearning::configure() {
         Log.setLogMode(LOG_MODE_FILE, logName);
         Log.setLogLevel(LOG_LEVEL_VERBOSE);
 
-//#ifdef	NO_LOGGING
-//		Log.log(0, "Setting log mode to off.");
-//		Log.setLogLevel(LOG_LEVEL_NONE);
-//		Log.setLogMode(LOG_MODE_OFF);
-//#endif
+#ifdef	NO_LOGGING
+		Log.log(0, "Setting log mode to off.");
+		Log.setLogLevel(LOG_LEVEL_NONE);
+		Log.setLogMode(LOG_MODE_OFF);
+#endif
 
         Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning %.2d.%.2d.%.5d.%.2d", AgentIndividualLearning_MAJOR, AgentIndividualLearning_MINOR, AgentIndividualLearning_BUILDNO, AgentIndividualLearning_EXTEND);
     }// end if

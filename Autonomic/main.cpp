@@ -145,15 +145,15 @@ int _tmain(int argc, _TCHAR* argv[]) {
 
 	_tmkdir(logDirectory);
 
-	// Initialize Winsock
-	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	if (iResult != 0) {
-		Log.log(0, "WSAStartup failed: %d", iResult);
-		return 1;
-	}
-	else {
-		Log.log(3, "WSAStartup succeeded");
-	}
+	//// Initialize Winsock
+	//iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+	//if (iResult != 0) {
+	//	Log.log(0, "WSAStartup failed: %d", iResult);
+	//	return 1;
+	//}
+	//else {
+	//	Log.log(3, "WSAStartup succeeded");
+	//}
 
 	// temp
 	int spin = 1;
@@ -168,6 +168,20 @@ int _tmain(int argc, _TCHAR* argv[]) {
 	wsprintf(runLogDirectory, _T("%s\\runNumber"), logDirectory);
 
 	for (int runNumber = 1; runNumber <= runCount; runNumber++) {
+
+		// Initialize Winsock
+		iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+		if (iResult != 0) {
+			Log.log(0, "WSAStartup failed: %d", iResult);
+			return 1;
+		}
+		else {
+			Log.log(3, "WSAStartup succeeded");
+		}
+
+
+
+
 
 		wsprintf(logDirectory, _T("%s%d"), runLogDirectory, runNumber);
 		_tmkdir(logDirectory);
@@ -369,16 +383,19 @@ int _tmain(int argc, _TCHAR* argv[]) {
 		}
 
 		apb->apbSleep(5000);	//For all hosts to shut down before starting next run
+		delete apb;
+		// Clean up Winsock
+		WSACleanup();
 	}
 
 	#if defined(TRACE)
 	System::Diagnostics::Trace::WriteLine("--- _tmain(): Stopping 3 ---");
 	#endif
 
-	delete apb;
+//	delete apb;
 
-	// Clean up Winsock
-	WSACleanup();
+	//// Clean up Winsock
+	//WSACleanup();
 
 	#if defined(TRACE)
 	System::Diagnostics::Trace::WriteLine("--- Exit _tmain() for startup thread: Autonomic ---");
