@@ -236,8 +236,21 @@ int AgentIndividualLearning::configureParameters(DataStream *ds) {
 
     Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::configureParameters: ownerId %s", Log.formatUUID(LOG_LEVEL_NORMAL, &STATE(AgentIndividualLearning)->ownerId));
 
+	// request run number info
+	UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convGetRunNumber, DDB_REQUEST_TIMEOUT);
+	if (thread == nilUUID) {
+		return 1;
+	}
+	this->ds.reset();
+	this->ds.packUUID(&thread);
+	//lds.packUUID(&STATE(AgentBase)->uuid);
+	this->sendMessage(this->hostCon, MSG_RRUNNUMBER, this->ds.stream(), this->ds.length());
+	this->ds.unlock();
+
+
+
     // get mission region
-    UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convMissionRegion, DDB_REQUEST_TIMEOUT);
+    thread = this->conversationInitiate(AgentIndividualLearning_CBR_convMissionRegion, DDB_REQUEST_TIMEOUT);
     if (thread == nilUUID) {
         return 1;
     }
@@ -247,16 +260,7 @@ int AgentIndividualLearning::configureParameters(DataStream *ds) {
     this->sendMessage(this->hostCon, MSG_DDB_RREGION, this->ds.stream(), this->ds.length());
     this->ds.unlock();
 
-	// request run number info
-	thread = this->conversationInitiate(AgentIndividualLearning_CBR_convGetRunNumber, DDB_REQUEST_TIMEOUT);
-	if (thread == nilUUID) {
-		return 1;
-	}
-	this->ds.reset();
-	this->ds.packUUID(&thread);
-	//lds.packUUID(&STATE(AgentBase)->uuid);
-	this->sendMessage(this->hostCon, MSG_RRUNNUMBER, this->ds.stream(), this->ds.length());
-	this->ds.unlock();
+
 
 	//Request advice exchange agent
 	this->spawnAgentAdviceExchange();
@@ -270,10 +274,11 @@ int AgentIndividualLearning::configureParameters(DataStream *ds) {
 
 int	AgentIndividualLearning::finishConfigureParameters() {
 
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::finishConfigureParameters");
 	//Only proceed to start if we have the run number and have not yet started (prevents double start)
 	if (STATE(AgentIndividualLearning)->parametersSet == false && STATE(AgentIndividualLearning)->hasReceivedRunNumber == true) {
 
-		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::finishConfigureParameters");
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::finishConfigureParameters: proceeding...");
 
 		//Read in data from previous run (if any)
 		this->parseLearningData();
@@ -1117,6 +1122,12 @@ int AgentIndividualLearning::spawnAgentAdviceExchange() {
 	UUID thread;
 	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::spawnAgentAdviceExchange: requesting advice exchange agent...");
 	if (!STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned) {
+
+		//STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned = 1;
+
+		if (STATE(AgentIndividualLearning)->missionRegionReceived && STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned)
+			this->finishConfigureParameters();
+
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::spawnAgentAdviceExchange: agent not yet spawned, requesting...");
 		UUID aAgentAdviceExchangeuuid;
 		UuidFromString((RPC_WSTR)_T(AgentAdviceExchange_UUID), &aAgentAdviceExchangeuuid);
@@ -1877,7 +1888,7 @@ bool AgentIndividualLearning::convRequestAvatarLoc(void *vpConv) {
 				STATE(AgentIndividualLearning)->prev_target_y = this->target.y;
 				this->target.x = this->avatar.x;
 				this->target.y = this->avatar.y;
-				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::determineReward: prev_target_x %f, prev_target_y %f, this->target.x %f, this->target.y %f", STATE(AgentIndividualLearning)->prev_target_x, STATE(AgentIndividualLearning)->prev_target_y, this->target.x, this->target.y);
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAvatarLoc: prev_target_x %f, prev_target_y %f, this->target.x %f, this->target.y %f", STATE(AgentIndividualLearning)->prev_target_x, STATE(AgentIndividualLearning)->prev_target_y, this->target.x, this->target.y);
 
 			}
 
@@ -2684,6 +2695,8 @@ int AgentIndividualLearning::recoveryFinish() {
 }// end recoveryFinish
 
 int AgentIndividualLearning::writeBackup(DataStream *ds) {
+
+	Log.log(0, "BACKUP WRITTEN!");
 
 	_WRITE_STATE(AgentIndividualLearning);
 

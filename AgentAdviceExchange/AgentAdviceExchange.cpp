@@ -264,15 +264,21 @@ int AgentAdviceExchange::askAdviser() {
 	}
 
 	// Send state vector to the adviser, to receive their advice in return
-	this->adviserData[this->adviser].queryConv = this->conversationInitiate(AgentAdviceExchange_CBR_convAdviceQuery, ADVICE_REQUEST_TIMEOUT);
-	if (this->adviserData[this->adviser].queryConv == nilUUID) {
+	UUID thread = this->conversationInitiate(AgentAdviceExchange_CBR_convAdviceQuery, ADVICE_REQUEST_TIMEOUT);
+	if (thread == nilUUID) {
 		return 1;
 	}
+	
+	
+	//this->adviserData[this->adviser].queryConv = this->conversationInitiate(AgentAdviceExchange_CBR_convAdviceQuery, ADVICE_REQUEST_TIMEOUT);
+	//if (this->adviserData[this->adviser].queryConv == nilUUID) {
+	//	return 1;
+	//}
 
 	// Send a message with the state vector
 	DataStream lds;
 	lds.reset();
-	lds.packUUID(&this->adviserData[this->adviser].queryConv); // Add the thread
+	lds.packUUID(&thread); // Add the thread
 	lds.packUUID(&STATE(AgentBase)->uuid);  // Add sender Id
 
 	// Pack the state vector
@@ -934,6 +940,9 @@ int	AgentAdviceExchange::writeState(DataStream *ds, bool top) {
 												// Personal data and metrics
 	//std::vector<float> q_vals_in;               // Parent agent Q values received during advice request
 	//std::vector<unsigned int> state_vector_in;  // Parent agent state vector received during advice request
+
+	_WRITE_STATE_VECTOR(float, &this->q_vals_in);
+	_WRITE_STATE_VECTOR(unsigned int, &this->state_vector_in);
 	ds->packFloat32(this->cq);                                   // Current average quality
 	ds->packFloat32(this->bq);                                   // Best average quality
 	ds->packFloat32(this->q_avg_epoch);                          // Average quality of the current epoch
@@ -942,7 +951,24 @@ int	AgentAdviceExchange::writeState(DataStream *ds, bool top) {
 
 	//UUID adviceRequestConv;                                    // Conversation from parent agent used to request advice
 	
-	_WRITE_STATE_MAP_LESS(UUID, adviserDataStruct, UUIDless, &this->adviserData); // All advice data for each adviser
+	//_WRITE_STATE_MAP_LESS(UUID, adviserDataStruct, UUIDless, &this->adviserData); // All advice data for each adviser
+
+	ds->packInt32(this->adviserData.size());
+
+	for (auto& advIter : this->adviserData) {
+		ds->packUUID(&(UUID)advIter.first);
+		ds->packUUID(&advIter.second.parentId);
+		ds->packInt32(advIter.second.avatarInstance);
+		//ds->packUUID(&advIter.second.queryConv);
+		_WRITE_STATE_VECTOR(float, &advIter.second.advice);
+		ds->packFloat32(advIter.second.cq);
+		ds->packFloat32(advIter.second.bq);
+		ds->packBool(advIter.second.hasReplied);
+	}
+
+
+
+
 	ds->packUUID(&this->adviser);                                            // Id of the AgentAdviceExchange adviser (i.e. the key for adviserData)
 	ds->packInt32(advExAgentCount);									   // Count of the number of advice exchange agents there are in the system
 	ds->packInt32(advExAgentCountReceived);							   // Count of the number of advice exchange agents that have sent replies to capacity requests	
@@ -973,15 +999,30 @@ int	AgentAdviceExchange::readState(DataStream *ds, bool top) {
 	// Personal data and metrics
 	//std::vector<float> q_vals_in;               // Parent agent Q values received during advice request
 	//std::vector<unsigned int> state_vector_in;  // Parent agent state vector received during advice request
+
+	_READ_STATE_VECTOR(float, &this->q_vals_in);
+	_READ_STATE_VECTOR(unsigned int, &this->state_vector_in);
+
 	this->cq = ds->unpackFloat32();                                   // Current average quality
 	this->bq = ds->unpackFloat32();                                                    // Best average quality
 	this->q_avg_epoch = ds->unpackFloat32();                            // Average quality of the current epoch
 
 																 // Advice data
-
 																 //UUID adviceRequestConv;                                    // Conversation from parent agent used to request advice
 
-	_READ_STATE_MAP(UUID, adviserDataStruct, &this->adviserData); // All advice data for each adviser
+	int advCount = ds->unpackInt32();
+	UUID advId;
+	for (int advIter = 0; advIter < advCount; advIter++) {
+		ds->unpackUUID(&advId);
+		ds->packUUID(&this->adviserData[advId].parentId);
+		this->adviserData[advId].avatarInstance = ds->unpackInt32();
+		//ds->unpackUUID(&this->adviserData[advId].queryConv);
+		_READ_STATE_VECTOR(float, &this->adviserData[advId].advice);
+		this->adviserData[advId].cq = ds->unpackFloat32();
+		this->adviserData[advId].bq = ds->unpackFloat32();
+		this->adviserData[advId].hasReplied = ds->unpackBool();
+	}
+
 	ds->unpackUUID(&this->adviser);                                            // Id of the AgentAdviceExchange adviser (i.e. the key for adviserData)
 	advExAgentCount = ds->unpackInt32();									   // Count of the number of advice exchange agents there are in the system
 	advExAgentCountReceived = ds->unpackInt32();							   // Count of the number of advice exchange agents that have sent replies to capacity requests	

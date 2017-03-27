@@ -2885,6 +2885,9 @@ UUID AgentBase::conversationInitiate( int cbRef, unsigned int period, void *data
 
 	this->conversations[thread] = conv;
 
+//	Log.log(0, "AgentBase::conversationInitiate: initiated conversation with UUID (%s)", Log.formatUUID(0, &thread));
+
+
 	return thread;
 }
 
@@ -5059,6 +5062,7 @@ int	AgentBase::readState( DataStream *ds, bool top ) {
 		buf.buf = malloc( buf.size );
 		if ( !buf.buf ) {
 			Log.log( 0, "AgentBase::readState: malloc failed" );
+			Log.log(0, "AgentBase::readState: malloc failed 1");
 			return 1;
 		}
 
@@ -5079,6 +5083,7 @@ int	AgentBase::readState( DataStream *ds, bool top ) {
 		timeoutEvent = (spTimeoutEvent)malloc(sizeof(sTimeoutEvent));
 		if ( !timeoutEvent ) {
 			Log.log( 0, "AgentBase::readState: malloc failed" );
+			Log.log(0, "AgentBase::readState: malloc failed 2");
 			return 1;
 		}
 
@@ -5113,6 +5118,7 @@ int	AgentBase::readState( DataStream *ds, bool top ) {
 			timeoutEvent->data = malloc(timeoutEvent->dataLen);
 			if ( !timeoutEvent->data ) {
 				Log.log( 0, "AgentBase::readState: malloc data failed!" );
+				Log.log(0, "AgentBase::readState: malloc failed 3");
 				free( timeoutEvent );
 				return 1;
 			}
@@ -5229,6 +5235,7 @@ int	AgentBase::readState( DataStream *ds, bool top ) {
 		conv = (spConversation)malloc(sizeof(sConversation));
 		if ( !conv ) {
 			Log.log( 0, "AgentBase::readState: malloc failed" );
+			Log.log(0, "AgentBase::readState: malloc failed 4");
 			return 1;
 		}
 		
@@ -5241,6 +5248,7 @@ int	AgentBase::readState( DataStream *ds, bool top ) {
 			conv->data = malloc(conv->dataLen);
 			if ( !conv->data ) {
 				Log.log( 0, "AgentBase::readState: malloc data failed!" );
+				Log.log(0, "AgentBase::readState: malloc failed 5");
 				free( conv );
 				return 1;
 			}
@@ -5254,6 +5262,7 @@ int	AgentBase::readState( DataStream *ds, bool top ) {
 			conv->response = (char *)malloc(conv->responseLen);
 			if ( !conv->response ) {
 				Log.log( 0, "AgentBase::readState: malloc data failed!" );
+				Log.log(0, "AgentBase::readState: malloc failed 5");
 				free( conv->data );
 				free( conv );
 				return 1;

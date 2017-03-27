@@ -738,8 +738,9 @@ int AvatarSimulation::nextAction() {
 	case AA_WAIT:
 		{
 			float *pAD = (float *)getDynamicBuffer(*this->actionData.begin());
-//			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::nextAction: AA_WAIT start %.3f", *pAD );
+			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::nextAction: AA_WAIT start %.3f", *pAD );
 			unsigned int millis = (unsigned int)((*pAD) * 1000);
+			millis = AvatarSimulation_SIMWAKE_PERIOD;
 			if ( nilUUID == (STATE(AvatarBase)->actionTimeout = this->addTimeout( millis, AvatarSimulation_CBR_cbActionStep ) ) )
 				return 1;
 		}
