@@ -107,10 +107,10 @@ int AgentTeamLearning::configure() {
 		Log.setLogMode(LOG_MODE_FILE, logName);
 		Log.setLogLevel(LOG_LEVEL_VERBOSE);
 
-//#ifdef	NO_LOGGING
-//		Log.setLogMode(LOG_MODE_OFF);
-//		Log.setLogLevel(LOG_LEVEL_NONE);
-//#endif
+#ifdef	NO_LOGGING
+		Log.setLogMode(LOG_MODE_OFF);
+		Log.setLogLevel(LOG_LEVEL_NONE);
+#endif
 
 
 		Log.log(0, "AgentTeamLearning %.2d.%.2d.%.5d.%.2d", AgentTeamLearning_MAJOR, AgentTeamLearning_MINOR, AgentTeamLearning_BUILDNO, AgentTeamLearning_EXTEND);

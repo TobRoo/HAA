@@ -22,7 +22,7 @@
 typedef struct adviserDataStruct {
 	UUID parentId;              // Id of (parent) Individual Learning agent
 	int avatarInstance;			// Instance of associated avatar
-	UUID queryConv;             // Thread used to ask this adviser for advice
+	//UUID queryConv;             // Thread used to ask this adviser for advice - not needed
 	std::vector<float> advice;  // vector of advised quality values
 	float cq;                   // Current average quality
 	float bq;                   // Best average quality
@@ -88,7 +88,7 @@ protected:
 	int condC_count;
 	int ask_count;
 
-	bool configuredParameters;
+	int configuredParameters;
 
 	// Random number generator
 	//RandomGenerator randomGenerator;

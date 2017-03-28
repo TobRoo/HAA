@@ -1123,29 +1123,29 @@ int AgentIndividualLearning::spawnAgentAdviceExchange() {
 	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::spawnAgentAdviceExchange: requesting advice exchange agent...");
 	if (!STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned) {
 
-		//STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned = 1;
+		STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned = 1;
 
-		if (STATE(AgentIndividualLearning)->missionRegionReceived && STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned)
-			this->finishConfigureParameters();
+		//if (STATE(AgentIndividualLearning)->missionRegionReceived && STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned)
+		//	this->finishConfigureParameters();
 
-		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::spawnAgentAdviceExchange: agent not yet spawned, requesting...");
-		UUID aAgentAdviceExchangeuuid;
-		UuidFromString((RPC_WSTR)_T(AgentAdviceExchange_UUID), &aAgentAdviceExchangeuuid);
-		thread = this->conversationInitiate(AgentIndividualLearning_CBR_convRequestAgentAdviceExchange, REQUESTAGENTSPAWN_TIMEOUT, &aAgentAdviceExchangeuuid, sizeof(UUID));
-		if (thread == nilUUID) {
-			return 1;
-		}
-		lds.reset();
-		lds.packUUID(this->getUUID());
-		lds.packUUID(&aAgentAdviceExchangeuuid);
-		lds.packChar(-1); // no instance parameters
-		lds.packFloat32(0); // affinity
-		lds.packChar(DDBAGENT_PRIORITY_CRITICAL);
-		lds.packUUID(&thread);
-		this->sendMessage(this->hostCon, MSG_RAGENT_SPAWN, lds.stream(), lds.length());
-		lds.unlock();
+		//Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::spawnAgentAdviceExchange: agent not yet spawned, requesting...");
+		//UUID aAgentAdviceExchangeuuid;
+		//UuidFromString((RPC_WSTR)_T(AgentAdviceExchange_UUID), &aAgentAdviceExchangeuuid);
+		//thread = this->conversationInitiate(AgentIndividualLearning_CBR_convRequestAgentAdviceExchange, REQUESTAGENTSPAWN_TIMEOUT, &aAgentAdviceExchangeuuid, sizeof(UUID));
+		//if (thread == nilUUID) {
+		//	return 1;
+		//}
+		//lds.reset();
+		//lds.packUUID(this->getUUID());
+		//lds.packUUID(&aAgentAdviceExchangeuuid);
+		//lds.packChar(-1); // no instance parameters
+		//lds.packFloat32(0); // affinity
+		//lds.packChar(DDBAGENT_PRIORITY_CRITICAL);
+		//lds.packUUID(&thread);
+		//this->sendMessage(this->hostCon, MSG_RAGENT_SPAWN, lds.stream(), lds.length());
+		//lds.unlock();
 
-		STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned = false; // in progress
+		//STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned = false; // in progress
 	}
 	return 0;
 }

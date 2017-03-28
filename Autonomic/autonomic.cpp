@@ -5118,6 +5118,7 @@ int	AgentBase::readState( DataStream *ds, bool top ) {
 			timeoutEvent->data = malloc(timeoutEvent->dataLen);
 			if ( !timeoutEvent->data ) {
 				Log.log( 0, "AgentBase::readState: malloc data failed!" );
+				Log.log(0, "AgentBase::readState:  timeoutEvent->dataLen: %d", timeoutEvent->dataLen);
 				Log.log(0, "AgentBase::readState: malloc failed 3");
 				free( timeoutEvent );
 				return 1;
@@ -5262,6 +5263,7 @@ int	AgentBase::readState( DataStream *ds, bool top ) {
 			conv->response = (char *)malloc(conv->responseLen);
 			if ( !conv->response ) {
 				Log.log( 0, "AgentBase::readState: malloc data failed!" );
+				Log.log(0, "AgentBase::readState: conv->responseLen: %d", conv->responseLen);
 				Log.log(0, "AgentBase::readState: malloc failed 5");
 				free( conv->data );
 				free( conv );

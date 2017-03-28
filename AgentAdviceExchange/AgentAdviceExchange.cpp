@@ -72,7 +72,7 @@ AgentAdviceExchange::AgentAdviceExchange(spAddressPort ap, UUID *ticket, int log
 	advExAgentCount = 0;
 	advExAgentCountReceived = 0;
 
-	this->configuredParameters = false;
+	this->configuredParameters = 0;
 
 	this->adviser = nilUUID;
 
@@ -133,7 +133,7 @@ int AgentAdviceExchange::configure() {
 }// end configure
 
 int AgentAdviceExchange::configureParameters(DataStream *ds) {
-	this->configuredParameters = true;
+	this->configuredParameters = 1;
 
 	UUID uuid;
 
@@ -657,7 +657,7 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 		lds.unlock();
 
 		// Proceed to ask adviser for advice
-	    this->askAdviser();
+	   // this->askAdviser();
 		//this->formAdvice();
 		this->backup();
 	}
@@ -937,9 +937,9 @@ int AgentAdviceExchange::thaw(DataStream *ds, bool resumeReady) {
 
 int	AgentAdviceExchange::writeState(DataStream *ds, bool top) {
 	if (top) _WRITE_STATE(AgentAdviceExchange);
-												// Personal data and metrics
-	//std::vector<float> q_vals_in;               // Parent agent Q values received during advice request
-	//std::vector<unsigned int> state_vector_in;  // Parent agent state vector received during advice request
+	//											// Personal data and metrics
+	////std::vector<float> q_vals_in;               // Parent agent Q values received during advice request
+	////std::vector<unsigned int> state_vector_in;  // Parent agent state vector received during advice request
 
 	_WRITE_STATE_VECTOR(float, &this->q_vals_in);
 	_WRITE_STATE_VECTOR(unsigned int, &this->state_vector_in);
@@ -947,11 +947,11 @@ int	AgentAdviceExchange::writeState(DataStream *ds, bool top) {
 	ds->packFloat32(this->bq);                                   // Best average quality
 	ds->packFloat32(this->q_avg_epoch);                          // Average quality of the current epoch
 
-												// Advice data
+	//											// Advice data
 
-	//UUID adviceRequestConv;                                    // Conversation from parent agent used to request advice
-	
-	//_WRITE_STATE_MAP_LESS(UUID, adviserDataStruct, UUIDless, &this->adviserData); // All advice data for each adviser
+	ds->packUUID(&this->adviceRequestConv);                                    // Conversation from parent agent used to request advice
+	//
+	////_WRITE_STATE_MAP_LESS(UUID, adviserDataStruct, UUIDless, &this->adviserData); // All advice data for each adviser
 
 	ds->packInt32(this->adviserData.size());
 
@@ -979,7 +979,8 @@ int	AgentAdviceExchange::writeState(DataStream *ds, bool top) {
 	ds->packInt32(condC_count);
 	ds->packInt32(ask_count);
 
-	ds->packBool(configuredParameters);
+	ds->packInt32(configuredParameters);
+	ds->packInt32(5);
 	Log.log(0, "STATE WRITTEN!");
 	return AgentBase::writeState(ds, false);
 }// end writeState
@@ -989,52 +990,52 @@ int	AgentAdviceExchange::readState(DataStream *ds, bool top) {
 
 	// Configuration data
 	// Initialize advice parameters
-	this->num_state_vrbls_ = 7;
-	this->num_actions_ = 5;
-	this->alpha = 0.80f;
-	this->beta = 0.95f;
-	this->delta = 0.0f;
-	this->rho = 1.00f;
+	//this->num_state_vrbls_ = 7;
+	//this->num_actions_ = 5;
+	//this->alpha = 0.80f;
+	//this->beta = 0.95f;
+	//this->delta = 0.0f;
+	//this->rho = 1.00f;
 
-	// Personal data and metrics
-	//std::vector<float> q_vals_in;               // Parent agent Q values received during advice request
-	//std::vector<unsigned int> state_vector_in;  // Parent agent state vector received during advice request
+	//// Personal data and metrics
+	////std::vector<float> q_vals_in;               // Parent agent Q values received during advice request
+	////std::vector<unsigned int> state_vector_in;  // Parent agent state vector received during advice request
 
-	_READ_STATE_VECTOR(float, &this->q_vals_in);
-	_READ_STATE_VECTOR(unsigned int, &this->state_vector_in);
+	//_READ_STATE_VECTOR(float, &this->q_vals_in);
+	//_READ_STATE_VECTOR(unsigned int, &this->state_vector_in);
 
-	this->cq = ds->unpackFloat32();                                   // Current average quality
-	this->bq = ds->unpackFloat32();                                                    // Best average quality
-	this->q_avg_epoch = ds->unpackFloat32();                            // Average quality of the current epoch
+	//this->cq = ds->unpackFloat32();                                   // Current average quality
+	//this->bq = ds->unpackFloat32();                                                    // Best average quality
+	//this->q_avg_epoch = ds->unpackFloat32();                            // Average quality of the current epoch
 
-																 // Advice data
-																 //UUID adviceRequestConv;                                    // Conversation from parent agent used to request advice
+	//															 // Advice data
+	//ds->unpackUUID(&this->adviceRequestConv);                   // Conversation from parent agent used to request advice
 
-	int advCount = ds->unpackInt32();
-	UUID advId;
-	for (int advIter = 0; advIter < advCount; advIter++) {
-		ds->unpackUUID(&advId);
-		ds->packUUID(&this->adviserData[advId].parentId);
-		this->adviserData[advId].avatarInstance = ds->unpackInt32();
-		//ds->unpackUUID(&this->adviserData[advId].queryConv);
-		_READ_STATE_VECTOR(float, &this->adviserData[advId].advice);
-		this->adviserData[advId].cq = ds->unpackFloat32();
-		this->adviserData[advId].bq = ds->unpackFloat32();
-		this->adviserData[advId].hasReplied = ds->unpackBool();
-	}
+	//int advCount = ds->unpackInt32();
+	//UUID advId;
+	//for (int advIter = 0; advIter < advCount; advIter++) {
+	//	ds->unpackUUID(&advId);
+	//	ds->packUUID(&this->adviserData[advId].parentId);
+	//	this->adviserData[advId].avatarInstance = ds->unpackInt32();
+	//	//ds->unpackUUID(&this->adviserData[advId].queryConv);
+	//	_READ_STATE_VECTOR(float, &this->adviserData[advId].advice);
+	//	this->adviserData[advId].cq = ds->unpackFloat32();
+	//	this->adviserData[advId].bq = ds->unpackFloat32();
+	//	this->adviserData[advId].hasReplied = ds->unpackBool();
+	//}
 
-	ds->unpackUUID(&this->adviser);                                            // Id of the AgentAdviceExchange adviser (i.e. the key for adviserData)
-	advExAgentCount = ds->unpackInt32();									   // Count of the number of advice exchange agents there are in the system
-	advExAgentCountReceived = ds->unpackInt32();							   // Count of the number of advice exchange agents that have sent replies to capacity requests	
+	//ds->unpackUUID(&this->adviser);                                            // Id of the AgentAdviceExchange adviser (i.e. the key for adviserData)
+	//advExAgentCount = ds->unpackInt32();									   // Count of the number of advice exchange agents there are in the system
+	//advExAgentCountReceived = ds->unpackInt32();							   // Count of the number of advice exchange agents that have sent replies to capacity requests	
 
-																	   // Data monitoring
-	condA_count = ds->unpackInt32();
-	condB_count = ds->unpackInt32();
-	condC_count = ds->unpackInt32();
-	ask_count = ds->unpackInt32();
+	//																   // Data monitoring
+	//condA_count = ds->unpackInt32();
+	//condB_count = ds->unpackInt32();
+	//condC_count = ds->unpackInt32();
+	//ask_count = ds->unpackInt32();
 
-	configuredParameters = ds->unpackBool();
-	Log.log(0, "STATE READ!");
+	//configuredParameters = ds->unpackInt32();
+	//Log.log(0, "STATE READ!");
 	return AgentBase::readState(ds, false);
 }// end readState
 
@@ -1071,14 +1072,14 @@ int AgentAdviceExchange::writeBackup(DataStream *ds) {
 	ds->packInt32(condC_count);
 	ds->packInt32(ask_count);
 
-	ds->packBool(configuredParameters);
+	ds->packInt32(configuredParameters);
 
 	Log.log(0, "BACKUP WRITTEN!");
 	return AgentBase::writeBackup(ds);
 }// end writeBackup
 
 int AgentAdviceExchange::readBackup(DataStream *ds) {
-	DataStream lds;
+	//DataStream lds;
 
 	// Initialize advice parameters
 	this->num_state_vrbls_ = 7;
@@ -1121,7 +1122,7 @@ int AgentAdviceExchange::readBackup(DataStream *ds) {
 	condC_count = ds->unpackInt32();
 	ask_count = ds->unpackInt32();
 
-	configuredParameters = ds->unpackBool();
+	configuredParameters = ds->unpackInt32();
 	Log.log(0, "READBACKUP 1!");
 	if (!STATE(AgentAdviceExchange)->parametersSet) {
 		Log.log(0, "READBACKUP 2!");

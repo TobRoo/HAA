@@ -84,4 +84,3 @@ ipch/
 *.psess
 /bin/*.tmp
 *.csv
-/bin/runExperiment.bat
