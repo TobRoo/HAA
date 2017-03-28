@@ -249,10 +249,10 @@ int ExecutiveMission::start( char *missionFile ) {
 	STATE(AgentBase)->started = false;
 
 
-	if (!this->mapReveal)	//Only explore if map is not revealed, otherwise forage
+	//if (!this->mapReveal)	//Only explore if map is not revealed, otherwise forage
 		STATE(ExecutiveMission)->missionPhase = TASK_EXPLORE;
-	else
-		STATE(ExecutiveMission)->missionPhase = TASK_FORAGE;
+	//else
+	//	STATE(ExecutiveMission)->missionPhase = TASK_FORAGE;
 
 
 	// watch regions;

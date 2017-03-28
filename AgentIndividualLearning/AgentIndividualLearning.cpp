@@ -448,6 +448,8 @@ int AgentIndividualLearning::preActionUpdate() {
     this->getStateVector();
     // Learn from the previous action
     this->learn();
+	updateQLearningData();	//Upload new q, exp vals and action counts to DDB
+
     // Get quality from state vector
     this->q_vals = this->q_learning_.getElements(this->stateVector);
 	for (auto& valIter: q_vals) {
@@ -601,7 +603,6 @@ int AgentIndividualLearning::formAction() {
 	this->sendAction(STATE(AgentIndividualLearning)->action);
 
 	this->totalActions++;
-	uploadQLearningData(true);	//Upload action counts to DDB
 	//this->backup();
 	return 0;
 }// end formAction
@@ -1183,6 +1184,48 @@ int AgentIndividualLearning::uploadQLearningData(bool onlyActions)
     this->sendMessage(this->hostCon, MSG_DDB_QLEARNINGDATA, lds.stream(), lds.length());
     lds.unlock();
     return 0;
+}
+int AgentIndividualLearning::updateQLearningData()
+{
+	DataStream lds;
+	lds.reset();
+	lds.packUUID(&STATE(AgentIndividualLearning)->ownerId);	//Avatar id
+	lds.packChar(STATE(AgentIndividualLearning)->avatarInstance);		//Pack the agent type instance - remember to set as different for each avatar in the config! (different avatar types will have different learning data)
+	
+	bool usefulAction = !(this->task.landmarkUUID == nilUUID);
+	
+	lds.packBool(usefulAction);
+
+	// Find corresponding row in table
+	int key = this->q_learning_.getKey(this->prevStateVector, action_id);
+	// Increment experience
+	unsigned int experience = this->exp_table_[key] + 1;
+	// Insert new data
+	this->q_table_[key] = quality;
+	this->exp_table_[key] = experience;
+
+
+
+
+	if (!onlyActions) {			//Full upload at the end of a run
+		lds.packInt32(this->q_learning_.table_size_);	//Size of value tables to store
+
+		for (auto qIter : this->q_learning_.q_table_) {
+			lds.packFloat32(qIter);						//Pack all values in q-table
+			if (qIter > 0.0f)
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Uploading qVal: %f", qIter);
+		}
+		for (auto expIter : this->q_learning_.exp_table_) {
+			lds.packUInt32(expIter);						//Pack all values in exp-table
+			if (expIter > 0)
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Uploading expVal: %d", expIter);
+		}
+	}
+	this->sendMessage(this->hostCon, MSG_DDB_QLEARNINGDATA, lds.stream(), lds.length());
+	lds.unlock();
+
+
+	return 0;
 }
 int AgentIndividualLearning::parseLearningData()
 {

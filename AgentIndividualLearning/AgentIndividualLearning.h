@@ -233,6 +233,7 @@ private:
 
     int uploadLearningData();		//General function, selects method depending on policy - so far, only Q-Learning implemented
     int uploadQLearningData(bool onlyActions);		//Uploads Q-Learning data to the DDB
+	int updateQLearningData();		//Updates the data stored in the DDB with qvals of the latest action, and increments action counts 
     int parseLearningData();		//Loads data from previous runs when constructing the agent
 
     virtual int ddbNotification(char *data, int len);

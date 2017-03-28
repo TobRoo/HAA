@@ -158,7 +158,7 @@ int LAlliance::chooseTask(const taskList &tasks) {
                 // An avatar is assigned, but it has not been engaged long enough to acquiesce
                 available = false;
 				char message2[100];
-				sprintf(message2, "chooseTask: checking if task is assigned to another: %s", available ? "true" : "false");
+				sprintf(message2, "chooseTask: checking if task is assigned to another: %s", available ? "false" : "true");
 				parentAgent->logWrapper(LOG_LEVEL_VERBOSE, message2);
             }
         }
@@ -212,7 +212,7 @@ int LAlliance::chooseTask(const taskList &tasks) {
     if (category1.size() != 0) {
         // There is a task this avatar is expected to be the best at
         // Find the longest task in this category
-        float longestTime = 0;
+        float longestTime = -9999999;
         std::map<UUID, float, UUIDless>::iterator cat1Iter;
         for (cat1Iter = category1.begin(); cat1Iter != category1.end(); cat1Iter++) {
             if (cat1Iter->second > longestTime) {
