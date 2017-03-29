@@ -10705,6 +10705,35 @@ int AgentHost::ddbAddQLearningData(bool onlyActions, char typeId, long long tota
 	return 0;
 }
 
+int AgentHost::ddbUpdateQLearningData(char instance, bool usefulAction, int key, float qVal, unsigned int expVal)
+{
+	this->ds.reset();
+	this->ds.packUUID(this->getUUID());
+	this->ds.packChar(instance);
+	this->ds.packBool(usefulAction);
+	this->ds.packInt32(key);
+	this->ds.packFloat32(qVal);
+	this->ds.packUInt32(expVal);
+	this->globalStateTransaction(OAC_DDB_UPDATEQLEARNINGDATA, this->ds.stream(), this->ds.length());
+
+	this->ds.unlock();
+	return 0;
+}
+
+int AgentHost::ddbGetQLearningData(spConnection con, UUID *thread, char instance)
+{
+
+	this->dStore->GetQLearningData(&this->ds, thread, instance);
+
+	this->sendAgentMessage(&con->uuid, MSG_RESPONSE, this->ds.stream(), this->ds.length());
+
+	this->ds.unlock();
+
+	return 0;
+
+
+}
+
 int AgentHost::ddbAddAdviceData(char instance, float cq, float bq)
 {
 	this->ds.reset();
@@ -12495,6 +12524,40 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		this->ddbAddQLearningData(onlyActions, instance, totalActions, usefulActions, tableSize, qTable, expTable);
 	}
 	break;
+	case MSG_DDB_UPDATE_QLEARNINGDATA:
+	{ // upload qval & expval update [UUID ownerId, char agentType.instance, bool usefulAction, float qval, int expVal] 
+		
+		UUID ownerId;
+		char instance;	//Type of avatar, stored in the mission file
+		bool usefulAction;
+
+		int key;
+		float qVal;            
+		unsigned int expVal;    
+
+		lds.setData(data, len);
+		lds.unpackUUID(&ownerId);		//Avatar id (owner of the data set)
+		instance = lds.unpackChar();
+		usefulAction = lds.unpackBool();
+		key = lds.unpackInt32();
+		qVal = lds.unpackFloat32();
+		expVal = lds.unpackUInt32();
+		lds.unlock();
+		this->ddbUpdateQLearningData(instance, usefulAction, key, qVal, expVal);
+	}
+	break; 
+	case MSG_DDB_GET_QLEARNINGDATA:
+	{
+		UUID thread;
+		lds.setData(data, len);
+		lds.unpackUUID(&thread);
+		char instance = lds.unpackChar();
+		lds.unlock();
+
+		this->ddbGetQLearningData(con, &thread, instance);
+	}
+	break;
+
 	case MSG_DDB_ADVICEDATA:
 	{
 		//Log.log(0, "AgentHost::conProcessMessage: MSG_DDB_ADVICEDATA ");
@@ -13883,6 +13946,31 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		lds.unlock();
 	}
 		break;
+	case OAC_DDB_UPDATEQLEARNINGDATA:
+	{
+		// store qval & expval update [UUID ownerId, char agentType.instance, bool usefulAction, float qval, int expVal] 
+
+		UUID sender;
+		char instance;	//Type of avatar, stored in the mission file
+		bool usefulAction;
+
+		int key;
+		float qVal;
+		unsigned int expVal;
+
+		lds.setData(data, len);
+		lds.unpackUUID(&sender);		//Avatar id (owner of the data set)
+		instance = lds.unpackChar();
+		usefulAction = lds.unpackBool();
+		key = lds.unpackInt32();
+		qVal = lds.unpackFloat32();
+		expVal = lds.unpackUInt32();
+		lds.unlock();
+
+		this->dStore->UpdateQLearningData(instance, usefulAction, key, qVal, expVal);
+
+	}
+	break;
 	case OAC_DDB_ADDADVICEDATA:
 	{
 

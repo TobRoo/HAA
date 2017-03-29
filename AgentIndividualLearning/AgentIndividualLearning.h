@@ -127,7 +127,6 @@ protected:
 	UUID AgentIndividualLearning_recoveryLock4;
 	UUID AgentIndividualLearning_recoveryLock5;
 
-
     DataStream ds; // shared DataStream object, for temporary, single thread, use only!
 
     std::map<UUID, DDBRegion, UUIDless> collectionRegions;
@@ -262,6 +261,7 @@ public:
 		AgentIndividualLearning_CBR_convRequestAdvice,
 		AgentIndividualLearning_CBR_convGetRunNumber,
 		AgentIndividualLearning_CBR_convDepositLandmark,
+		AgentIndividualLearning_CBR_convGetQLearningData,
     };
 
     // Define callback functions (make sure they match CallbackRef above and are added to this->callback during agent creation)
@@ -283,6 +283,8 @@ public:
 	bool convRequestAdvice(void *vpConv);
 
 	bool convGetRunNumber(void * vpConv);
+
+	bool convGetQLearningData(void * vpConv);
 
 protected:
     virtual int	  freeze( UUID *ticket );

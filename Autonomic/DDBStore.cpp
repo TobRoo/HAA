@@ -5044,9 +5044,46 @@ bool DDBStore::AddQLearningData(bool onlyActions, char instance, long long total
 	return false;
 }
 
+bool DDBStore::UpdateQLearningData(char instance, bool usefulAction, int key, float qVal, unsigned int expVal)
+{
+
+
+		if (this->DDBQLearningDatas.find(instance) != this->DDBQLearningDatas.end()) { //Already exists
+
+			this->DDBQLearningDatas[instance].qTable.at(key) = qVal;
+			this->DDBQLearningDatas[instance].expTable.at(key) = expVal;
+			this->DDBQLearningDatas[instance].totalActions++;
+			if (usefulAction)
+				this->DDBQLearningDatas[instance].usefulActions++;
+		}
+		else {
+			Log->log(0, "DDBStore::UpdateQLearningData: Avatar instance not found.");
+		}
+	return false;
+}
+
 mapDDBQLearningData DDBStore::GetQLearningData()
 {
 	return this->DDBQLearningDatas;
+}
+
+int DDBStore::GetQLearningData(DataStream *ds, UUID *thread, char instance)
+{
+	mapDDBQLearningData::iterator iter = this->DDBQLearningDatas.find(instance);
+
+	ds->reset();
+	ds->packUUID(thread);
+	if (iter == this->DDBQLearningDatas.end()) {
+		ds->packChar(DDBR_NOTFOUND);
+		return 1; // not found
+	}
+
+	// send task data
+	ds->packChar(DDBR_OK);
+	_WRITE_STATE_VECTOR(float, &iter->second.qTable);
+	_WRITE_STATE_VECTOR(unsigned int, &iter->second.expTable);
+
+	return 0;
 }
 
 

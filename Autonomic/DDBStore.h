@@ -150,11 +150,14 @@ public:
 	UUID GetTaskDataId(UUID * id);
 
 	bool AddQLearningData(bool onlyActions, char instance, long long totalActions, long long usefulActions, int tableSize, std::vector<float> qTable, std::vector<unsigned int> expTable);
+	bool UpdateQLearningData(char instance, bool usefulAction, int key, float qVal, unsigned int expVal);
 	bool AddAdviceData(char instance, float cq, float bq);
 	bool AddSimSteps(unsigned long long totalSimSteps);
 	unsigned long long GetSimSteps();
 	mapDDBAdviceData GetAdviceData();
 	mapDDBQLearningData GetQLearningData();
+
+	int GetQLearningData(DataStream * ds, UUID * thread, char instance);
 
 	int DataDump( Logger *Data, bool fulldump, char *logDirectory ); // dump data and statistics
 

@@ -151,7 +151,7 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
 	this->callback[AgentIndividualLearning_CBR_convRequestAgentAdviceExchange] = NEW_MEMBER_CB(AgentIndividualLearning, convRequestAgentAdviceExchange);
 	this->callback[AgentIndividualLearning_CBR_convRequestAdvice] = NEW_MEMBER_CB(AgentIndividualLearning, convRequestAdvice);
 	this->callback[AgentIndividualLearning_CBR_convGetRunNumber] = NEW_MEMBER_CB(AgentIndividualLearning, convGetRunNumber);
-
+	this->callback[AgentIndividualLearning_CBR_convGetQLearningData] = NEW_MEMBER_CB(AgentIndividualLearning, convGetQLearningData);
 	
 
 	tempCounter = 0;
@@ -282,6 +282,7 @@ int	AgentIndividualLearning::finishConfigureParameters() {
 
 		//Read in data from previous run (if any)
 		this->parseLearningData();
+		this->uploadLearningData();	//Store it back into DDB
 
 		STATE(AgentIndividualLearning)->parametersSet = true;
 
@@ -1197,31 +1198,17 @@ int AgentIndividualLearning::updateQLearningData()
 	lds.packBool(usefulAction);
 
 	// Find corresponding row in table
-	int key = this->q_learning_.getKey(this->prevStateVector, action_id);
-	// Increment experience
-	unsigned int experience = this->exp_table_[key] + 1;
-	// Insert new data
-	this->q_table_[key] = quality;
-	this->exp_table_[key] = experience;
-
-
-
-
-	if (!onlyActions) {			//Full upload at the end of a run
-		lds.packInt32(this->q_learning_.table_size_);	//Size of value tables to store
-
-		for (auto qIter : this->q_learning_.q_table_) {
-			lds.packFloat32(qIter);						//Pack all values in q-table
-			if (qIter > 0.0f)
-				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Uploading qVal: %f", qIter);
-		}
-		for (auto expIter : this->q_learning_.exp_table_) {
-			lds.packUInt32(expIter);						//Pack all values in exp-table
-			if (expIter > 0)
-				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Uploading expVal: %d", expIter);
-		}
+	int key = this->q_learning_.getKey(this->prevStateVector, STATE(AgentIndividualLearning)->action.action);
+	if (key >= 0) {
+		// Upload new data
+		lds.packInt32(key);
+		lds.packFloat32(this->q_learning_.q_table_[key]);
+		lds.packUInt32(this->q_learning_.exp_table_[key]);
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData: Key is %d", key);
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Uploading qVal: %f", this->q_learning_.q_table_[key]);
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Uploading expVal: %d", this->q_learning_.exp_table_[key]);
+		this->sendMessage(this->hostCon, MSG_DDB_UPDATE_QLEARNINGDATA, lds.stream(), lds.length());
 	}
-	this->sendMessage(this->hostCon, MSG_DDB_QLEARNINGDATA, lds.stream(), lds.length());
 	lds.unlock();
 
 
@@ -1586,8 +1573,8 @@ int AgentIndividualLearning::conProcessMessage(spConnection con, unsigned char m
 		break;
 		case MSG_MISSION_DONE:
 		{
-			Log.log(0, " AgentIndividualLearning::conProcessMessage: mission done, uploading learning data for next run.");
-			this->uploadLearningData();
+			//Log.log(0, " AgentIndividualLearning::conProcessMessage: mission done, uploading learning data for next run.");
+			//this->uploadLearningData();
 		}
 		break;
         default:
@@ -2631,6 +2618,41 @@ bool AgentIndividualLearning::convGetRunNumber(void * vpConv)
 	return false;
 }
 
+bool AgentIndividualLearning::convGetQLearningData(void * vpConv)
+{
+	DataStream lds;
+	spConversation conv = (spConversation)vpConv;
+
+	if (conv->response == NULL) { // timed out
+		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetQLearningData: timed out");
+		return 0; // end conversation
+	}
+
+	lds.setData(conv->response, conv->responseLen);
+	lds.unpackData(sizeof(UUID)); // discard thread
+	char response = lds.unpackChar();
+	if (response == DDBR_OK) { // succeeded
+
+		float qVal; 
+		while (lds.unpackBool()) {
+			qVal = *(float *)lds.unpackData(sizeof(float)); 
+			(&this->q_learning_.q_table_)->push_back(qVal); 
+		}
+		unsigned int expVal;
+		while (lds.unpackBool()) {
+			expVal = *(unsigned int *)lds.unpackData(sizeof(unsigned int));
+			(&this->q_learning_.exp_table_)->push_back(expVal);
+		}
+	}
+	else {
+		Log.log(0, "AgentIndividualLearning::convGetQLearningData: Could not retrieve learning data after crash.");
+	}
+	lds.unlock();
+
+	recoveryCheck(&this->AgentIndividualLearning_recoveryLock5);
+	return false;
+}
+
 
 //-----------------------------------------------------------------------------
 // State functions
@@ -2729,6 +2751,9 @@ int AgentIndividualLearning::recoveryFinish() {
     if (AgentBase::recoveryFinish())
         return 1;
 
+
+
+
 	int action = (int)ceil(randomGenerator.Uniform01() * num_actions_);
 	Log.log(0, "RecoveryFinish actionTest: num_actions_ %d", num_actions_);
 	Log.log(0, "RecoveryFinish actionTest: %d", action);
@@ -2751,11 +2776,11 @@ int AgentIndividualLearning::writeBackup(DataStream *ds) {
 	ds->packBool(hasCargo);
 	ds->packBool(hasDelivered);
 
-	_WRITE_STATE_VECTOR(float, &this->q_learning_.q_table_);
+	/*_WRITE_STATE_VECTOR(float, &this->q_learning_.q_table_);
 	_WRITE_STATE_VECTOR(unsigned int, &this->q_learning_.exp_table_);
 
 	_WRITE_STATE_VECTOR(float, &this->q_learning_.q_vals_);
-	_WRITE_STATE_VECTOR(unsigned int, &this->q_learning_.exp_vals_);
+	_WRITE_STATE_VECTOR(unsigned int, &this->q_learning_.exp_vals_);*/
 
 	_WRITE_STATE_VECTOR(float, &this->q_vals);
 	_WRITE_STATE_VECTOR(unsigned int, &this->stateVector);
@@ -2794,11 +2819,11 @@ int AgentIndividualLearning::readBackup(DataStream *ds) {
 	hasCargo = ds->unpackBool();
 	hasDelivered = ds->unpackBool();
 
-	_READ_STATE_VECTOR(float, &this->q_learning_.q_table_);
-	_READ_STATE_VECTOR(unsigned int, &this->q_learning_.exp_table_);
+	//_READ_STATE_VECTOR(float, &this->q_learning_.q_table_);
+	//_READ_STATE_VECTOR(unsigned int, &this->q_learning_.exp_table_);
 
-	_READ_STATE_VECTOR(float, &this->q_learning_.q_vals_);
-	_READ_STATE_VECTOR(unsigned int, &this->q_learning_.exp_vals_);
+	//_READ_STATE_VECTOR(float, &this->q_learning_.q_vals_);
+	//_READ_STATE_VECTOR(unsigned int, &this->q_learning_.exp_vals_);
 
 	_READ_STATE_VECTOR(float, &this->q_vals);
 	_READ_STATE_VECTOR(unsigned int, &this->stateVector);
@@ -2903,6 +2928,23 @@ int AgentIndividualLearning::readBackup(DataStream *ds) {
 	// we have tasks to take care of before we can resume
 	apb->apbUuidCreate(&this->AgentIndividualLearning_recoveryLock1);
 	this->recoveryLocks.push_back(this->AgentIndividualLearning_recoveryLock1);
+
+
+	// request Q-learning data
+	thread = this->conversationInitiate(AgentIndividualLearning_CBR_convGetQLearningData, DDB_REQUEST_TIMEOUT);
+	if (thread == nilUUID) {
+		return 1;
+	}
+
+	sds.reset();
+	sds.packUUID(&thread);
+	sds.packChar(STATE(AgentIndividualLearning)->avatarInstance); // dummy id, getting the full list of tasks anyway
+	this->sendMessage(this->hostCon, MSG_DDB_GET_QLEARNINGDATA, sds.stream(), sds.length());
+	sds.unlock();
+
+	// we have tasks to take care of before we can resume
+	apb->apbUuidCreate(&this->AgentIndividualLearning_recoveryLock5);
+	this->recoveryLocks.push_back(this->AgentIndividualLearning_recoveryLock5);
 
     return AgentBase::readBackup(ds);
 }// end readBackup
