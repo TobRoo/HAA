@@ -396,7 +396,7 @@ int AvatarSimulation::parseMF_HandleAvatar( AgentType *agentType, char *fileName
 
 
 
-		STATE(AvatarBase)->maxLinear = STATE(AvatarSimulation)->maxVelocityEst*0.1f; // 0.2f;
+		STATE(AvatarBase)->maxLinear = STATE(AvatarSimulation)->maxVelocityEst*0.05f; // 0.2f;
 		STATE(AvatarBase)->maxRotation = 20.0f/180 * fM_PI;
 
 		// register with DDB

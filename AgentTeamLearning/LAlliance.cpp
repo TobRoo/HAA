@@ -402,7 +402,7 @@ int LAlliance::updateTau() {
     // Compute the new value
     float beta = (float)exp(n / stochasticUpdateTheta4)/(stochasticUpdateTheta3
                                                          + (float)exp(n / stochasticUpdateTheta4));
-    float current_tau = beta*(prev_tau + (stochasticUpdateTheta2 / n)*(myData.psi - prev_tau));
+    float current_tau = beta*(prev_tau + exp(-n/stochasticUpdateTheta2)*(myData.psi - prev_tau));
 
     // Update the mean task time, and tau standard deviation
     float prev_mean = myData.mean[myData.taskId];

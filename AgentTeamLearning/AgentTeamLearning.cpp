@@ -239,6 +239,7 @@ int AgentTeamLearning::parseLearningData()
 	char ch;
 	ITEM_TYPES landmark_type;
 	float tauVal;
+	int attempts;
 
 	if (fopen_s(&fp, learningDataFile, "r")) {
 		Log.log(0, "AgentTeamLearning::parseLearningData: failed to open %s", learningDataFile);
@@ -267,11 +268,13 @@ int AgentTeamLearning::parseLearningData()
 				}
 				while (fscanf_s(fp, "landmark_type=%d\n", &landmark_type) == 1) {
 					fscanf_s(fp, "tau=%f\n", &tauVal);
+					fscanf_s(fp, "attempts=%d\n", &attempts);
 					Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: type: %d, tau: %f", landmark_type, tauVal);
 					if (id == STATE(AgentTeamLearning)->avatarInstance) {				//If the data belongs to this agent, store it
 						for (auto& taskIter : tempTaskList) {							//Go through all tasks 
 							if (taskIter.second->type == landmark_type) {				//Find one with the same landmark type
 								lAllianceObject.myData.tau.at(taskIter.first) = tauVal;	//Set the stored tau value for the task
+								lAllianceObject.myData.attempts.at(taskIter.first) = attempts;	//Set the attempts value for the task
 								tempTaskList.erase(taskIter.first);						//Remove the task from the temporary task list to avoid dual assignments
 								break;
 							}

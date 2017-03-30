@@ -231,7 +231,7 @@ int AgentIndividualLearning::configureParameters(DataStream *ds) {
 
 	// Set the reward activation distance
 	// (must move at least at a 45 degree angle relative to target or goal)
-	this->reward_activation_dist_ = 0.707f*STATE(AgentIndividualLearning)->maxLinear*0.2;	//0.2 is set in AvatarSimulation, as opposed to 1.0
+	this->reward_activation_dist_ = 0.707f*STATE(AgentIndividualLearning)->maxLinear;	//0.2 is set in AvatarSimulation (not anymore), as opposed to 1.0
 
 
     Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::configureParameters: ownerId %s", Log.formatUUID(LOG_LEVEL_NORMAL, &STATE(AgentIndividualLearning)->ownerId));
@@ -2702,6 +2702,7 @@ int	AgentIndividualLearning::writeState(DataStream *ds, bool top) {
 
 	ds->packData(&totalActions, sizeof(totalActions));
 	ds->packData(&usefulActions, sizeof(usefulActions));
+	ds->packFloat32(this->reward_activation_dist_);
 
     return AgentBase::writeState(ds, false);
 }// end writeState
@@ -2743,6 +2744,7 @@ int	AgentIndividualLearning::readState(DataStream *ds, bool top) {
 
 	this->totalActions = *(unsigned long*)ds->unpackData(sizeof(unsigned long));
 	this->usefulActions = *(unsigned long*)ds->unpackData(sizeof(unsigned long));
+	this->reward_activation_dist_= ds->unpackFloat32();
 
     return AgentBase::readState(ds, false);
 }// end readState
@@ -2802,6 +2804,7 @@ int AgentIndividualLearning::writeBackup(DataStream *ds) {
 
 	ds->packData(&totalActions, sizeof(totalActions));
 	ds->packData(&usefulActions, sizeof(usefulActions));
+	ds->packFloat32(this->reward_activation_dist_);
 
     return AgentBase::writeBackup(ds);
 }// end writeBackup
@@ -2845,6 +2848,7 @@ int AgentIndividualLearning::readBackup(DataStream *ds) {
 
 	this->totalActions = *(unsigned long*)ds->unpackData(sizeof(unsigned long));
 	this->usefulActions = *(unsigned long*)ds->unpackData(sizeof(unsigned long));
+	this->reward_activation_dist_ = ds->unpackFloat32();
 
 	this->randomGenerator = *new RandomGenerator();
 
