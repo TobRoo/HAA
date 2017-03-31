@@ -231,7 +231,7 @@ int AgentIndividualLearning::configureParameters(DataStream *ds) {
 
 	// Set the reward activation distance
 	// (must move at least at a 45 degree angle relative to target or goal)
-	this->reward_activation_dist_ = 0.707f*STATE(AgentIndividualLearning)->maxLinear;	//0.2 is set in AvatarSimulation (not anymore), as opposed to 1.0
+	this->reward_activation_dist_ = 0.707f*STATE(AgentIndividualLearning)->maxLinear*0.5f;	//0.2 is set in AvatarSimulation (not anymore), as opposed to 1.0 //times 0.5 due to reverse speed being half of top speed
 
 
     Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::configureParameters: ownerId %s", Log.formatUUID(LOG_LEVEL_NORMAL, &STATE(AgentIndividualLearning)->ownerId));
@@ -1173,13 +1173,13 @@ int AgentIndividualLearning::uploadQLearningData(bool onlyActions)
 
 		for (auto qIter : this->q_learning_.q_table_) {
 			lds.packFloat32(qIter);						//Pack all values in q-table
-			if (qIter > 0.0f)
-				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Uploading qVal: %f", qIter);
+			//if (qIter > 0.0f)
+			//	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Uploading qVal: %f", qIter);
 		}
 		for (auto expIter : this->q_learning_.exp_table_) {
 			lds.packUInt32(expIter);						//Pack all values in exp-table
-			if (expIter > 0)
-				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Uploading expVal: %d", expIter);
+			//if (expIter > 0)
+			//	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::uploadQLearningData:Uploading expVal: %d", expIter);
 		}
 	}
     this->sendMessage(this->hostCon, MSG_DDB_QLEARNINGDATA, lds.stream(), lds.length());

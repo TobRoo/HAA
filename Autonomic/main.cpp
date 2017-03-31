@@ -138,9 +138,17 @@ int _tmain(int argc, _TCHAR* argv[]) {
 		runCount = atoi(runCountString);
 	}
 
+	char runNumString[64];
+	int runNum = 1;	//Number of simulations to be run in sequence, 1 is default
 
-	if (argc >= 4) { // mission file specified
-		sprintf_s(missionPath, sizeof(missionPath), "%ws", argv[3]);
+	if (argc >= 4) { // runCount specified
+		sprintf_s(runNumString, sizeof(runNumString), "%ws", argv[3]);
+		runNum = atoi(runNumString);
+	}
+
+
+	if (argc >= 5) { // mission file specified
+		sprintf_s(missionPath, sizeof(missionPath), "%ws", argv[4]);
 	}
 
 	_tmkdir(logDirectory);
@@ -167,7 +175,7 @@ int _tmain(int argc, _TCHAR* argv[]) {
 	WCHAR runLogDirectory[512];
 	wsprintf(runLogDirectory, _T("%s\\runNumber"), logDirectory);
 
-	for (int runNumber = 1; runNumber <= runCount; runNumber++) {
+	for (int runNumber = runNum; runNumber <= runCount; runNumber++) {
 
 		// Initialize Winsock
 		iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -382,7 +390,7 @@ int _tmain(int argc, _TCHAR* argv[]) {
 
 		}
 
-		apb->apbSleep(5000);	//For all hosts to shut down before starting next run
+		apb->apbSleep(10000);	//For all hosts to shut down before starting next run
 		delete apb;
 		// Clean up Winsock
 		WSACleanup();

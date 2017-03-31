@@ -13898,7 +13898,8 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 	{
 
 
-		int qCount, expCount = 0;
+		int qCount = 0;
+		int expCount = 0;
 		UUID sender;
 		char instance;
 		long long totalActions;
