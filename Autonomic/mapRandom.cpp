@@ -22,13 +22,13 @@ int	mapRandomizer(char* misFile, char* newMisFile, char* newPathFile, char* newL
 	int isRandomMap = isRandom(misFile);
 
 	if (isRandomMap == -1) {
-		cout << "Failed to open file.\n";
+		cout << "mapRandomizer::Failed to open file: -1.\n";
 		return 1;
 	}
 	else if (isRandomMap == 1) {
 		MAPCONTENT mapContent;
 		if (getMapContent(misFile, mapContent) == -1) {
-			cout << "Failed to open file.\n";
+			cout << "mapRandomizer:: getMapContent failed.\n";
 			return 1;
 		}
 		generateRandomMap(misFile, newMisFile, newPathFile, newLandmarkFile, newTargetFile, newLayoutFile, mapContent);

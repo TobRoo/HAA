@@ -5080,6 +5080,8 @@ int DDBStore::GetQLearningData(DataStream *ds, UUID *thread, char instance)
 
 	// send task data
 	ds->packChar(DDBR_OK);
+	ds->packInt64(iter->second.totalActions);
+	ds->packInt64(iter->second.usefulActions);
 	_WRITE_STATE_VECTOR(float, &iter->second.qTable);
 	_WRITE_STATE_VECTOR(unsigned int, &iter->second.expTable);
 

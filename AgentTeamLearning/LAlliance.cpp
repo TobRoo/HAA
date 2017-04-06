@@ -30,7 +30,7 @@
 LAlliance::LAlliance(AgentTeamLearning *parentAgent) {
 
     //// Algorithm variables (TODO: Load these in from a config file)
-	maxTaskTime = 2000;//50000;// 50;//500;//2000;
+	maxTaskTime = 500;// 2000;//50000;// 50;//500;//2000;
     motivFreq = 5;
     impatienceRateTheta = 1.0f;
     stochasticUpdateTheta2 = 15.0f;
@@ -212,7 +212,7 @@ int LAlliance::chooseTask(const taskList &tasks) {
     if (category1.size() != 0) {
         // There is a task this avatar is expected to be the best at
         // Find the longest task in this category
-        float longestTime = -9999999;
+        float longestTime = 0;
         std::map<UUID, float, UUIDless>::iterator cat1Iter;
         for (cat1Iter = category1.begin(); cat1Iter != category1.end(); cat1Iter++) {
             if (cat1Iter->second > longestTime) {

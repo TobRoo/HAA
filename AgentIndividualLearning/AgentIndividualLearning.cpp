@@ -40,6 +40,8 @@
 
 #define CARGO_REQUEST_TIMEOUT 200	
 
+#define USE_ADVICE_EXCHANGE
+
 using namespace AvatarBase_Defs;
 
 #ifdef _DEBUG
@@ -286,7 +288,6 @@ int	AgentIndividualLearning::finishConfigureParameters() {
 
 		STATE(AgentIndividualLearning)->parametersSet = true;
 
-
 		if (STATE(AgentIndividualLearning)->startDelayed) {
 			STATE(AgentIndividualLearning)->startDelayed = false;
 			this->start(STATE(AgentBase)->missionFile);
@@ -456,9 +457,13 @@ int AgentIndividualLearning::preActionUpdate() {
 	for (auto& valIter: q_vals) {
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::preActionUpdate: received q_val: %f", valIter);
 	}
+
 	// Get advice
-	//this->requestAdvice(q_vals, this->stateVector);
-	formAction();
+	#ifdef USE_ADVICE_EXCHANGE
+		this->requestAdvice(q_vals, this->stateVector);
+	#else
+		formAction();
+	#endif
 
     return 0;
 }// end preActionUpdate
@@ -1125,29 +1130,31 @@ int AgentIndividualLearning::spawnAgentAdviceExchange() {
 	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::spawnAgentAdviceExchange: requesting advice exchange agent...");
 	if (!STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned) {
 
+	#ifndef USE_ADVICE_EXCHANGE
 		STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned = 1;
+	#else
+		if (STATE(AgentIndividualLearning)->missionRegionReceived && STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned)
+			this->finishConfigureParameters();
 
-		//if (STATE(AgentIndividualLearning)->missionRegionReceived && STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned)
-		//	this->finishConfigureParameters();
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::spawnAgentAdviceExchange: agent not yet spawned, requesting...");
+		UUID aAgentAdviceExchangeuuid;
+		UuidFromString((RPC_WSTR)_T(AgentAdviceExchange_UUID), &aAgentAdviceExchangeuuid);
+		thread = this->conversationInitiate(AgentIndividualLearning_CBR_convRequestAgentAdviceExchange, REQUESTAGENTSPAWN_TIMEOUT, &aAgentAdviceExchangeuuid, sizeof(UUID));
+		if (thread == nilUUID) {
+			return 1;
+		}
+		lds.reset();
+		lds.packUUID(this->getUUID());
+		lds.packUUID(&aAgentAdviceExchangeuuid);
+		lds.packChar(-1); // no instance parameters
+		lds.packFloat32(0); // affinity
+		lds.packChar(DDBAGENT_PRIORITY_CRITICAL);
+		lds.packUUID(&thread);
+		this->sendMessage(this->hostCon, MSG_RAGENT_SPAWN, lds.stream(), lds.length());
+		lds.unlock();
 
-		//Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::spawnAgentAdviceExchange: agent not yet spawned, requesting...");
-		//UUID aAgentAdviceExchangeuuid;
-		//UuidFromString((RPC_WSTR)_T(AgentAdviceExchange_UUID), &aAgentAdviceExchangeuuid);
-		//thread = this->conversationInitiate(AgentIndividualLearning_CBR_convRequestAgentAdviceExchange, REQUESTAGENTSPAWN_TIMEOUT, &aAgentAdviceExchangeuuid, sizeof(UUID));
-		//if (thread == nilUUID) {
-		//	return 1;
-		//}
-		//lds.reset();
-		//lds.packUUID(this->getUUID());
-		//lds.packUUID(&aAgentAdviceExchangeuuid);
-		//lds.packChar(-1); // no instance parameters
-		//lds.packFloat32(0); // affinity
-		//lds.packChar(DDBAGENT_PRIORITY_CRITICAL);
-		//lds.packUUID(&thread);
-		//this->sendMessage(this->hostCon, MSG_RAGENT_SPAWN, lds.stream(), lds.length());
-		//lds.unlock();
-
-		//STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned = false; // in progress
+		STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned = false; // in progress
+	#endif
 	}
 	return 0;
 }
@@ -1224,7 +1231,7 @@ int AgentIndividualLearning::parseLearningData()
 
 
 	FILE *fp;
-	int i, id;
+	int i, id, attempts;
 	char keyBuf[64];
 	char ch;
 	ITEM_TYPES landmark_type;
@@ -1256,6 +1263,7 @@ int AgentIndividualLearning::parseLearningData()
 				}
 				while (fscanf_s(fp, "landmark_type=%d\n", &landmark_type) == 1) {
 					fscanf_s(fp, "tau=%f\n", &tauVal);
+					fscanf_s(fp, "attempts=%d\n", &attempts);
 				//	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::parseLearningData: type: %d, tau: %f", landmark_type, tauVal);
 				}
 			}
@@ -1287,10 +1295,13 @@ int AgentIndividualLearning::parseLearningData()
 				}
 				float qVal;
 				int count = 0;
+				int valCount = 0;
 				while (fscanf_s(fp, "%f\n", &qVal) == 1) {
 					if (id == STATE(AgentIndividualLearning)->avatarInstance) {				//If the data belongs to this agent, store it
 						this->q_learning_.q_table_[count] = qVal;
 						count++;
+						if (qVal > 0)
+							valCount++;
 					}
 				}
 				if (fscanf_s(fp, "expTable=\n") != 0) {
@@ -1299,13 +1310,17 @@ int AgentIndividualLearning::parseLearningData()
 				}
 				int expVal;
 				count = 0;
+				int expValCount = 0;
 				while (fscanf_s(fp, "%d\n", &expVal) == 1) {
 					if (id == STATE(AgentIndividualLearning)->avatarInstance) {				//If the data belongs to this agent, store it
 						this->q_learning_.exp_table_[count] = expVal;
 						count++;
+						if (expVal > 0)
+							expValCount++;
 					}
 				}
 				if (id == STATE(AgentIndividualLearning)->avatarInstance) { //The data belongs to this agent, no need to parse further...
+					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::parseLearningData:total qVals %d, total expVals %d", valCount, expValCount);
 					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::parseLearningData: found this agent's id, parsing complete, stopping parsing process...");
 					break;
 				}
@@ -2632,6 +2647,8 @@ bool AgentIndividualLearning::convGetQLearningData(void * vpConv)
 	lds.unpackData(sizeof(UUID)); // discard thread
 	char response = lds.unpackChar();
 	if (response == DDBR_OK) { // succeeded
+		this->totalActions = lds.unpackInt64();
+		this->usefulActions = lds.unpackInt64();
 
 		float qVal; 
 		while (lds.unpackBool()) {

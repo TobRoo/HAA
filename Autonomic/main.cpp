@@ -234,7 +234,7 @@ int _tmain(int argc, _TCHAR* argv[]) {
 
 
 
-			if (argc >= 4) { // mission file specified - no need to do this for hostExclusive
+			if (argc >= 5) { // mission file specified - no need to do this for hostExclusive
 			//Check if map should be randomized and/or revealed
 
 				WCHAR randomMapDirectory[512];
