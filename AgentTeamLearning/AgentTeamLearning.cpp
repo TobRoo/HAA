@@ -551,8 +551,10 @@ int AgentTeamLearning::checkRoundStatus() {
 		// Do we need to initiate the next round?
 		if (last_agent)
 			this->initiateNextRound();
+
+		this->backup();
 	}
-	this->backup();
+
 	return 0;
 }
 

@@ -81,7 +81,7 @@ AgentAdviceExchange::AgentAdviceExchange(spAddressPort ap, UUID *ticket, int log
 	this->callback[AgentAdviceExchange_CBR_convGetAgentInfo] = NEW_MEMBER_CB(AgentAdviceExchange, convGetAgentInfo);
 	this->callback[AgentAdviceExchange_CBR_convAdviceQuery] = NEW_MEMBER_CB(AgentAdviceExchange, convAdviceQuery);
 
-	//this->tempCounter = 0;
+	this->stepCounter = 0;
 }// end constructor
 
 //-----------------------------------------------------------------------------
@@ -225,14 +225,14 @@ int AgentAdviceExchange::stop() {
 
 int AgentAdviceExchange::step() {
 	//Log.log(0, "AgentAdviceExchange::step()");
-	//this->tempCounter++;
+	this->stepCounter++;
 	//  if (STATE(AgentBase)->stopFlag) {
 	//      uploadLearningData();	//Stores individual learningdata in DDB for next simulation run
 	//  }
-	//if (tempCounter == 500) {
-	//	Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::step: REACHED UPLOAD TEST COUNT!");
-	//	uploadAdviceData();	//Stores individual learningdata in DDB for next simulation run
-	//}
+	if (stepCounter >= 100) {		//Regular backups
+		backup();
+		stepCounter = 0;
+	}
 	return AgentBase::step();
 }// end step
 
@@ -343,7 +343,7 @@ int AgentAdviceExchange::formAdvice() {
 	}
 	this->sendMessage(this->hostCon, MSG_RESPONSE, lds.stream(), lds.length(), &STATE(AgentAdviceExchange)->ownerId);
 	lds.unlock();
-	this->backup();
+	//this->backup();
 	return 0;
 }
 
@@ -660,7 +660,7 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 		// Proceed to ask adviser for advice
 	    this->askAdviser();
 		//this->formAdvice();
-		this->backup();
+		//this->backup();
 	}
 	break;
 	case AgentAdviceExchange_MSGS::MSG_REQUEST_CAPACITY:

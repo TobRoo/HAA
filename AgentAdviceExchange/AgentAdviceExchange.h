@@ -93,7 +93,7 @@ protected:
 	// Random number generator
 	//RandomGenerator randomGenerator;
 
-	//int tempCounter;
+	int stepCounter;
 
 //-----------------------------------------------------------------------------
 // Functions	
