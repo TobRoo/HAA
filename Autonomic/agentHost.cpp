@@ -10676,14 +10676,14 @@ int AgentHost::ddbTLRoundGetInfo(spConnection con, UUID *thread) {
 
 
 
-int AgentHost::ddbAddQLearningData(bool onlyActions, char typeId, long long totalActions, long long usefulActions, int tableSize, std::vector<float> qTable, std::vector<unsigned int> expTable)
+int AgentHost::ddbAddQLearningData(bool onlyActions, char typeId, unsigned long totalActions, unsigned long usefulActions, int tableSize, std::vector<float> qTable, std::vector<unsigned int> expTable)
 {
 	this->ds.reset();
 	this->ds.packUUID(this->getUUID());
 	this->ds.packChar(typeId);
 	this->ds.packBool(onlyActions);
-	this->ds.packInt64(totalActions);
-	this->ds.packInt64(usefulActions);
+	this->ds.packUInt64(totalActions);
+	this->ds.packUInt64(usefulActions);
 
 
 	if (!onlyActions) {
@@ -10723,11 +10723,13 @@ int AgentHost::ddbUpdateQLearningData(char instance, bool usefulAction, int key,
 int AgentHost::ddbGetQLearningData(spConnection con, UUID *thread, char instance)
 {
 
-	this->dStore->GetQLearningData(&this->ds, thread, instance);
+	DataStream lds;
 
-	this->sendAgentMessage(&con->uuid, MSG_RESPONSE, this->ds.stream(), this->ds.length());
+	this->dStore->GetQLearningData(&lds, thread, instance);
 
-	this->ds.unlock();
+	this->sendAgentMessage(&con->uuid, MSG_RESPONSE, lds.stream(), lds.length());
+
+	lds.unlock();
 
 	return 0;
 
@@ -11080,8 +11082,8 @@ int AgentHost::WritePerformanceData(mapDDBQLearningData * QLData)
 {
 	if (this->gatherData) {		//Collect performance data and save in .csv file
 
-		long long totalActions = 0;
-		long long usefulActions = 0;
+		unsigned long totalActions = 0;
+		unsigned long usefulActions = 0;
 		time_t timeNow = time(0);		//Get current time (for timestamping data)
 		tm* utcTime = gmtime(&timeNow);
 
@@ -12488,8 +12490,8 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 
 		UUID ownerId;
 		char instance;	//Type of avatar, stored in the mission file
-		long long totalActions;
-		long long usefulActions;
+		unsigned long totalActions;
+		unsigned long usefulActions;
 		int tableSize;
 		bool onlyActions;
 
@@ -12500,8 +12502,8 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		lds.unpackUUID(&ownerId);		//Avatar id (owner of the data set)
 		instance = lds.unpackChar();
 		onlyActions = lds.unpackBool();
-		totalActions = lds.unpackInt64();
-		usefulActions = lds.unpackInt64();
+		totalActions = lds.unpackUInt64();
+		usefulActions = lds.unpackUInt64();
 		if (!onlyActions) {
 			tableSize = lds.unpackInt32();
 
@@ -13902,8 +13904,8 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		int expCount = 0;
 		UUID sender;
 		char instance;
-		long long totalActions;
-		long long usefulActions;
+		unsigned long totalActions;
+		unsigned long usefulActions;
 		bool onlyActions;
 
 		int tableSize;
@@ -13915,8 +13917,8 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		lds.unpackUUID(&sender);
 		instance = lds.unpackChar();
 		onlyActions = lds.unpackBool();
-		totalActions = lds.unpackInt64();
-		usefulActions = lds.unpackInt64();
+		totalActions = lds.unpackUInt64();
+		usefulActions = lds.unpackUInt64();
 
 		if (!onlyActions) {
 

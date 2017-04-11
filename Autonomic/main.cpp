@@ -139,9 +139,9 @@ int _tmain(int argc, _TCHAR* argv[]) {
 	}
 
 	char runNumString[64];
-	int runNum = 1;	//Number of simulations to be run in sequence, 1 is default
+	int runNum = 1; //Simulation run number at which to begin 
 
-	if (argc >= 4) { // runCount specified
+	if (argc >= 4) { // runNum specified
 		sprintf_s(runNumString, sizeof(runNumString), "%ws", argv[3]);
 		runNum = atoi(runNumString);
 	}

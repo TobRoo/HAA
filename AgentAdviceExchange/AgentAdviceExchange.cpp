@@ -229,7 +229,7 @@ int AgentAdviceExchange::step() {
 	//  if (STATE(AgentBase)->stopFlag) {
 	//      uploadLearningData();	//Stores individual learningdata in DDB for next simulation run
 	//  }
-	if (stepCounter >= 100) {		//Regular backups
+	if (stepCounter >= 1000) {		//Regular backups
 		backup();
 		stepCounter = 0;
 	}
@@ -259,6 +259,7 @@ int AgentAdviceExchange::askAdviser() {
 
 	// Make sure we have an adviser
 	if (this->adviser == nilUUID) {
+		Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::askAdviser: No adviser, formAdvice() run directly instead...");
 		this->formAdvice();
 		return 0;
 	}
@@ -914,7 +915,10 @@ bool AgentAdviceExchange::convAdviceQuery(void *vpConv) {
 	this->adviserData[this->adviser].advice.clear();
 	for (int i = 0; i < this->num_actions_; i++) {
 		this->adviserData[this->adviser].advice.push_back(lds.unpackFloat32());
+		Log.log(0, "AgentAdviceExchange::convAdviceQuery:received qVal %f from adviser", this->adviserData[this->adviser].advice.begin());
 	}
+
+	lds.unlock();
 
 	// Proceed to form advice
 	this->formAdvice();
@@ -1083,14 +1087,6 @@ int AgentAdviceExchange::writeBackup(DataStream *ds) {
 
 int AgentAdviceExchange::readBackup(DataStream *ds) {
 	//DataStream lds;
-
-	// Initialize advice parameters
-	this->num_state_vrbls_ = 7;
-	this->num_actions_ = 5;
-	this->alpha = 0.80f;
-	this->beta = 0.95f;
-	this->delta = 0.0f;
-	this->rho = 1.00f;
 
 	_READ_STATE(AgentAdviceExchange);
 

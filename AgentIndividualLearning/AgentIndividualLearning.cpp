@@ -77,6 +77,8 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
     STATE(AgentIndividualLearning)->action.val = 0.0;
 	STATE(AgentIndividualLearning)->runNumber = 0;
 
+	STATE(AgentIndividualLearning)->hasQLearningData = false;	//Use flag to prevent uploads before getting the stored data, used in sendAction()
+
     // initialize avatar and target info
     this->task.landmarkUUID = nilUUID;
 	this->target.landmarkType = NON_COLLECTABLE;
@@ -282,8 +284,10 @@ int	AgentIndividualLearning::finishConfigureParameters() {
 
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::finishConfigureParameters: proceeding...");
 
-		//Read in data from previous run (if any)
+		//Read in data from previous run (if any, and if not recovering)
+
 		this->parseLearningData();
+		STATE(AgentIndividualLearning)->hasQLearningData = true;	//Use flag to prevent uploads before getting the stored data, used in sendAction()
 		this->uploadLearningData();	//Store it back into DDB
 
 		STATE(AgentIndividualLearning)->parametersSet = true;
@@ -1173,8 +1177,8 @@ int AgentIndividualLearning::uploadQLearningData(bool onlyActions)
     lds.packUUID(&STATE(AgentIndividualLearning)->ownerId);	//Avatar id
     lds.packChar(STATE(AgentIndividualLearning)->avatarInstance);		//Pack the agent type instance - remember to set as different for each avatar in the config! (different avatar types will have different learning data)
 	lds.packBool(onlyActions);
-	lds.packInt64(this->totalActions);
-	lds.packInt64(this->usefulActions);
+	lds.packUInt64(this->totalActions);
+	lds.packUInt64(this->usefulActions);
 	if (!onlyActions) {			//Full upload at the end of a run
 		lds.packInt32(this->q_learning_.table_size_);	//Size of value tables to store
 
@@ -1195,6 +1199,10 @@ int AgentIndividualLearning::uploadQLearningData(bool onlyActions)
 }
 int AgentIndividualLearning::updateQLearningData()
 {
+	if (!STATE(AgentIndividualLearning)->hasQLearningData)
+		return 0;	//Do not upload until we have the old data back to prevent overwriting values
+
+
 	DataStream lds;
 	lds.reset();
 	lds.packUUID(&STATE(AgentIndividualLearning)->ownerId);	//Avatar id
@@ -2639,7 +2647,7 @@ bool AgentIndividualLearning::convGetQLearningData(void * vpConv)
 	spConversation conv = (spConversation)vpConv;
 
 	if (conv->response == NULL) { // timed out
-		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetQLearningData: timed out");
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetQLearningData: timed out");
 		return 0; // end conversation
 	}
 
@@ -2647,8 +2655,10 @@ bool AgentIndividualLearning::convGetQLearningData(void * vpConv)
 	lds.unpackData(sizeof(UUID)); // discard thread
 	char response = lds.unpackChar();
 	if (response == DDBR_OK) { // succeeded
-		this->totalActions = lds.unpackInt64();
-		this->usefulActions = lds.unpackInt64();
+		this->totalActions = lds.unpackUInt64();
+		this->usefulActions = lds.unpackUInt64();
+
+		Log.log(0, "AgentIndividualLearning::convGetQLearningData: totalActions: %ul, usefulActions: %ul", this->totalActions, this->usefulActions);
 
 		float qVal; 
 		while (lds.unpackBool()) {
@@ -2660,6 +2670,8 @@ bool AgentIndividualLearning::convGetQLearningData(void * vpConv)
 			expVal = *(unsigned int *)lds.unpackData(sizeof(unsigned int));
 			(&this->q_learning_.exp_table_)->push_back(expVal);
 		}
+
+		STATE(AgentIndividualLearning)->hasQLearningData = true;	//Use flag to prevent uploads before getting the stored data, used in sendAction()
 	}
 	else {
 		Log.log(0, "AgentIndividualLearning::convGetQLearningData: Could not retrieve learning data after crash.");
@@ -2693,8 +2705,8 @@ int	AgentIndividualLearning::writeState(DataStream *ds, bool top) {
 	ds->packBool(hasCargo);
 	ds->packBool(hasDelivered);
 
-	_WRITE_STATE_VECTOR(float, &this->q_learning_.q_table_);
-	_WRITE_STATE_VECTOR(unsigned int, &this->q_learning_.exp_table_);
+	//_WRITE_STATE_VECTOR(float, &this->q_learning_.q_table_);
+	//_WRITE_STATE_VECTOR(unsigned int, &this->q_learning_.exp_table_);
 
 	_WRITE_STATE_VECTOR(float, &this->q_learning_.q_vals_);
 	_WRITE_STATE_VECTOR(unsigned int, &this->q_learning_.exp_vals_);
@@ -2735,8 +2747,23 @@ int	AgentIndividualLearning::readState(DataStream *ds, bool top) {
 	hasCargo = ds->unpackBool();
 	hasDelivered = ds->unpackBool();
 
-	_READ_STATE_VECTOR(float, &this->q_learning_.q_table_);
-	_READ_STATE_VECTOR(unsigned int, &this->q_learning_.exp_table_);
+	DataStream sds;
+
+	// request Q-learning data from DDB, too big to pass around otherwise
+	UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convGetQLearningData, DDB_REQUEST_TIMEOUT);
+	if (thread == nilUUID) {
+		return 1;
+	}
+	STATE(AgentIndividualLearning)->hasQLearningData = false;	//Use flag to prevent uploads before getting the stored data, used in sendAction()
+
+	sds.reset();
+	sds.packUUID(&thread);
+	sds.packChar(STATE(AgentIndividualLearning)->avatarInstance); // dummy id, getting the full list of tasks anyway
+	this->sendMessage(this->hostCon, MSG_DDB_GET_QLEARNINGDATA, sds.stream(), sds.length());
+	sds.unlock();
+
+	//_READ_STATE_VECTOR(float, &this->q_learning_.q_table_);
+	//_READ_STATE_VECTOR(unsigned int, &this->q_learning_.exp_table_);
 
 	_READ_STATE_VECTOR(float, &this->q_learning_.q_vals_);
 	_READ_STATE_VECTOR(unsigned int, &this->q_learning_.exp_vals_);
