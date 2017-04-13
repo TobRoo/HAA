@@ -5057,7 +5057,9 @@ bool DDBStore::UpdateQLearningData(char instance, bool usefulAction, int key, fl
 				this->DDBQLearningDatas[instance].usefulActions++;
 		}
 		else {
-			Log->log(0, "DDBStore::UpdateQLearningData: Avatar instance not found.");
+			Log->log(0, "DDBStore::UpdateQLearningData: Avatar instance %d not found.", instance);
+			for(auto instIter: this->DDBQLearningDatas)
+				Log->log(0, "DDBStore::UpdateQLearningData: Avatar instance in store: %d", instIter.first);
 		}
 	return false;
 }

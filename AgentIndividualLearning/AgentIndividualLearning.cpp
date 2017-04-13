@@ -40,7 +40,7 @@
 
 #define CARGO_REQUEST_TIMEOUT 200	
 
-#define USE_ADVICE_EXCHANGE
+//#define USE_ADVICE_EXCHANGE
 
 using namespace AvatarBase_Defs;
 
@@ -129,8 +129,10 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
 
 	this->q_avg = 0.0f;
 
-    // Seed the random number generator
-    srand(static_cast <unsigned> (time(0)));
+    //// Seed the random number generator
+    //srand(static_cast <unsigned> (time(0)));
+
+	this->randomGenerator = new RandomGenerator();
 
     //Set cargo flags
     this->hasCargo = false;
@@ -170,6 +172,8 @@ AgentIndividualLearning::~AgentIndividualLearning() {
     if (STATE(AgentBase)->started) {
         this->stop();
     }// end started if
+
+	delete this->randomGenerator;
 
 }// end destructor
 
@@ -863,9 +867,9 @@ int AgentIndividualLearning::policy(std::vector<float> &quality) {
 	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: POLICY 1");
     if (quality_sum == 0.0f) {
         random_actions_++;
-		srand(time(NULL));
-       // int action = (int)ceil(randomGenerator.Uniform01() * num_actions_);
-		action = rand() % 5 + 1;
+		//srand(time(NULL));
+        int action = (int)ceil(randomGenerator->Uniform01() * num_actions_);
+		//action = rand() % 5 + 1;
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::policy: All zero quality, selecting a random action");
         return action;
     }
@@ -898,8 +902,9 @@ int AgentIndividualLearning::policy(std::vector<float> &quality) {
         action_prob[i] = exponents[i] / exponents_sum;
     }
 
-    float rand_val = randomGenerator.Uniform01();
-    float action_prob_sum = action_prob[0];
+    float rand_val = randomGenerator->Uniform01();
+	
+	float action_prob_sum = action_prob[0];
 
     // Loop through actions to select one
     for (int i = 0; i < num_actions_; ++i) {
@@ -2800,7 +2805,7 @@ int AgentIndividualLearning::recoveryFinish() {
 
 
 
-	int action = (int)ceil(randomGenerator.Uniform01() * num_actions_);
+	int action = (int)ceil(randomGenerator->Uniform01() * num_actions_);
 	Log.log(0, "RecoveryFinish actionTest: num_actions_ %d", num_actions_);
 	Log.log(0, "RecoveryFinish actionTest: %d", action);
 	this->updateStateData();
@@ -2892,10 +2897,7 @@ int AgentIndividualLearning::readBackup(DataStream *ds) {
 
 	this->totalActions = *(unsigned long*)ds->unpackData(sizeof(unsigned long));
 	this->usefulActions = *(unsigned long*)ds->unpackData(sizeof(unsigned long));
-	this->reward_activation_dist_ = ds->unpackFloat32();
-
-	this->randomGenerator = *new RandomGenerator();
-
+	this->reward_activation_dist_ = ds->unpackFloat32();	
 
 	if (!STATE(AgentIndividualLearning)->hasReceivedRunNumber) {
 		// request run number info

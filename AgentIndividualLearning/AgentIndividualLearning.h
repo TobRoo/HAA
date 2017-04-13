@@ -196,7 +196,7 @@ protected:
     unsigned long usefulActions;
 
 	// Random number generator
-	RandomGenerator randomGenerator;
+	RandomGenerator *randomGenerator;
 
 	// TODO: REMOVE AFTER TESTING
 	int tempCounter;

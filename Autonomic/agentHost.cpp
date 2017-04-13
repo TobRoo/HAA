@@ -10865,76 +10865,77 @@ int AgentHost::DataDump_AvatarPose( DataStream *ds ) {
 
 int AgentHost::LearningDataDump()
 {
-	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: 1");
+	if (this->gatherData) {
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: 1");
 
 
 
-	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: 1.3");
-	DataStream taskDataDS;
-	DataStream taskDS;
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: 1.3");
+		DataStream taskDataDS;
+		DataStream taskDS;
 
 
-	this->dStore->GetTaskData(&nilUUID, &taskDataDS, &nilUUID, true);
-	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: 2");
-	taskDataDS.rewind();
-	taskDataDS.unpackData(sizeof(UUID)); // discard thread
-	char taskDataOk = taskDataDS.unpackChar();	//DDBR_OK
-	bool enumTaskData = taskDataDS.unpackBool();	//EnumTaskData
-	int numTaskDatas = taskDataDS.unpackInt32();
-	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: taskDataOk is %d, enumTaskData is %d, numTaskDatas is %d", taskDataOk, enumTaskData, numTaskDatas);
+		this->dStore->GetTaskData(&nilUUID, &taskDataDS, &nilUUID, true);
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: 2");
+		taskDataDS.rewind();
+		taskDataDS.unpackData(sizeof(UUID)); // discard thread
+		char taskDataOk = taskDataDS.unpackChar();	//DDBR_OK
+		bool enumTaskData = taskDataDS.unpackBool();	//EnumTaskData
+		int numTaskDatas = taskDataDS.unpackInt32();
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: taskDataOk is %d, enumTaskData is %d, numTaskDatas is %d", taskDataOk, enumTaskData, numTaskDatas);
 
-	this->dStore->GetTask(&nilUUID, &taskDS, &nilUUID, true);
-	taskDS.rewind();
-	taskDS.unpackData(sizeof(UUID)); // discard thread
-	char taskOk = taskDS.unpackChar();	//DDBR_OK
-	bool enumTask = taskDS.unpackBool();	//EnumTasks
-	int numTasks = taskDS.unpackInt32();
-	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: 3");
-	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: taskOk is %d, enumTask is %d, numTasks is %d, ", taskOk, enumTask, numTasks);
+		this->dStore->GetTask(&nilUUID, &taskDS, &nilUUID, true);
+		taskDS.rewind();
+		taskDS.unpackData(sizeof(UUID)); // discard thread
+		char taskOk = taskDS.unpackChar();	//DDBR_OK
+		bool enumTask = taskDS.unpackBool();	//EnumTasks
+		int numTasks = taskDS.unpackInt32();
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: 3");
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: taskOk is %d, enumTask is %d, numTasks is %d, ", taskOk, enumTask, numTasks);
 
-	mapDDBQLearningData QLData = this->dStore->GetQLearningData();
-	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: size of QLData is %d, ", QLData.size());
-	for (auto& qlIter : QLData) {
-		Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: Instance: %d, Total actions: %d, Useful actions: %d, table size: %d", qlIter.first, qlIter.second.totalActions, qlIter.second.usefulActions, qlIter.second.qTable.size());
+		mapDDBQLearningData QLData = this->dStore->GetQLearningData();
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: size of QLData is %d, ", QLData.size());
+		for (auto& qlIter : QLData) {
+			Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: Instance: %d, Total actions: %d, Useful actions: %d, table size: %d", qlIter.first, qlIter.second.totalActions, qlIter.second.usefulActions, qlIter.second.qTable.size());
 
-//		for (auto qTIter : qlIter.second.qTable)
-//			;
-////			Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: instance %d, qTable entry: %f", qlIter.first-'0', qTIter);
+			//		for (auto qTIter : qlIter.second.qTable)
+			//			;
+			////			Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: instance %d, qTable entry: %f", qlIter.first-'0', qTIter);
+		}
+
+		mapDDBAdviceData adviceData = this->dStore->GetAdviceData();
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: size of adviceData is %d, ", adviceData.size());
+		for (auto& advIter : adviceData) {
+			Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: Instance: %d, cq: %f, bq: %f", advIter.first, advIter.second.cq, advIter.second.bq);
+
+			//		for (auto qTIter : qlIter.second.qTable)
+			//			;
+			////			Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: instance %d, qTable entry: %f", qlIter.first-'0', qTIter);
+		}
+
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump:about to write learning data...");
+		taskDataDS.rewind();
+		taskDS.rewind();
+
+
+
+
+		WritePerformanceData(&QLData);
+
+
+		WCHAR tempLearningDataFile[512];
+		wsprintf(tempLearningDataFile, _T("learningData%d.tmp"), STATE(AgentHost)->runNumber);
+		std::ifstream    tempLearningData(tempLearningDataFile);
+		bool fileExists = tempLearningData.good();
+		if (fileExists) {		//Only dump learning data if there is no file with the current run number in the bin folder
+			return 0;
+		}
+		tempLearningData.close();
+		WriteLearningData(&taskDataDS, &taskDS, &QLData, &adviceData);
+
+		taskDataDS.unlock();
+		taskDS.unlock();
 	}
-
-	mapDDBAdviceData adviceData = this->dStore->GetAdviceData();
-	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: size of adviceData is %d, ", adviceData.size());
-	for (auto& advIter : adviceData) {
-		Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: Instance: %d, cq: %f, bq: %f", advIter.first, advIter.second.cq, advIter.second.bq);
-
-		//		for (auto qTIter : qlIter.second.qTable)
-		//			;
-		////			Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: instance %d, qTable entry: %f", qlIter.first-'0', qTIter);
-	}
-
-	Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump:about to write learning data...");
-	taskDataDS.rewind();
-	taskDS.rewind();
-
-
-
-
-	WritePerformanceData(&QLData);
-
-
-	WCHAR tempLearningDataFile[512];
-	wsprintf(tempLearningDataFile, _T("learningData%d.tmp"), STATE(AgentHost)->runNumber);
-	std::ifstream    tempLearningData(tempLearningDataFile);
-	bool fileExists = tempLearningData.good();
-	if (fileExists) {		//Only dump learning data if there is no file with the current run number in the bin folder
-		return 0;
-	}
-	tempLearningData.close();
-	WriteLearningData(&taskDataDS, &taskDS, &QLData, &adviceData);
-
-	taskDataDS.unlock();
-	taskDS.unlock();
-
 	return 0;
 }
 
