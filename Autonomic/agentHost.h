@@ -28,7 +28,7 @@ using namespace std;
 // TEMP
 #define CLUSTERSIZE 1
 
-#define CLEAN_EXIT_INTERVAL  10 // ms
+#define CLEAN_EXIT_INTERVAL  50 // ms
 
 //#define TIMEOUT_REQUESTAGENTSPAWNPROPOSALS				 200000 // ms
 //#define TIMEOUT_AGENTSPAWNPROPOSAL						1000000 // ms
@@ -37,7 +37,7 @@ using namespace std;
 //#define TIMEOUT_ACCEPTAGENTSPAWNPROPOSAL				 200000 // ms, MUST BE BIGGER THAN TIMEOUT_SPAWNAGENT
 #define	TIMEOUT_SPAWNAGENT								 100000 // ms, MUST BE SMALLER THAN TIMEOUT_ACCEPTAGENTSPAWNPROPOSAL
 
-#define MAX_PORTS	100 // our local port + this amount should be reserved by the system
+#define MAX_PORTS	199 // our local port + this amount should be reserved by the system
 
 #define DDB_EFFECTIVEPARTICLENUM_THRESHOLD  0.3f // fraction of total particles
 

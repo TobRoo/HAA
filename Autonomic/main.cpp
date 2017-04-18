@@ -267,10 +267,13 @@ int _tmain(int argc, _TCHAR* argv[]) {
 						*c2 = *c;
 					if (*c == ']')
 						break;
+					Log.log(0, "Found character %c", *c);
 					c++;
 					c2++;
 				}
-
+				Log.log(0, "Found character %c", *c);
+				c2++;
+				*c2 = '\0';
 				//Get the last part of configPath
 				c = configEnding;
 				char *charPtr = strstr(configPath, "hostCfgs");
@@ -295,11 +298,11 @@ int _tmain(int argc, _TCHAR* argv[]) {
 					Log.log(0, "main: could not find hostCfgs directory - randomMap and mapReveal will fail. ");
 				}
 
-				/*	Log.log(0, "configEnding is: %s", configEnding);
+					Log.log(0, "configEnding is: %s", configEnding);
 					Log.log(0, "logDirStart is: %s", logDirStart);
 					Log.log(0, "timeBuf is: %s", timeBuf);
 					Log.log(0, "configPath is: %s", configPath);
-					Log.log(0, "logDir is: %s", logDir);*/
+					Log.log(0, "logDir is: %s", logDir);
 
 
 

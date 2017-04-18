@@ -643,6 +643,10 @@ int AvatarSimulation::parseAvatarOutput( DataStream *ds ) {
 					this->sendMessage( this->hostCon, MSG_DDB_LANDMARKSETINFO, lds.stream(), lds.length() );
 					lds.unlock();
 				}
+				else {
+					x = -1.0f;	// x and y not set
+					y = -1.0f;
+				}
 
 				// notify initiator
 				if ( this->collectionTask.front().thread == thread ) {

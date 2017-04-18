@@ -140,6 +140,8 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
 
 	STATE(AgentIndividualLearning)->collectRequestSent = false;
 	STATE(AgentIndividualLearning)->depositRequestSent = false;
+
+	STATE(AgentIndividualLearning)->isStuck = false;
 	
     // Prepare callbacks
     this->callback[AgentIndividualLearning_CBR_convAction] = NEW_MEMBER_CB(AgentIndividualLearning, convAction);
@@ -1026,6 +1028,15 @@ bool AgentIndividualLearning::validAction(ActionPair &action) {
     float new_pos_y = this->avatar.y + sin(this->avatar.r) * action.val;
 
     // Check X world boundaries
+
+	if ((this->avatar.x - this->avatar.outerRadius) < STATE(AgentIndividualLearning)->missionRegion.x ||
+		this->avatar.x + this->avatar.outerRadius > (STATE(AgentIndividualLearning)->missionRegion.x + STATE(AgentIndividualLearning)->missionRegion.w)) {
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Stuck, world X boundary");
+		STATE(AgentIndividualLearning)->isStuck = true;
+	}
+	else {
+		STATE(AgentIndividualLearning)->isStuck = false;
+	}
     if ((new_pos_x - this->avatar.outerRadius) < STATE(AgentIndividualLearning)->missionRegion.x ||
         new_pos_x + this->avatar.outerRadius > (STATE(AgentIndividualLearning)->missionRegion.x + STATE(AgentIndividualLearning)->missionRegion.w)) {
         Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Invalid action (world X boundary)");
@@ -1033,6 +1044,14 @@ bool AgentIndividualLearning::validAction(ActionPair &action) {
     }
 
     // Check Y world boundaries
+	if ((this->avatar.y - this->avatar.outerRadius) < STATE(AgentIndividualLearning)->missionRegion.y ||
+		this->avatar.y + this->avatar.outerRadius > (STATE(AgentIndividualLearning)->missionRegion.y + STATE(AgentIndividualLearning)->missionRegion.h)) {
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Stuck, world Y boundary");
+		STATE(AgentIndividualLearning)->isStuck = true;
+	}
+	else {
+		STATE(AgentIndividualLearning)->isStuck = false;
+	}
     if ((new_pos_y - this->avatar.outerRadius) < STATE(AgentIndividualLearning)->missionRegion.y ||
         new_pos_y + this->avatar.outerRadius > (STATE(AgentIndividualLearning)->missionRegion.y + STATE(AgentIndividualLearning)->missionRegion.h)) {
         Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Invalid action (world Y boundary)");
@@ -1074,11 +1093,23 @@ bool AgentIndividualLearning::validAction(ActionPair &action) {
         float rel_obst_y_low = obstIter.second.y;	//Magic number for now, TODO: Define obstacle width and height in a header file (autonomic.h?)
 
 		// Check obstacle boundaries
+		float obst_x_high_diff_current = (this->avatar.x - this->avatar.outerRadius) - rel_obst_x_high;
+		float obst_x_low_diff_current = rel_obst_x_low - (this->avatar.x + this->avatar.outerRadius);
+		float obst_y_high_diff_current = (this->avatar.y - this->avatar.outerRadius) - rel_obst_y_high;
+		float obst_y_low_diff_current = rel_obst_y_low - (this->avatar.y + this->avatar.outerRadius);
+
 		float obst_x_high_diff = (new_pos_x - this->avatar.outerRadius) - rel_obst_x_high;
 		float obst_x_low_diff = rel_obst_x_low - (new_pos_x + this->avatar.outerRadius);
 		float obst_y_high_diff = (new_pos_y - this->avatar.outerRadius) - rel_obst_y_high;
 		float obst_y_low_diff = rel_obst_y_low - (new_pos_y + this->avatar.outerRadius);
-        
+		
+		if ((obst_x_high_diff_current < 0) && (obst_x_low_diff_current < 0) && (obst_y_high_diff_current < 0) && (obst_y_low_diff_current < 0)) {
+			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Stuck, obstacle boundary");
+			STATE(AgentIndividualLearning)->isStuck = true;
+		}
+		else {
+			STATE(AgentIndividualLearning)->isStuck = false;
+		}
 		if ((obst_x_high_diff < 0) && (obst_x_low_diff < 0) && (obst_y_high_diff < 0) && (obst_y_low_diff < 0)) {
             Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Invalid action (obstacle boundary)");
             return false;
