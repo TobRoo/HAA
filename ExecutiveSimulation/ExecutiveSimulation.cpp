@@ -1233,9 +1233,30 @@ int SimAvatar::SimPreStep( _timeb *simTime, int dt ) {
 	sn = sin( this->state.r );
 	cs = cos( this->state.r );
 	this->state.t = *simTime;
-	this->state.x += dL*cs;
-	this->state.y += dL*sn;
+
+	//Quick fix - lock the avatars to mission region
+
+	if (this->state.x + dL*cs < 0.0f || this->state.x + dL*cs > 10.0f || this->state.y + dL*sn < 0.0f || this->state.y + dL*sn > 10.0f)
+		;
+		//dL = 0.0f;
+	else
+	{
+		this->state.x += dL*cs;
+		this->state.y += dL*sn;
+	}
 	this->state.r += dA;
+
+	//Quick fix - lock the avatars to mission region
+
+	//if (this->state.x < 0.0f)
+	//	this->state.x = 0.05f;
+	//if (this->state.x > 10.0f)
+	//	this->state.x = 9.95f;
+	//if (this->state.y < 0.0f)
+	//	this->state.y = 0.05f;
+	//if (this->state.y < 10.0f)
+	//	this->state.y = 9.95f;
+
 
 	// update landmarks
 	sn = sin( this->state.r );
@@ -1270,8 +1291,16 @@ int SimAvatar::SimStep( _timeb *simTime, int dt ) {
 	sn = sin( this->stateEst.r );
 	cs = cos( this->stateEst.r );
 	this->stateEst.t = *simTime;
-	this->stateEst.x += dL*cs;
-	this->stateEst.y += dL*sn;
+
+
+	if (this->stateEst.x + dL*cs < 0.0f || this->stateEst.x + dL*cs > 10.0f || this->stateEst.y + dL*sn < 0.0f || this->stateEst.y + dL*sn > 10.0f)
+		;
+		//dL = 0.0f;
+	else
+	{
+		this->stateEst.x += dL*cs;
+		this->stateEst.y += dL*sn;
+	}
 	this->stateEst.r += dA;
 
 	// handle motion command

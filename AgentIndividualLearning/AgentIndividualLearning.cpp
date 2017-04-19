@@ -75,6 +75,9 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
 	STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned = false;
     STATE(AgentIndividualLearning)->action.action = AvatarBase_Defs::AA_WAIT;
     STATE(AgentIndividualLearning)->action.val = 0.0;
+	STATE(AgentIndividualLearning)->stuckAction.action = AvatarBase_Defs::AA_WAIT;
+	STATE(AgentIndividualLearning)->stuckAction.val = 0.0;
+
 	STATE(AgentIndividualLearning)->runNumber = 0;
 
 	STATE(AgentIndividualLearning)->hasQLearningData = false;	//Use flag to prevent uploads before getting the stored data, used in sendAction()
@@ -502,11 +505,17 @@ int AgentIndividualLearning::formAction() {
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action MOVE_FORWARD");
 		STATE(AgentIndividualLearning)->action.action = MOVE_FORWARD; //	AvatarBase_Defs::AA_MOVE;
 		STATE(AgentIndividualLearning)->action.val = STATE(AgentIndividualLearning)->maxLinear;
+		//Store the reverse action in case the avatar ends up just out of bounds or inside an obstacle
+		STATE(AgentIndividualLearning)->stuckAction.action = MOVE_BACKWARD;
+		STATE(AgentIndividualLearning)->stuckAction.val = -STATE(AgentIndividualLearning)->maxLinear;
 	}
 	else if (action == MOVE_BACKWARD) {
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action MOVE_BACKWARD");
 		STATE(AgentIndividualLearning)->action.action = MOVE_BACKWARD; //AvatarBase_Defs::AA_MOVE;
 		STATE(AgentIndividualLearning)->action.val = STATE(AgentIndividualLearning)->maxLinear*this->backupFractionalSpeed;
+		//Store the reverse action in case the avatar ends up just out of bounds or inside an obstacle
+		STATE(AgentIndividualLearning)->stuckAction.action = MOVE_FORWARD;
+		STATE(AgentIndividualLearning)->stuckAction.val = -STATE(AgentIndividualLearning)->maxLinear*this->backupFractionalSpeed;
 	}
 	else if (action == ROTATE_LEFT) {
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action ROTATE_LEFT");
@@ -615,6 +624,9 @@ int AgentIndividualLearning::formAction() {
 	if (!this->validAction(STATE(AgentIndividualLearning)->action)) {
 		STATE(AgentIndividualLearning)->action.val = 0.0;
 	}
+	if (STATE(AgentIndividualLearning)->isStuck)	//If stuck in forbidden terrain, immediately reverse
+		STATE(AgentIndividualLearning)->action = STATE(AgentIndividualLearning)->stuckAction;
+
 	// Send the action to AvatarBase
 	this->sendAction(STATE(AgentIndividualLearning)->action);
 

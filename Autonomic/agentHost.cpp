@@ -10865,7 +10865,9 @@ int AgentHost::DataDump_AvatarPose( DataStream *ds ) {
 
 int AgentHost::LearningDataDump()
 {
-	if (this->gatherData) {
+	
+
+	if (STATE(AgentBase)->stabilityTimeMin == -1) {		//Only write data at the end of a simulation run
 		Log.log(LOG_LEVEL_NORMAL, "AgentHost::LearningDataDump: 1");
 
 

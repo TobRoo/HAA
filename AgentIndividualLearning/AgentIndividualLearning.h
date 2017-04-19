@@ -96,6 +96,9 @@ public:
         ActionPair action;
         UUID actionConv; // action conversation id
         _timeb actionCompleteTime; // time that the last action was completed
+		
+		ActionPair stuckAction;	//Action to take in the case the avatar gets stuck out of bounds or in an obstacle (reversing the previous action)
+
 
 		// Advice data
 		int agentAdviceExchangeSpawned;

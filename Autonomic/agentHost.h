@@ -28,7 +28,7 @@ using namespace std;
 // TEMP
 #define CLUSTERSIZE 1
 
-#define CLEAN_EXIT_INTERVAL  50 // ms
+#define CLEAN_EXIT_INTERVAL  10 // ms
 
 //#define TIMEOUT_REQUESTAGENTSPAWNPROPOSALS				 200000 // ms
 //#define TIMEOUT_AGENTSPAWNPROPOSAL						1000000 // ms
