@@ -248,6 +248,7 @@ int AgentIndividualLearning::configureParameters(DataStream *ds) {
 
 
     Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::configureParameters: ownerId %s", Log.formatUUID(LOG_LEVEL_NORMAL, &STATE(AgentIndividualLearning)->ownerId));
+	Log.log(0, "My instance is: %d", STATE(AgentIndividualLearning)->avatarInstance);
 
 	// request run number info
 	UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convGetRunNumber, DDB_REQUEST_TIMEOUT);
@@ -539,6 +540,7 @@ int AgentIndividualLearning::formAction() {
 		UUID avId = this->avatarId;
 		UUID thread;
 
+		Log.log(0, "collectRequestSent: %s, depositRequestSent %s ", STATE(AgentIndividualLearning)->collectRequestSent ? "true" : "false", STATE(AgentIndividualLearning)->depositRequestSent ? "true" : "false");
 
 		if(!(STATE(AgentIndividualLearning)->collectRequestSent || STATE(AgentIndividualLearning)->depositRequestSent) ){		//Request is not yet answered
 			if (!this->hasCargo ) {
@@ -2381,14 +2383,13 @@ bool AgentIndividualLearning::convCollectLandmark(void * vpConv) {
         Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convCollectLandmark: success: landmark now at x %f y %f, avatar at x %f y %f", this->target.x, this->target.y, this->avatar.x, this->avatar.y);
         this->hasCargo = true;
 		STATE(AgentIndividualLearning)->collectRequestSent = false;
-        this->backup(); // landmarkCollected
+       
     }
 	else if (success == -1) {
 		if (STATE(AgentIndividualLearning)->collectRequestSent) { // We have sent a collectRequest - the landmark was collected, and we missed the confirmation - proceed as if success
 			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convCollectLandmark: already collected, but we have sent a collectRequest - proceeding as success");
 			this->hasCargo = true;
 			STATE(AgentIndividualLearning)->collectRequestSent = false;
-			this->backup(); // landmarkCollected
 		}
 	}
 	else if (success == -2) {
@@ -2400,6 +2401,9 @@ bool AgentIndividualLearning::convCollectLandmark(void * vpConv) {
     }
 	STATE(AgentIndividualLearning)->collectRequestSent = false;
 	lds.unlock();
+
+	this->backup(); // landmarkCollected
+
 	return 0;
 }
 
@@ -2482,7 +2486,7 @@ bool AgentIndividualLearning::convDepositLandmark(void * vpConv) {
 				}
 
 		}
-		this->backup(); // landmarkDeposited
+
 	}
 	else if (success == -1) {	//Not yet collected / already dropped off, but missed the confirmation message
 		if (STATE(AgentIndividualLearning)->depositRequestSent) { // We have sent a depositRequest - the landmark was dropped off, and we missed the confirmation - proceed as if success
@@ -2548,7 +2552,6 @@ bool AgentIndividualLearning::convDepositLandmark(void * vpConv) {
 
 			}
 			STATE(AgentIndividualLearning)->depositRequestSent = false;
-			this->backup(); // landmarkDeposited
 
 
 
@@ -2561,6 +2564,9 @@ bool AgentIndividualLearning::convDepositLandmark(void * vpConv) {
 	}
 
 	STATE(AgentIndividualLearning)->depositRequestSent = false;
+
+	this->backup(); // landmarkDeposited
+
 	return 0;
 }
 

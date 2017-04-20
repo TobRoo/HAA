@@ -10522,31 +10522,33 @@ int AgentHost::ddbAddTask(UUID *id, UUID *landmarkUUID, UUID *agent, UUID *avata
 Log.log(0, "AgentHost::ddbAddTask: task contents: landmark UUID: %s, avatar UUID: %s, completed: %s, ITEM_TYPES: %d", Log.formatUUID(LOG_LEVEL_NORMAL, landmarkUUID), Log.formatUUID(LOG_LEVEL_NORMAL, avatar), completed ? "true" : "false", TYPE);
 
 
-
+	DataStream lds;
 
 	// distribute
-	this->ds.reset();
-	this->ds.packUUID(this->getUUID());
-	this->ds.packUUID(id);
-	this->ds.packUUID(landmarkUUID);
-	this->ds.packUUID(agent);
-	this->ds.packUUID(avatar);
-	this->ds.packBool(completed);
-	this->ds.packInt32(TYPE);
-	this->globalStateTransaction(OAC_DDB_ADDTASK, this->ds.stream(), this->ds.length());
-	this->ds.unlock();
+	lds.reset();
+	lds.packUUID(this->getUUID());
+	lds.packUUID(id);
+	lds.packUUID(landmarkUUID);
+	lds.packUUID(agent);
+	lds.packUUID(avatar);
+	lds.packBool(completed);
+	lds.packInt32(TYPE);
+	this->globalStateTransaction(OAC_DDB_ADDTASK, lds.stream(), lds.length());
+	lds.unlock();
 
 	return 0;
 }
 
 int AgentHost::ddbRemoveTask(UUID *id) {
 
+	DataStream lds;
+
 	// distribute
-	this->ds.reset();
-	this->ds.packUUID(this->getUUID());
-	this->ds.packUUID(id);
-	this->globalStateTransaction(OAC_DDB_REMTASK, this->ds.stream(), this->ds.length());
-	this->ds.unlock();
+	lds.reset();
+	lds.packUUID(this->getUUID());
+	lds.packUUID(id);
+	this->globalStateTransaction(OAC_DDB_REMTASK, lds.stream(), lds.length());
+	lds.unlock();
 
 	return 0;
 }
@@ -10578,22 +10580,23 @@ int AgentHost::ddbTaskSetInfo(UUID *id, UUID *agent, UUID *avatar, bool complete
 }
 
 int AgentHost::ddbGetTask(UUID *id, spConnection con, UUID *thread, bool enumTasks) {
-
-	this->dStore->GetTask(id, &this->ds, thread, enumTasks);
-
+	
 	DataStream lds;
-	lds.setData(this->ds.stream(), this->ds.length());
-	lds.unpackChar();
-	lds.unpackBool();
-	lds.unpackData(sizeof(UUID));
-	DDBTask *inspectTask;
-	inspectTask = (DDBTask *)lds.unpackData(sizeof(DDBTask));
-//	Log.log(0, "AgentHost::ddbTaskGetInfo: Task id %s has agent id: %s", Log.formatUUID(0,id), Log.formatUUID(0, &inspectTask->agentUUID));
+	this->dStore->GetTask(id, &lds, thread, enumTasks);
 
 
-	this->sendAgentMessage(&con->uuid, MSG_RESPONSE, this->ds.stream(), this->ds.length());
+//	lds.setData(this->ds.stream(), this->ds.length());
+//	lds.unpackChar();
+//	lds.unpackBool();
+//	lds.unpackData(sizeof(UUID));
+//	DDBTask *inspectTask;
+//	inspectTask = (DDBTask *)lds.unpackData(sizeof(DDBTask));
+////	Log.log(0, "AgentHost::ddbTaskGetInfo: Task id %s has agent id: %s", Log.formatUUID(0,id), Log.formatUUID(0, &inspectTask->agentUUID));
+	Log.log(0, "AgentHost::ddbGetTask::Sending ddbGetTask response to agent %s", Log.formatUUID(0, &con->uuid));
 
-	this->ds.unlock();
+	this->sendAgentMessage(&con->uuid, MSG_RESPONSE, lds.stream(), lds.length());
+
+	lds.unlock();
 
 	return 0;
 }
@@ -10601,25 +10604,27 @@ int AgentHost::ddbGetTask(UUID *id, spConnection con, UUID *thread, bool enumTas
 int AgentHost::ddbAddTaskData(UUID *avatarId, DDBTaskData *taskData) {
 	// distribute
 
+	DataStream lds;
 
-	this->ds.reset();
-	this->ds.packUUID(this->getUUID());
-	this->ds.packUUID(avatarId);
-	this->ds.packTaskData(taskData);
-	this->globalStateTransaction(OAC_DDB_ADDTASKDATA, this->ds.stream(), this->ds.length());
-	this->ds.unlock();
+	lds.reset();
+	lds.packUUID(this->getUUID());
+	lds.packUUID(avatarId);
+	lds.packTaskData(taskData);
+	this->globalStateTransaction(OAC_DDB_ADDTASKDATA, lds.stream(), lds.length());
+	lds.unlock();
 
 	return 0;
 }
 
 int AgentHost::ddbRemoveTaskData(UUID *avatarid) {
 
+	DataStream lds;
 	// distribute
-	this->ds.reset();
-	this->ds.packUUID(this->getUUID());
-	this->ds.packUUID(avatarid);
-	this->globalStateTransaction(OAC_DDB_REMTASKDATA, this->ds.stream(), this->ds.length());
-	this->ds.unlock();
+	lds.reset();
+	lds.packUUID(this->getUUID());
+	lds.packUUID(avatarid);
+	this->globalStateTransaction(OAC_DDB_REMTASKDATA, lds.stream(), lds.length());
+	lds.unlock();
 
 	return 0;
 }
@@ -10647,11 +10652,13 @@ int AgentHost::ddbTaskDataSetInfo(UUID *avatarId, DDBTaskData *taskData) {
 
 int AgentHost::ddbGetTaskData(UUID *id, spConnection con, UUID *thread, bool enumTaskData) {
 
-	this->dStore->GetTaskData(id, &this->ds, thread, enumTaskData);
+	DataStream lds;
 
-	this->sendAgentMessage(&con->uuid, MSG_RESPONSE, this->ds.stream(), this->ds.length());
+	this->dStore->GetTaskData(id, &lds, thread, enumTaskData);
+	Log.log(0, "AgentHost::ddbGetTaskData::Sending ddbGetTaskData response to agent %s", Log.formatUUID(0, &con->uuid));
+	this->sendAgentMessage(&con->uuid, MSG_RESPONSE, lds.stream(), lds.length());
 
-	this->ds.unlock();
+	lds.unlock();
 
 	return 0;
 }
@@ -10665,11 +10672,14 @@ int AgentHost::ddbTLRoundSetInfo(DataStream *lds) {
 
 int AgentHost::ddbTLRoundGetInfo(spConnection con, UUID *thread) {
 
-	this->dStore->GetTLRoundInfo(&this->ds, thread);
+	DataStream lds;
 
-	this->sendAgentMessage(&con->uuid, MSG_RESPONSE, this->ds.stream(), this->ds.length());
+	this->dStore->GetTLRoundInfo(&lds, thread);
 
-	this->ds.unlock();
+	Log.log(0, "AgentHost::ddbTLRoundGetInfo::Sending ddbTLRoundGetInfo response to agent %s", Log.formatUUID(0, &con->uuid ) );
+	this->sendAgentMessage(&con->uuid, MSG_RESPONSE, lds.stream(), lds.length());
+
+	lds.unlock();
 
 	return 0;
 }
@@ -10678,45 +10688,49 @@ int AgentHost::ddbTLRoundGetInfo(spConnection con, UUID *thread) {
 
 int AgentHost::ddbAddQLearningData(bool onlyActions, char typeId, unsigned long totalActions, unsigned long usefulActions, int tableSize, std::vector<float> qTable, std::vector<unsigned int> expTable)
 {
-	this->ds.reset();
-	this->ds.packUUID(this->getUUID());
-	this->ds.packChar(typeId);
-	this->ds.packBool(onlyActions);
-	this->ds.packUInt64(totalActions);
-	this->ds.packUInt64(usefulActions);
+	DataStream lds;
+
+	lds.reset();
+	lds.packUUID(this->getUUID());
+	lds.packChar(typeId);
+	lds.packBool(onlyActions);
+	lds.packUInt64(totalActions);
+	lds.packUInt64(usefulActions);
 
 
 	if (!onlyActions) {
-		this->ds.packInt32(tableSize);		//Size of value tables to store
+		lds.packInt32(tableSize);		//Size of value tables to store
 
 		for (auto qIter : qTable) {
-			this->ds.packFloat32(qIter);						//Pack all values in q-table
+			lds.packFloat32(qIter);						//Pack all values in q-table
 			//if (qIter > 0.0f)
 				//Log.log(LOG_LEVEL_NORMAL, "AgentHost::ddbAddQLearningData:packing qVal: %f", qIter);
 		}
 		for (auto expIter : expTable) {
-			this->ds.packUInt32(expIter);						//Pack all values in exp-table
+			lds.packUInt32(expIter);						//Pack all values in exp-table
 		}
-		Log.log(LOG_LEVEL_NORMAL, "AgentHost::ddbAddQLearningData: stream length is %d", this->ds.length());
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::ddbAddQLearningData: stream length is %d", lds.length());
 	}
-	this->globalStateTransaction(OAC_DDB_ADDQLEARNINGDATA, this->ds.stream(), this->ds.length());
+	this->globalStateTransaction(OAC_DDB_ADDQLEARNINGDATA, lds.stream(), lds.length());
 
-	this->ds.unlock();
+	lds.unlock();
 	return 0;
 }
 
 int AgentHost::ddbUpdateQLearningData(char instance, bool usefulAction, int key, float qVal, unsigned int expVal)
 {
-	this->ds.reset();
-	this->ds.packUUID(this->getUUID());
-	this->ds.packChar(instance);
-	this->ds.packBool(usefulAction);
-	this->ds.packInt32(key);
-	this->ds.packFloat32(qVal);
-	this->ds.packUInt32(expVal);
-	this->globalStateTransaction(OAC_DDB_UPDATEQLEARNINGDATA, this->ds.stream(), this->ds.length());
+	DataStream lds;
 
-	this->ds.unlock();
+	lds.reset();
+	lds.packUUID(this->getUUID());
+	lds.packChar(instance);
+	lds.packBool(usefulAction);
+	lds.packInt32(key);
+	lds.packFloat32(qVal);
+	lds.packUInt32(expVal);
+	this->globalStateTransaction(OAC_DDB_UPDATEQLEARNINGDATA, lds.stream(), lds.length());
+
+	lds.unlock();
 	return 0;
 }
 
@@ -10738,23 +10752,27 @@ int AgentHost::ddbGetQLearningData(spConnection con, UUID *thread, char instance
 
 int AgentHost::ddbAddAdviceData(char instance, float cq, float bq)
 {
-	this->ds.reset();
-	this->ds.packUUID(this->getUUID());
-	this->ds.packChar(instance);
-	this->ds.packFloat32(cq);
-	this->ds.packFloat32(bq);
+	DataStream lds;
 
-	this->globalStateTransaction(OAC_DDB_ADDADVICEDATA, this->ds.stream(), this->ds.length());
-	this->ds.unlock();
+	lds.reset();
+	lds.packUUID(this->getUUID());
+	lds.packChar(instance);
+	lds.packFloat32(cq);
+	lds.packFloat32(bq);
+
+	this->globalStateTransaction(OAC_DDB_ADDADVICEDATA, lds.stream(), lds.length());
+	lds.unlock();
 	return 0;
 }
 
 int AgentHost::ddbAddSimSteps(unsigned long long totalSimSteps)
 {
-	this->ds.reset();
-	this->ds.packUInt64(totalSimSteps);
-	this->globalStateTransaction(OAC_DDB_ADDSIMSTEPS, this->ds.stream(), this->ds.length());
-	this->ds.unlock();
+	DataStream lds;
+
+	lds.reset();
+	lds.packUInt64(totalSimSteps);
+	this->globalStateTransaction(OAC_DDB_ADDSIMSTEPS, lds.stream(), lds.length());
+	lds.unlock();
 	return 0;
 }
 

@@ -15,6 +15,8 @@
 
 #define LOG_TRUE_POSITIONS 1000 // every second
 
+#define MAX_ITERATION_COUNT 1000000	//Simulation ends after this many iterations, regardless of completion
+
 //*****************************************************************************
 // ExecutiveSimulation
 
@@ -1005,6 +1007,19 @@ bool ExecutiveSimulation::cbSimStep( void *NA ) {
 	this->totalSimSteps++;
 	//Log.log( 0, "ExecutiveSimulation::cbSimStep: step!" );
 
+	if (this->totalSimSteps == MAX_ITERATION_COUNT)	//Maximum number of iterations allowed
+	{
+		DataStream lds;
+
+		Log.log(0, "ExecutiveSimulation::missionDone: mission ran out of time!");
+		// notify host
+		lds.reset();
+		lds.packChar(0); // failure, did not complete in time
+		this->sendMessage(this->hostCon, MSG_MISSION_DONE, lds.stream(), lds.length());
+		lds.unlock();
+	}
+
+
 	lastTime = this->simTime;
 	apb->apb_ftime_s( &this->simTime );
 
@@ -1292,9 +1307,9 @@ int SimAvatar::SimStep( _timeb *simTime, int dt ) {
 	cs = cos( this->stateEst.r );
 	this->stateEst.t = *simTime;
 
-
+	//Quick fix - lock the avatars to mission region
 	if (this->stateEst.x + dL*cs < 0.0f || this->stateEst.x + dL*cs > 10.0f || this->stateEst.y + dL*sn < 0.0f || this->stateEst.y + dL*sn > 10.0f)
-		;
+		this->finishMove();
 		//dL = 0.0f;
 	else
 	{

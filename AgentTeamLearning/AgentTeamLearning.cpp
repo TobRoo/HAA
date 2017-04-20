@@ -135,7 +135,7 @@ int AgentTeamLearning::configureParameters(DataStream *ds) {
 	STATE(AgentTeamLearning)->isSetupComplete = false; // need taskdata info and task info
 
 	// register as round info watcher
-	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::start: registering as agent watcher");
+	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::configureParameters: registering as agent watcher");
 	lds.reset();
 	lds.packUUID(&STATE(AgentBase)->uuid);
 	lds.packInt32(DDB_TL_ROUND_INFO);
@@ -602,18 +602,18 @@ int AgentTeamLearning::initiateNextRound() {
 			pos++;
 
 			// Send the data
-			lds.reset();
-			lds.packUUID(this->getUUID());	//Sender id
-			lds.packInt32(this->new_round_number);  // Next round number
-			lds.packData(&this->round_start_time, sizeof(_timeb));  // Next round start time
+	//		lds.reset();
+	//		lds.packUUID(this->getUUID());	//Sender id
+	//		lds.packInt32(this->new_round_number);  // Next round number
+	//		lds.packData(&this->round_start_time, sizeof(_timeb));  // Next round start time
 
-			// Pack the new (randomized) list
-			for (iter_inner = this->TLAgents.begin(); iter_inner != this->TLAgents.end(); ++iter_inner) {
-				lds.packUUID(&*iter_inner);
-			}
+	//		// Pack the new (randomized) list
+	//		for (iter_inner = this->TLAgents.begin(); iter_inner != this->TLAgents.end(); ++iter_inner) {
+	//			lds.packUUID(&*iter_inner);
+	//		}
 
-	//		this->sendMessageEx(this->hostCon, MSGEX(AgentTeamLearning_MSGS, MSG_ROUND_INFO), lds.stream(), lds.length(), &*iter_outer);
-			lds.unlock();
+	////		this->sendMessageEx(this->hostCon, MSGEX(AgentTeamLearning_MSGS, MSG_ROUND_INFO), lds.stream(), lds.length(), &*iter_outer);
+	//		lds.unlock();
 		/*}*/
 
 			//Try DDB upload for better reliability in case of failures
@@ -693,13 +693,13 @@ int AgentTeamLearning::sendRequest(UUID *agentId, int message, UUID *id) {
 	case AgentTeamLearning_MSGS::MSG_REQUEST_ACQUIESCENCE:
 	{
 		Log.log(0, "AgentTeamLearning::sendRequest: Sending acquiescence request to agent %s.", Log.formatUUID(0, agentId));
-		UUID thread = this->conversationInitiate(AgentTeamLearning::AgentTeamLearning_CBR_convReqAcquiescence, DDB_REQUEST_TIMEOUT, &agentId, sizeof(UUID));
+	/*	UUID thread = this->conversationInitiate(AgentTeamLearning::AgentTeamLearning_CBR_convReqAcquiescence, DDB_REQUEST_TIMEOUT, &agentId, sizeof(UUID));
 		if (thread == nilUUID) {
 			return 1;
-		}
+		}*/
 		lds.reset();
 		lds.packUUID(this->getUUID()); // Sender id
-		lds.packUUID(&thread);
+	//	lds.packUUID(&thread);
 		lds.packUUID(id);
 		this->sendMessageEx(this->hostCon, MSGEX(AgentTeamLearning_MSGS, MSG_REQUEST_ACQUIESCENCE), lds.stream(), lds.length(), agentId);
 	}
@@ -707,13 +707,13 @@ int AgentTeamLearning::sendRequest(UUID *agentId, int message, UUID *id) {
 	case AgentTeamLearning_MSGS::MSG_REQUEST_MOTRESET:
 	{
 		Log.log(0, "AgentTeamLearning::sendRequest: Sending motivation reset request to agent %s.", Log.formatUUID(0, agentId));
-		UUID thread = this->conversationInitiate(AgentTeamLearning::AgentTeamLearning_CBR_convReqMotReset, DDB_REQUEST_TIMEOUT, &agentId, sizeof(UUID));
-		if (thread == nilUUID) {
-			return 1;
-		}
+		//UUID thread = this->conversationInitiate(AgentTeamLearning::AgentTeamLearning_CBR_convReqMotReset, DDB_REQUEST_TIMEOUT, &agentId, sizeof(UUID));
+		//if (thread == nilUUID) {
+		//	return 1;
+		//}
 		lds.reset();
 		lds.packUUID(this->getUUID()); // Sender id
-		lds.packUUID(&thread);
+	//	lds.packUUID(&thread);
 		lds.packUUID(id);
 		this->sendMessageEx(this->hostCon, MSGEX(AgentTeamLearning_MSGS, MSG_REQUEST_MOTRESET), lds.stream(), lds.length(), agentId);
 	}
@@ -920,74 +920,74 @@ int AgentTeamLearning::conProcessMessage(spConnection con, unsigned char message
 		lds.unlock();
 	}
 	break;
-	case AgentTeamLearning_MSGS::MSG_ROUND_INFO:
-	{
-		// This message contains the information about the next round
-		//   -New round number
-		//   -Round start time
-		//   -Agent order
-
-		// The round number and agent order will be updated in the step method, once the timeout time has passed
-		this->round_info_set = false;
-
-		// Record when we received this message
-		_ftime64_s(&this->round_info_receive_time);
-
-		UUID sender;
-		int count = 1;
-		bool isSenderLast;
-
-		lds.setData(data, len);
-		lds.unpackUUID(&sender);
-
-
-		for (auto iter : this->TLAgents) {
-			//Log.log(0, " AgentTeamLearning::checkRoundStatus:: last agent iter %s", Log.formatUUID(0, &*iter));
-			// Stop counting once we've found sender
-			if (iter == sender) {
-				isSenderLast = (count == this->TLAgents.size());		
-				break;
-			}
-			count++;
-		}
-
-		if (!isSenderLast && !STATE(AgentTeamLearning)->returningFromRecovery && sender != *this->getUUID()) { //Not the last agent - erroneous next round msg from recovered agent. A newly recovered agent will accept anyway, since the round order will be incorrect
-			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning_MSGS::MSG_ROUND_INFO: Ignoring new round msg, booleans: %d %d %d", !isSenderLast, !STATE(AgentTeamLearning)->returningFromRecovery, sender != *this->getUUID());
-			lds.unlock();
-			break;
-		}
-		STATE(AgentTeamLearning)->returningFromRecovery = false;
-		int round = lds.unpackInt32();  // Next round number
-		this->new_round_number = round;
-		this->round_start_time = *(_timeb *)lds.unpackData(sizeof(_timeb)); // Next round start time
-		// Unpack the new randomized list of agents
-		this->TLAgents.clear();
-		int pos;
-		UUID new_id;
-		std::vector<UUID>::iterator iter;
-		for (int i = 0; i < this->TLAgentData.size(); i++) {
-			lds.unpackUUID(&new_id);
-			this->TLAgents.push_back(new_id);
-
-			// Initialize to no response for the next round
-			this->TLAgentData[new_id].response = false;
-
-			// For logging
-			if (new_id == STATE(AgentBase)->uuid) 
-				pos = i + 1;
-			
-		}
-		lds.unlock();
-//		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::conProcessMessage: Round %d: Received info for new round, our position is %d.", round, pos);
-	}
-	break;
+//	case AgentTeamLearning_MSGS::MSG_ROUND_INFO:
+//	{
+//		// This message contains the information about the next round
+//		//   -New round number
+//		//   -Round start time
+//		//   -Agent order
+//
+//		// The round number and agent order will be updated in the step method, once the timeout time has passed
+//		this->round_info_set = false;
+//
+//		// Record when we received this message
+//		_ftime64_s(&this->round_info_receive_time);
+//
+//		UUID sender;
+//		int count = 1;
+//		bool isSenderLast;
+//
+//		lds.setData(data, len);
+//		lds.unpackUUID(&sender);
+//
+//
+//		for (auto iter : this->TLAgents) {
+//			//Log.log(0, " AgentTeamLearning::checkRoundStatus:: last agent iter %s", Log.formatUUID(0, &*iter));
+//			// Stop counting once we've found sender
+//			if (iter == sender) {
+//				isSenderLast = (count == this->TLAgents.size());		
+//				break;
+//			}
+//			count++;
+//		}
+//
+//		if (!isSenderLast && !STATE(AgentTeamLearning)->returningFromRecovery && sender != *this->getUUID()) { //Not the last agent - erroneous next round msg from recovered agent. A newly recovered agent will accept anyway, since the round order will be incorrect
+//			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning_MSGS::MSG_ROUND_INFO: Ignoring new round msg, booleans: %d %d %d", !isSenderLast, !STATE(AgentTeamLearning)->returningFromRecovery, sender != *this->getUUID());
+//			lds.unlock();
+//			break;
+//		}
+//		STATE(AgentTeamLearning)->returningFromRecovery = false;
+//		int round = lds.unpackInt32();  // Next round number
+//		this->new_round_number = round;
+//		this->round_start_time = *(_timeb *)lds.unpackData(sizeof(_timeb)); // Next round start time
+//		// Unpack the new randomized list of agents
+//		this->TLAgents.clear();
+//		int pos;
+//		UUID new_id;
+//		std::vector<UUID>::iterator iter;
+//		for (int i = 0; i < this->TLAgentData.size(); i++) {
+//			lds.unpackUUID(&new_id);
+//			this->TLAgents.push_back(new_id);
+//
+//			// Initialize to no response for the next round
+//			this->TLAgentData[new_id].response = false;
+//
+//			// For logging
+//			if (new_id == STATE(AgentBase)->uuid) 
+//				pos = i + 1;
+//			
+//		}
+//		lds.unlock();
+////		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::conProcessMessage: Round %d: Received info for new round, our position is %d.", round, pos);
+//	}
+//	break;
 	case AgentTeamLearning_MSGS::MSG_REQUEST_ACQUIESCENCE:
 	{
 		UUID sender;
 		UUID nilTask;
 		lds.setData(data, len);
 		lds.unpackUUID(&sender);
-		lds.unpackData(sizeof(UUID));	//Discard thread (for now - do we need a conversation?)
+	//	lds.unpackData(sizeof(UUID));	//Discard thread (for now - do we need a conversation?)
 		lds.unpackUUID(&nilTask);
 		Log.log(0, "AgentTeamLearning::conProcessMessage: Received acquiescence request from %s.", Log.formatUUID(0, &sender));
 		if (this->mTaskList.find(nilTask) != this->mTaskList.end()) {
@@ -1012,7 +1012,7 @@ int AgentTeamLearning::conProcessMessage(spConnection con, unsigned char message
 		UUID sender;
 		UUID taskId;
 		lds.unpackUUID(&sender);
-		lds.unpackData(sizeof(UUID));	//Discard thread (for now - do we need a conversation?)
+//		lds.unpackData(sizeof(UUID));	//Discard thread (for now - do we need a conversation?)
 		lds.unpackUUID(&taskId);
 		Log.log(0, "AgentTeamLearning::conProcessMessage: Received motivation reset request from %s regarding task %s.", Log.formatUUID(0, &sender), Log.formatUUID(0, &taskId));
 		this->lAllianceObject.motivationReset(taskId);
