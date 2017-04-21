@@ -238,7 +238,7 @@ int AgentTeamLearning::parseLearningData()
 	char keyBuf[64];
 	char ch;
 	ITEM_TYPES landmark_type;
-	float tauVal;
+	float tauVal, mean, stddev;
 	int attempts;
 
 	if (fopen_s(&fp, learningDataFile, "r")) {
@@ -269,12 +269,16 @@ int AgentTeamLearning::parseLearningData()
 				while (fscanf_s(fp, "landmark_type=%d\n", &landmark_type) == 1) {
 					fscanf_s(fp, "tau=%f\n", &tauVal);
 					fscanf_s(fp, "attempts=%d\n", &attempts);
-					Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: type: %d, tau: %f", landmark_type, tauVal);
+					fscanf_s(fp, "mean=%f\n", &mean);
+					fscanf_s(fp, "stddev=%f\n", &stddev);
+					Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::parseLearningData: type: %d, tau: %f, attempts: %d, mean: %f, stddev: %f", landmark_type, tauVal, attempts, mean, stddev);
 					if (id == STATE(AgentTeamLearning)->avatarInstance) {				//If the data belongs to this agent, store it
 						for (auto& taskIter : tempTaskList) {							//Go through all tasks 
 							if (taskIter.second->type == landmark_type) {				//Find one with the same landmark type
 								lAllianceObject.myData.tau.at(taskIter.first) = tauVal;	//Set the stored tau value for the task
 								lAllianceObject.myData.attempts.at(taskIter.first) = attempts;	//Set the attempts value for the task
+								lAllianceObject.myData.mean.at(taskIter.first) = mean;	//Set the mean value for the task
+								lAllianceObject.myData.stddev.at(taskIter.first) = stddev;	//Set the stddev value for the task
 								tempTaskList.erase(taskIter.first);						//Remove the task from the temporary task list to avoid dual assignments
 								break;
 							}

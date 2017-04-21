@@ -11041,9 +11041,14 @@ int AgentHost::WriteLearningData(DataStream *taskDataDS, DataStream *taskDS, map
 			 Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 7: landmark_type is %d", (int)allTasks[tauIter.first]->type);
 			 Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 7: tau is %f", tauIter.second);
 			 Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 7: attempts is %d", taskData.attempts.at(tauIter.first));
+			 Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 7: mean is %f", taskData.mean.at(tauIter.first));
+			 Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 7: stddev is %f", taskData.stddev.at(tauIter.first));
+
 			 tempLearningData << "landmark_type=" << (int)allTasks[tauIter.first]->type << "\n";
 			 tempLearningData << "tau=" << tauIter.second << "\n";
 			 tempLearningData << "attempts=" << taskData.attempts.at(tauIter.first) << "\n";
+			 tempLearningData << "mean=" << taskData.mean.at(tauIter.first) << "\n";
+			 tempLearningData << "stddev=" << taskData.stddev.at(tauIter.first) << "\n";
 		 }
 		 Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 7: end of tau loop");
 		 tempLearningData << "\n";

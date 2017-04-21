@@ -1046,7 +1046,7 @@ bool AgentIndividualLearning::validAction(ActionPair &action) {
 	if ((this->avatar.x - this->avatar.outerRadius) < STATE(AgentIndividualLearning)->missionRegion.x ||
 		this->avatar.x + this->avatar.outerRadius > (STATE(AgentIndividualLearning)->missionRegion.x + STATE(AgentIndividualLearning)->missionRegion.w)) {
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Stuck, world X boundary");
-		STATE(AgentIndividualLearning)->isStuck = true;
+//		STATE(AgentIndividualLearning)->isStuck = true;	//Boundaries are handled in ExecutiveMission
 	}
 	else {
 		STATE(AgentIndividualLearning)->isStuck = false;
@@ -1061,7 +1061,7 @@ bool AgentIndividualLearning::validAction(ActionPair &action) {
 	if ((this->avatar.y - this->avatar.outerRadius) < STATE(AgentIndividualLearning)->missionRegion.y ||
 		this->avatar.y + this->avatar.outerRadius > (STATE(AgentIndividualLearning)->missionRegion.y + STATE(AgentIndividualLearning)->missionRegion.h)) {
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::validAction: Stuck, world Y boundary");
-		STATE(AgentIndividualLearning)->isStuck = true;
+//		STATE(AgentIndividualLearning)->isStuck = true; //Boundaries are handled in ExecutiveMission
 	}
 	else {
 		STATE(AgentIndividualLearning)->isStuck = false;
@@ -1293,7 +1293,7 @@ int AgentIndividualLearning::parseLearningData()
 	char keyBuf[64];
 	char ch;
 	ITEM_TYPES landmark_type;
-	float tauVal, cq, bq;
+	float tauVal, cq, bq, mean, stddev;
 
 	if (fopen_s(&fp, learningDataFile, "r")) {
 		Log.log(0, "AgentIndividualLearning::parseLearningData: failed to open %s", learningDataFile);
@@ -1322,6 +1322,8 @@ int AgentIndividualLearning::parseLearningData()
 				while (fscanf_s(fp, "landmark_type=%d\n", &landmark_type) == 1) {
 					fscanf_s(fp, "tau=%f\n", &tauVal);
 					fscanf_s(fp, "attempts=%d\n", &attempts);
+					fscanf_s(fp, "mean=%d\n", &mean);
+					fscanf_s(fp, "stddev=%d\n", &stddev);
 				//	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::parseLearningData: type: %d, tau: %f", landmark_type, tauVal);
 				}
 			}

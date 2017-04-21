@@ -442,7 +442,7 @@ int AgentAdviceExchange::parseAdviserData()
 	char keyBuf[64];
 	char ch;
 	ITEM_TYPES landmark_type;
-	float tauVal, cq, bq;
+	float tauVal, cq, bq, mean, stddev;
 
 	if (fopen_s(&fp, learningDataFile, "r")) {
 		Log.log(0, "AgentAdviceExchange::parseAdviserData: failed to open %s", learningDataFile);
@@ -471,6 +471,8 @@ int AgentAdviceExchange::parseAdviserData()
 				while (fscanf_s(fp, "landmark_type=%d\n", &landmark_type) == 1) {
 					fscanf_s(fp, "tau=%f\n", &tauVal);
 					fscanf_s(fp, "attempts=%d\n", &attempts);
+					fscanf_s(fp, "mean=%d\n", &mean);
+					fscanf_s(fp, "stddev=%d\n", &stddev);
 					//Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::parseLearningData: type: %d, tau: %f", landmark_type, tauVal);
 				}
 			}

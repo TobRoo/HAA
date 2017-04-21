@@ -421,7 +421,10 @@ int LAlliance::updateTau() {
     myData.mean[myData.taskId] = current_mean;
     myData.stddev[myData.taskId] = current_stddev;
 
-
+	sprintf(message, "updateTau: current_mean: %f, prev_mean %f", current_mean, prev_mean);
+	parentAgent->logWrapper(LOG_LEVEL_VERBOSE, message);
+	sprintf(message, "updateTau: current_stddev: %f, prev_stddev %f", current_stddev, prev_stddev);
+	parentAgent->logWrapper(LOG_LEVEL_VERBOSE, message);
 
 	sprintf(message, "updateTau: First factor: %.2f", (stochasticUpdateTheta2 / n));
 	parentAgent->logWrapper(LOG_LEVEL_VERBOSE, message);
