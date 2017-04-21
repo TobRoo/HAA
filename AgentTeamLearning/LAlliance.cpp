@@ -410,7 +410,7 @@ int LAlliance::updateTau() {
     float current_mean, current_stddev;
     if (n > 1) {
         current_mean = prev_mean + (time_on_task - prev_mean)/n;
-        current_stddev = (float)sqrt((pow(n - 1, 2)*pow(prev_stddev, 2) + (time_on_task - prev_mean)*(time_on_task - current_mean))/n);
+        current_stddev = (float)sqrt(((n - 1)*pow(prev_stddev, 2) + (time_on_task - prev_mean)*(time_on_task - current_mean))/n);
     }else {
         current_mean = prev_mean;
         current_stddev = prev_stddev;
