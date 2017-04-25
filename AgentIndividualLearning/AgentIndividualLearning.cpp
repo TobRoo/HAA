@@ -619,7 +619,7 @@ int AgentIndividualLearning::formAction() {
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: No matching action, %d", action);
 	}// end form action if
 
-//	Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::formAction: Average action quality: %.3f", this->q_avg);
+	Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::formAction: Average action quality: %.3f", this->q_avg);
 
 	 // When the action is not valid retain the type, but zero the movement value
 	 // (so that it can still be used for learning)
@@ -1322,8 +1322,8 @@ int AgentIndividualLearning::parseLearningData()
 				while (fscanf_s(fp, "landmark_type=%d\n", &landmark_type) == 1) {
 					fscanf_s(fp, "tau=%f\n", &tauVal);
 					fscanf_s(fp, "attempts=%d\n", &attempts);
-					fscanf_s(fp, "mean=%d\n", &mean);
-					fscanf_s(fp, "stddev=%d\n", &stddev);
+					fscanf_s(fp, "mean=%f\n", &mean);
+					fscanf_s(fp, "stddev=%f\n", &stddev);
 				//	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::parseLearningData: type: %d, tau: %f", landmark_type, tauVal);
 				}
 			}
@@ -1360,12 +1360,12 @@ int AgentIndividualLearning::parseLearningData()
 					if (id == STATE(AgentIndividualLearning)->avatarInstance) {				//If the data belongs to this agent, store it
 						this->q_learning_.q_table_[count] = qVal;
 						count++;
-						if (qVal > 0)
+						if (qVal != 0)
 							valCount++;
 					}
 				}
 				if (fscanf_s(fp, "expTable=\n") != 0) {
-					Log.log(0, "AgentIndividualLearning::parseLearningData: badly formatted qTable");
+					Log.log(0, "AgentIndividualLearning::parseLearningData: badly formatted expTable");
 					break;
 				}
 				int expVal;
@@ -2714,7 +2714,7 @@ bool AgentIndividualLearning::convGetQLearningData(void * vpConv)
 		this->totalActions = lds.unpackUInt64();
 		this->usefulActions = lds.unpackUInt64();
 
-		Log.log(0, "AgentIndividualLearning::convGetQLearningData: totalActions: %ul, usefulActions: %ul", this->totalActions, this->usefulActions);
+		Log.log(0, "AgentIndividualLearning::convGetQLearningData: totalActions: %lu, usefulActions: %lu", this->totalActions, this->usefulActions);
 
 		float qVal; 
 		while (lds.unpackBool()) {
