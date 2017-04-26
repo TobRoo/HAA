@@ -963,9 +963,11 @@ float AgentIndividualLearning::determineReward() {
 	// Reward moving closer to goal area, to encourage waiting there until a task is received
     if (this->task.landmarkUUID == nilUUID && !this->hasDelivered) {	//Also check that the last action was not delivery (which sets the task to nilUUID if no other tasks are available)
         if (delta_goal_dist < -reward_activation_dist_) {
+			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::determineReward: No target, moved closer to goal area, congregation reward");
             return 1.0f;
         }
         else {
+			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::determineReward: No action, empty_reward_value_");
             return empty_reward_value_;
         }
     }
@@ -978,6 +980,7 @@ float AgentIndividualLearning::determineReward() {
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::determineReward: Delivered the target, return_reward_");
         // Item has been returned
         this->hasDelivered = false;	//Set back to false in preparation for new task
+		this->backup();
         return return_reward_;
     }
 
@@ -1641,7 +1644,7 @@ int AgentIndividualLearning::conProcessMessage(spConnection con, unsigned char m
 			for (std::vector<float>::iterator q_iter = q_values.begin(); q_iter != q_values.end(); ++q_iter) {
 				lds_qvals.packFloat32(*q_iter);
 			}
-			this->sendMessage(this->hostCon, MSG_RESPONSE, lds_qvals.stream(), lds_qvals.length(), &sender);
+			this->sendAgentMessage(&sender, MSG_RESPONSE, lds_qvals.stream(), lds_qvals.length() );
 			lds_qvals.unlock();
 			
 		}
@@ -1686,7 +1689,7 @@ bool AgentIndividualLearning::convAction(void *vpConv) {
     char result = lds.unpackChar();
     _timeb tb;
     tb = *(_timeb *)lds.unpackData(sizeof(_timeb));
-    int reason = lds.unpackInt32();
+   // int reason = lds.unpackInt32();
 	lds.unlock();
 
     if (result == AAR_SUCCESS) {
@@ -1697,10 +1700,12 @@ bool AgentIndividualLearning::convAction(void *vpConv) {
     }
     else {
         if (result == AAR_CANCELLED) {
-            Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convAction: Action canceled, reason %d. Resending previous action", reason);
+           // Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convAction: Action canceled, reason %d. Resending previous action", reason);
+			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convAction: Action canceled. Resending previous action");
         }
         else if (result == AAR_ABORTED) {
-            Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convAction: Action aborted, reason %d. Resending previous action", reason);
+           // Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convAction: Action aborted, reason %d. Resending previous action", reason);
+			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convAction: Action aborted. Resending previous action");
         }
 
         // Resend the action

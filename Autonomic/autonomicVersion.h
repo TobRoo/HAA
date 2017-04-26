@@ -83,7 +83,7 @@ enum MSGS {
 
 	OAC_DDB_ADDTASK, // add task to DDB [UUID sender, UUID uuid, UUID landmarkUUID, UUID avatar, bool completed, int type]
 	OAC_DDB_REMTASK, // remove task from DDB [UUID sender, UUID uuid]
-	OAC_DDB_TASKSETINFO, // set task info [UUID sender, UUID uuid, int infoFlags, data...]
+	OAC_DDB_TASKSETINFO, // set task info [UUID sender, UUID uuid, UUID agentId, UUID avatarId, bool completed]
 
 	OAC_DDB_ADDTASKDATA, // add taskdata to DDB [UUID sender, UUID uuid, DDBTaskData data]
 	OAC_DDB_REMTASKDATA, // remove taskdata from DDB [UUID sender, UUID uuid]
@@ -210,7 +210,7 @@ enum MSGS {
 	MSG_DDB_REMTASK,		// remove task from DDB [UUID uuid]
 	MSG_DDB_TASKGETINFO,	// request task info [UUID uuid, UUID thread, bool enumTasks]
 							// RESPONSE: send task info [UUID uuid, UUID landmarkUUID, UUID agent, UUID avatar, bool completed, int type] (if enum is true, send all tasks)
-	MSG_DDB_TASKSETINFO,	// set task info [UUID uuid, int infoFlags, ...data]
+	MSG_DDB_TASKSETINFO,	// set task info [UUID uuid, UUID agentId, UUID avatarId, bool completed]
 	
 	MSG_DDB_ADDTASKDATA,	 // add taskdata to DDB [UUID uuid, DDBTaskData data]
 	MSG_DDB_REMTASKDATA,	 // remove taskdata from DDB [ UUID uuid]
@@ -326,11 +326,11 @@ static const unsigned int MSG_SIZE[] = { // array of message size by message id,
 
 	sizeof(UUID)*5 + 1 + 4, // OAC_DDB_ADDTASK [UUID sender, UUID uuid, UUID landmarkUUID, UUID agent, UUID avatar, bool completed, int type]
 	sizeof(UUID)*2,			// OAC_DDB_REMTASK, remove task from DDB [UUID sender, UUID uuid]
-	-2,						// OAC_DDB_TASKSETINFO, set task info [UUID sender, UUID uuid, int infoFlags, data...]
+	4 * sizeof(UUID) + sizeof(bool),						// OAC_DDB_TASKSETINFO, set task info [UUID sender, UUID uuid, UUID agentId, UUID avatarId, bool completed]
 	
-	-2, //sizeof(UUID) * 2 + sizeof(DDBTaskData),	//OAC_DDB_ADDTASKDATA [UUID sender, UUID uuid, DDBTaskData data]
+	-3, //sizeof(UUID) * 2 + sizeof(DDBTaskData),	//OAC_DDB_ADDTASKDATA [UUID sender, UUID uuid, DDBTaskData data]
 	sizeof(UUID) * 2,				//OAC_DDB_REMTASKDATA [UUID sender, UUID uuid]
-	-2,								//sizeof(UUID) * 2 + sizeof(DDBTaskData),  //OAC_DDB_TASKDATASETINFO [UUID sender, UUID uuid, DDBTaskData data]
+	-3,								//sizeof(UUID) * 2 + sizeof(DDBTaskData),  //OAC_DDB_TASKDATASETINFO [UUID sender, UUID uuid, DDBTaskData data]
 	-2,								 // OAC_DDB_TL_ROUND_INFO set next round info [UUID sender, int round number, _timeb start time, n*UUID agent_UUID]
 	-3,												//					OAC_DDB_ADDQLEARNINGDATA
 	sizeof(UUID) + sizeof(char) + sizeof(bool) + sizeof(int) + sizeof(float) + sizeof(unsigned int), //OAC_DDB_UPDATEQLEARNINGDATA  [UUID sender, char instance, bool usefulAction, int key, float qVal, unsigned int expVal]	
@@ -438,12 +438,12 @@ static const unsigned int MSG_SIZE[] = { // array of message size by message id,
 	sizeof(UUID) + sizeof(UUID) + sizeof(UUID) + sizeof(UUID) + 1 + 4, 	//MSG_DDB_ADDTASK
 	sizeof(UUID), 											//MSG_DDB_REMTASK
 	sizeof(UUID) + sizeof(UUID) + sizeof(bool), 			//MSG_DDB_TASKGETINFO
-	-2,														//MSG_DDB_TASKSETINFO
+	3*sizeof(UUID) + sizeof(bool),														//MSG_DDB_TASKSETINFO
 
-	-2,//sizeof(UUID) + sizeof(DDBTaskData),					//MSG_DDB_ADDTASKDATA
+	-3,//sizeof(UUID) + sizeof(DDBTaskData),					//MSG_DDB_ADDTASKDATA
 	sizeof(UUID),										//MSG_DDB_REMTASKDATA
 	sizeof(UUID) + sizeof(UUID) + sizeof(bool),			//MSG_DDB_TASKDATAGETINFO
-	-2,//sizeof(UUID) + sizeof(DDBTaskData),					//MSG_DDB_TASKDATASETINFO
+	-3,//sizeof(UUID) + sizeof(DDBTaskData),					//MSG_DDB_TASKDATASETINFO
 	-2,					//MSG_DDB_TL_ROUND_INFO
 	sizeof(UUID),		//MSG_DDB_TL_GET_ROUND_INFO
 	-3,					// MSG_DDB_QLEARNINGDATA

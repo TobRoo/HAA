@@ -1426,6 +1426,33 @@ int SimAvatar::SimStep( _timeb *simTime, int dt ) {
 	if ( this->stateEst.vR > this->maxVelocityEst ) this->stateEst.vR = this->maxVelocityEst;
 	if ( this->stateEst.vR < -this->maxVelocityEst ) this->stateEst.vR = -this->maxVelocityEst;
 
+
+
+	if (dt > 100) { //Likely server crash or similar, set estimate state to true state to avoid extreme divergence (quick fix)
+		stateEst = state;
+	}
+
+
+	//verify that we are within bounds (quick fix)
+
+	if (this->stateEst.x < 0.0f)
+		this->stateEst.x = 0.1f;
+	if (this->stateEst.x > 10.0f)
+		this->stateEst.x = 9.9f;
+	if (this->stateEst.y < 0.0f)
+		this->stateEst.y = 0.1f;
+	if (this->stateEst.y > 10.0f)
+		this->stateEst.y = 9.9f;
+	if (this->state.x < 0.0f)
+		this->state.x = 0.1f;
+	if (this->state.x > 10.0f)
+		this->state.x = 9.9f;
+	if (this->state.y < 0.0f)
+		this->state.y = 0.1f;
+	if (this->state.y > 10.0f)
+		this->state.y = 9.9f;
+
+
 	// check sensors
 	std::list<SimSonar>::iterator itSS;
 	for ( itSS = this->sonars.begin(); itSS != this->sonars.end(); itSS++ ) {

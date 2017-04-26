@@ -1,5 +1,5 @@
 
-FOR /L %%A IN (1,1,300) DO (
+FOR /L %%A IN (4,1,300) DO (
 
 
 start "hostLocal1" %~dp0\Autonomic.exe hostCfgs\Experiment2RCISLHighFail\hostLocal1.cfg %%A %%A data\missions\missionRCISLExperiment2HighFailure.ini
