@@ -471,8 +471,8 @@ int AgentAdviceExchange::parseAdviserData()
 				while (fscanf_s(fp, "landmark_type=%d\n", &landmark_type) == 1) {
 					fscanf_s(fp, "tau=%f\n", &tauVal);
 					fscanf_s(fp, "attempts=%d\n", &attempts);
-					fscanf_s(fp, "mean=%d\n", &mean);
-					fscanf_s(fp, "stddev=%d\n", &stddev);
+					fscanf_s(fp, "mean=%f\n", &mean);
+					fscanf_s(fp, "stddev=%f\n", &stddev);
 					//Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::parseLearningData: type: %d, tau: %f", landmark_type, tauVal);
 				}
 			}
