@@ -2064,7 +2064,9 @@ int SimAvatar::doSonar( SimSonar *sonar ) {
 		reading.value = sqrt( hitValSq );
 
 		// add error
+		#ifndef NO_RANDOM_ERROR
 		reading.value += (float)apb->apbNormalDistribution( 0, SimAvatar_SONAR_SIGMA ); // m error
+		#endif
 
 		// add reading to output stream
 		this->output.packChar( ExecutiveSimulation_Defs::SAE_SENSOR_SONAR );
@@ -2252,8 +2254,10 @@ int SimAvatar::doCamera( SimCamera *camera ) {
 					readingVal = sqrt( readingVal );
 
 					// add error
-					readingVal *= 1 + (float)apb->apbNormalDistribution( 0, SimAvatar_CAMERA_R_SIGMA ); // percentage error
-					readingAngle += (float)apb->apbNormalDistribution( 0, SimAvatar_CAMERA_A_SIGMA ); // radian error
+					#ifndef NO_RANDOM_ERROR
+						readingVal *= 1 + (float)apb->apbNormalDistribution( 0, SimAvatar_CAMERA_R_SIGMA ); // percentage error
+						readingAngle += (float)apb->apbNormalDistribution( 0, SimAvatar_CAMERA_A_SIGMA ); // radian error
+					#endif
 
 					// pack reading
 					this->ds.packChar( SimCamera_DATA_LANDMARK );

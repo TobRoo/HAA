@@ -630,9 +630,18 @@ int AvatarBase::generatePFState( float *sigma ) {
 	float *pstate = (float *)getDynamicBuffer( STATE(AvatarBase)->pfStateRef );
 
 	for ( i=0; i<STATE(AvatarBase)->pfNumParticles; i++ ) {
-		pstate[AVATAR_PFSTATE_X] = STATE(AvatarBase)->posX + (float)apb->apbNormalDistribution( 0, sigma[0] );
-		pstate[AVATAR_PFSTATE_Y] = STATE(AvatarBase)->posY + (float)apb->apbNormalDistribution( 0, sigma[1] );
-		pstate[AVATAR_PFSTATE_R] = STATE(AvatarBase)->posR + (float)apb->apbNormalDistribution( 0, sigma[2] );
+
+		#ifdef NO_RANDOM_ERROR
+		pstate[AVATAR_PFSTATE_X] = STATE(AvatarBase)->posX;
+		pstate[AVATAR_PFSTATE_Y] = STATE(AvatarBase)->posY;
+		pstate[AVATAR_PFSTATE_R] = STATE(AvatarBase)->posR;
+
+		#else
+			pstate[AVATAR_PFSTATE_X] = STATE(AvatarBase)->posX + (float)apb->apbNormalDistribution( 0, sigma[0] );
+			pstate[AVATAR_PFSTATE_Y] = STATE(AvatarBase)->posY + (float)apb->apbNormalDistribution( 0, sigma[1] );
+			pstate[AVATAR_PFSTATE_R] = STATE(AvatarBase)->posR + (float)apb->apbNormalDistribution( 0, sigma[2] );
+		#endif
+
 		pstate += AVATAR_PFSTATE_SIZE;
 	}
 
@@ -721,9 +730,18 @@ int AvatarBase::_updatePFState( _timeb *tb, float dt, float forwardD, float tang
 	//	float fullstate[1500];
 	//	memcpy( fullstate, pState, sizeof(float)*3*500 );
 		for ( i=0; i<STATE(AvatarBase)->pfNumParticles; i++ ) {
+
+
+			#ifdef NO_RANDOM_ERROR
+			pforwardD = forwardD ;
+			ptangentialD = tangentialD;
+			protationalD = rotationalD;
+			#else
 			pforwardD = forwardD + (float)apb->apbNormalDistribution(0,STATE(AvatarBase)->pfUpdateSigma[0])*dt;
 			ptangentialD = tangentialD + (float)apb->apbNormalDistribution(0,STATE(AvatarBase)->pfUpdateSigma[1])*dt;
 			protationalD = rotationalD + (float)apb->apbNormalDistribution(0,STATE(AvatarBase)->pfUpdateSigma[2])*dt;
+
+			#endif
 
 			sn = sin( pState[AVATAR_PFSTATE_R] );
 			cs = cos( pState[AVATAR_PFSTATE_R] );
