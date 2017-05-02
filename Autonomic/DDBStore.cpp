@@ -4752,7 +4752,7 @@ int DDBStore::TaskSetInfo(UUID *id, UUID *agent, UUID *avatar,  bool completed) 
 	//if (task->completed != completed) {	//Completion status has changed, treat as normal
 		task->agentUUID = *agent;
 		task->avatar = *avatar;
-		task->completed = completed;
+		task->completed = task->completed || completed;	//If task is already completed, or is set to completed, it is updated to be completed (prevents rare case of already completed task to be marked as incomplete)
 		_ftime64_s(&iter->second.second);	//Set the update time as now
 	//}
 	//else {	//Only avatar and/or agent changed - make sure that task ownership is not rapidly changing by enforcing a wait period 
