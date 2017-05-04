@@ -90,7 +90,7 @@ enum MSGS {
 	OAC_DDB_TASKDATASETINFO, // set taskdata info [UUID sender, UUID uuid, DDBTaskData data]
 	OAC_DDB_TL_ROUND_INFO,	  // set next round info [UUID sender, int round number, _timeb start time, n*UUID agent_UUID]
 	OAC_DDB_ADDQLEARNINGDATA, //Upload learning data for next run [UUID sender, char instance, long long totalActions, long long usefulActions, int tableSize, <float>qTable, <unsigned int>expTable]
-	OAC_DDB_UPDATEQLEARNINGDATA, // Update learning data [UUID sender, char instance, bool usefulActions, int key, float qVal, unsigned int expVal]	
+	OAC_DDB_UPDATEQLEARNINGDATA, // Update learning data [UUID sender, char instance, bool usefulActions, float reward, int key, float qVal, unsigned int expVal]	
 	OAC_DDB_ADDADVICEDATA,	  //[UUID sender, char instance, float cq, float bq]
 	OAC_DDB_ADDSIMSTEPS,	// [unsigned long long totalSimSteps
 
@@ -219,7 +219,7 @@ enum MSGS {
 	MSG_DDB_TL_ROUND_INFO,	 // set next round info [UUID sender, int round number, _timeb start time, n*UUID agent_UUID]
 	MSG_DDB_TL_GET_ROUND_INFO, // get round info [UUID thread]
 	MSG_DDB_QLEARNINGDATA,	 // upload individual learning data for next simulation run [UUID ownerId, char agentType.instance, long long totalActions, long long usefulActions, int table_size, float [table_size]qtable, float [table_size]exptable]
-	MSG_DDB_UPDATE_QLEARNINGDATA, // upload qval & expval update [UUID ownerId, char agentType.instance, bool usefulAction, int key, float qval, int expVal] 
+	MSG_DDB_UPDATE_QLEARNINGDATA, // upload qval & expval update [UUID ownerId, char agentType.instance, bool usefulAction, float reward, int key, float qval, int expVal] 
 	MSG_DDB_GET_QLEARNINGDATA,	// get Q-learning data [UUID thread, char agentType.instance]
 	MSG_DDB_ADVICEDATA,		 // upload advice data for next simulation run [UUID avatarId, char avatarInstance, float cq, float bq]
 	MSG_DDB_SIMSTEPS,		 // upload total simstep count from ExecutiveSimulation [unsigned long long totalSimSteps]
@@ -333,7 +333,7 @@ static const unsigned int MSG_SIZE[] = { // array of message size by message id,
 	-3,								//sizeof(UUID) * 2 + sizeof(DDBTaskData),  //OAC_DDB_TASKDATASETINFO [UUID sender, UUID uuid, DDBTaskData data]
 	-2,								 // OAC_DDB_TL_ROUND_INFO set next round info [UUID sender, int round number, _timeb start time, n*UUID agent_UUID]
 	-3,												//					OAC_DDB_ADDQLEARNINGDATA
-	sizeof(UUID) + sizeof(char) + sizeof(bool) + sizeof(int) + sizeof(float) + sizeof(unsigned int), //OAC_DDB_UPDATEQLEARNINGDATA  [UUID sender, char instance, bool usefulAction, int key, float qVal, unsigned int expVal]	
+	sizeof(UUID) + sizeof(char) + sizeof(bool) + sizeof(float) + sizeof(int) + sizeof(float) + sizeof(unsigned int), //OAC_DDB_UPDATEQLEARNINGDATA  [UUID sender, char instance, bool usefulAction, float reward, int key, float qVal, unsigned int expVal]	
 	sizeof(UUID) + sizeof(char) + 2*sizeof(float),	//OAC_DDB_ADDADVICEDATA,	  //[UUID sender, char instance, float cq, float bq]
 	sizeof(unsigned long long),					//OAC_DDB_ADDSIMSTEPS
 
@@ -447,7 +447,7 @@ static const unsigned int MSG_SIZE[] = { // array of message size by message id,
 	-2,					//MSG_DDB_TL_ROUND_INFO
 	sizeof(UUID),		//MSG_DDB_TL_GET_ROUND_INFO
 	-3,					// MSG_DDB_QLEARNINGDATA
-	sizeof(UUID) + sizeof(char) + sizeof(bool) + sizeof(int) + sizeof(float) + sizeof(unsigned int), //MSG_DDB_UPDATE_QLEARNINGDATA [UUID ownerId, char agentType.instance, bool usefulAction, int key, float qval, int expVal] 
+	sizeof(UUID) + sizeof(char) + sizeof(bool) + sizeof(float) + sizeof(int) + sizeof(float) + sizeof(unsigned int), //MSG_DDB_UPDATE_QLEARNINGDATA [UUID ownerId, char agentType.instance, bool usefulAction, float reward, int key, float qval, int expVal] 
 	sizeof(UUID) + sizeof(char),																	 //	MSG_DDB_GET_QLEARNINGDATA,	[UUID thread, char agentType.instance]
 	sizeof(UUID) + sizeof(char) + 2*sizeof(float),		//MSG_DDB_ADVICEDATA
 	sizeof(unsigned long long),		 // MSG_DDB_SIMSTEPS

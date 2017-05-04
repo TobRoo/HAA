@@ -396,7 +396,7 @@ int AvatarSimulation::parseMF_HandleAvatar( AgentType *agentType, char *fileName
 
 
 
-		STATE(AvatarBase)->maxLinear = STATE(AvatarSimulation)->maxVelocityEst*0.05f; // 0.2f;
+		STATE(AvatarBase)->maxLinear = STATE(AvatarSimulation)->maxVelocityEst; // 0.2f;
 		STATE(AvatarBase)->maxRotation = 20.0f/180 * fM_PI;
 
 		// register with DDB
@@ -657,6 +657,10 @@ int AvatarSimulation::parseAvatarOutput( DataStream *ds ) {
 					lds.packFloat32(x);
 					lds.packFloat32(y);
 					this->sendMessage( this->hostCon, MSG_RESPONSE, lds.stream(), lds.length(), &this->collectionTask.front().initiator );
+#ifdef LOG_RESPONSES
+					Log.log(LOG_LEVEL_NORMAL, "RESPONSE: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &this->collectionTask.front().initiator), Log.formatUUID(0, &thread));
+#endif
+
 					lds.unlock();
 					this->collectionTask.pop_front();
 				} else {
@@ -707,6 +711,10 @@ int AvatarSimulation::parseAvatarOutput( DataStream *ds ) {
 				lds.packUUID(&thread);
 				lds.packChar(successCode);
 				this->sendMessage(this->hostCon, MSG_RESPONSE, lds.stream(), lds.length(), &initiator);
+#ifdef LOG_RESPONSES
+				Log.log(LOG_LEVEL_NORMAL, "RESPONSE: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &initiator), Log.formatUUID(0, &thread));
+#endif
+
 				lds.unlock();
 		}
 		break;
@@ -792,7 +800,7 @@ int AvatarSimulation::nextAction() {
 				millis = (unsigned short)(1000 * (accT + decT));
 			}
 
-			millis = AvatarSimulation_SIMWAKE_PERIOD;
+		//	millis = AvatarSimulation_SIMWAKE_PERIOD;
 
 			Log.log( LOG_LEVEL_VERBOSE, "AvatarSimulation::nextAction: AA_MOVE start %.3f est millis=%d", D, millis );
 

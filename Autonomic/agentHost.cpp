@@ -4416,6 +4416,10 @@ int AgentHost::_killAgent( UUID *agentId ) {
 				lds.packUUID( &iA->second.spawnThread );
 				lds.packBool( false ); // failed
 				this->sendAgentMessage( dStore->AgentGetParent( agentId ), MSG_RESPONSE, lds.stream(), lds.length() );
+				#ifdef LOG_RESPONSES
+				Log.log(LOG_LEVEL_NORMAL, "RESPONSE: case DDBAGENT_STATUS_SPAWNING: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, dStore->AgentGetParent(agentId)), Log.formatUUID(0, &iA->second.spawnThread));
+				#endif
+
 				lds.unlock();
 			}
 			break;
@@ -4909,6 +4913,10 @@ int AgentHost::recvRequestUniqueId( spConnection con, DataStream *ds ) {
 		this->ds.packChar( 1 ); // spawned
 		this->ds.packUUID( (UUID *)&iterAI->first );
 		this->sendAgentMessage( &con->uuid, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
+		#ifdef LOG_RESPONSES
+		Log.log(LOG_LEVEL_NORMAL, "RESPONSE:  AgentHost::recvRequestUniqueId 1: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &con->uuid), Log.formatUUID(0, (UUID *)&iterAI->first));
+		#endif
+
 //		this->sendMessage( con, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
 		this->ds.unlock();
 		return 0;
@@ -4924,6 +4932,9 @@ int AgentHost::recvRequestUniqueId( spConnection con, DataStream *ds ) {
 
 	if ( iterAT != this->uniqueNeeded.end() ) {
 		this->ds.packChar( 0 ); // not spawned
+		#ifdef LOG_RESPONSES
+		Log.log(LOG_LEVEL_NORMAL, "RESPONSE: recvRequestUniqueId 2: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &con->uuid), Log.formatUUID(0, (UUID *)&iterAI->first));
+		#endif
 		this->sendAgentMessage( &con->uuid, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
 //		this->sendMessage( con, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
 		this->ds.unlock();
@@ -4932,6 +4943,9 @@ int AgentHost::recvRequestUniqueId( spConnection con, DataStream *ds ) {
 
 	// couldn't find it
 	this->ds.packChar( -1 ); // unknown unique
+	#ifdef LOG_RESPONSES
+	Log.log(LOG_LEVEL_NORMAL, "RESPONSE: recvRequestUniqueId 3: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &con->uuid), Log.formatUUID(0, (UUID *)&iterAI->first));
+	#endif
 	this->sendAgentMessage( &con->uuid, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
 	//this->sendMessage( con, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
 	this->ds.unlock();
@@ -7500,6 +7514,10 @@ int AgentHost::AgentTransferInfoChanged( UUID *agent, int infoFlags ) {
 						lds.packBool( true );
 						lds.packUUID( agent );
 						this->sendAgentMessage( dStore->AgentGetParent( agent ), MSG_RESPONSE, lds.stream(), lds.length() );
+						#ifdef LOG_RESPONSES
+						Log.log(LOG_LEVEL_NORMAL, "RESPONSE: case DDBAGENT_STATUS_READY: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, dStore->AgentGetParent(agent)), Log.formatUUID(0, &ai->spawnThread));
+						#endif
+
 						lds.unlock();
 					}
 					break;
@@ -9210,6 +9228,10 @@ int AgentHost::ddbAgentGetInfo( UUID *id, int infoFlags, spConnection con, UUID 
 
 	this->dStore->AgentGetInfo( id, infoFlags, &lds, thread );
 
+#ifdef LOG_RESPONSES
+	Log.log(LOG_LEVEL_NORMAL, "RESPONSE: ddbAgentGetInfo: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &con->uuid), Log.formatUUID(0, thread));
+#endif
+
 	this->sendAgentMessage( &con->uuid, MSG_RESPONSE, lds.stream(), lds.length() );
 
 	lds.unlock();
@@ -9491,6 +9513,9 @@ int AgentHost::ddbGetRegion( UUID *id, spConnection con, UUID *thread ) {
 	this->dStore->GetRegion( id, &this->ds, thread );
 
 	this->sendAgentMessage( &con->uuid, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
+#ifdef LOG_RESPONSES
+	Log.log(LOG_LEVEL_NORMAL, "RESPONSE: ddbGetRegion: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &con->uuid), Log.formatUUID(0, thread));
+#endif
 	//this->sendMessage( con, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
 
 	this->ds.unlock();
@@ -9597,7 +9622,9 @@ int AgentHost::ddbGetLandmark( UUID *id, spConnection con, UUID *thread, bool en
 
 	this->sendAgentMessage( &con->uuid, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
 	//this->sendMessage( con, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
-
+#ifdef LOG_RESPONSES
+	Log.log(LOG_LEVEL_NORMAL, "RESPONSE: ddbGetLandmark 1: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &con->uuid), Log.formatUUID(0, thread));
+#endif
 	this->ds.unlock();
 	
 	return 0;
@@ -9608,6 +9635,10 @@ int AgentHost::ddbGetLandmark( unsigned char code, spConnection con, UUID *threa
 	this->dStore->GetLandmark( code, &this->ds, thread );
 
 	this->sendAgentMessage( &con->uuid, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
+#ifdef LOG_RESPONSES
+	Log.log(LOG_LEVEL_NORMAL, "RESPONSE: ddbGetLandmark 2: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &con->uuid), Log.formatUUID(0, thread));
+#endif
+
 	//this->sendMessage( con, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
 
 	this->ds.unlock();
@@ -9686,6 +9717,10 @@ int AgentHost::ddbPOGGetInfo( UUID *id, spConnection con, UUID *thread ) {
 	this->dStore->POGGetInfo( id, &this->ds, thread );
 
 	this->sendAgentMessage( &con->uuid, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
+#ifdef LOG_RESPONSES
+	Log.log(LOG_LEVEL_NORMAL, "RESPONSE: ddbPOGGetInfo: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &con->uuid), Log.formatUUID(0, thread));
+#endif
+
 	//this->sendMessage( con, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
 
 	this->ds.unlock();
@@ -9745,6 +9780,10 @@ int AgentHost::ddbPOGGetRegion( UUID *id, float x, float y, float w, float h, sp
 	this->dStore->POGGetRegion( id, x, y, w, h, &this->ds, thread );
 
 	this->sendAgentMessage( &con->uuid, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
+#ifdef LOG_RESPONSES
+	Log.log(LOG_LEVEL_NORMAL, "RESPONSE: ddbPOGGetRegion: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &con->uuid), Log.formatUUID(0, thread));
+#endif
+
 	//this->sendMessage( con, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
 
 	this->ds.unlock();
@@ -10286,6 +10325,10 @@ int AgentHost::ddbPFGetInfo( UUID *id, int infoFlags, _timeb *tb, spConnection c
 	this->dStore->PFGetInfo( id, infoFlags, tb, &lds, thread, &effectiveParticleNum );
 
 	this->sendAgentMessage( &con->uuid, MSG_RESPONSE, lds.stream(), lds.length() );
+#ifdef LOG_RESPONSES
+	Log.log(LOG_LEVEL_NORMAL, "RESPONSE: ddbPFGetInfo: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &con->uuid), Log.formatUUID(0, thread));
+#endif
+
 	//this->sendMessage( con, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
 
 	lds.unlock();
@@ -10373,6 +10416,9 @@ int AgentHost::ddbAvatarGetInfo( UUID *id, int infoFlags, spConnection con, UUID
 	this->dStore->AvatarGetInfo( id, infoFlags, &this->ds, thread );
 
 	this->sendAgentMessage( &con->uuid, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
+#ifdef LOG_RESPONSES
+	Log.log(LOG_LEVEL_NORMAL, "RESPONSE: ddbAvatarGetInfo: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &con->uuid), Log.formatUUID(0, thread));
+#endif
 	//this->sendMessage( con, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
 	
 	this->ds.unlock();
@@ -10496,6 +10542,9 @@ int AgentHost::ddbSensorGetInfo( UUID *id, int infoFlags, spConnection con, UUID
 	this->dStore->SensorGetInfo( id, infoFlags, &this->ds, thread );
 
 	this->sendAgentMessage( &con->uuid, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
+#ifdef LOG_RESPONSES
+	Log.log(LOG_LEVEL_NORMAL, "RESPONSE: ddbSensorGetInfo: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &con->uuid), Log.formatUUID(0, thread));
+#endif
 	//this->sendMessage( con, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
 
 	this->ds.unlock();
@@ -10508,6 +10557,9 @@ int AgentHost::ddbSensorGetData( UUID *id, _timeb *tb, spConnection con, UUID *t
 	this->dStore->SensorGetData( id, tb, &this->ds, thread );
 
 	this->sendAgentMessage( &con->uuid, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
+#ifdef LOG_RESPONSES
+	Log.log(LOG_LEVEL_NORMAL, "RESPONSE: ddbSensorGetData: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &con->uuid), Log.formatUUID(0, thread));
+#endif
 	//this->sendMessage( con, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
 
 	this->ds.unlock();
@@ -10595,6 +10647,9 @@ int AgentHost::ddbGetTask(UUID *id, spConnection con, UUID *thread, bool enumTas
 	Log.log(0, "AgentHost::ddbGetTask::Sending ddbGetTask response to agent %s", Log.formatUUID(0, &con->uuid));
 
 	this->sendAgentMessage(&con->uuid, MSG_RESPONSE, lds.stream(), lds.length());
+#ifdef LOG_RESPONSES
+	Log.log(LOG_LEVEL_NORMAL, "RESPONSE: ddbGetTask: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &con->uuid), Log.formatUUID(0, thread));
+#endif
 
 	lds.unlock();
 
@@ -10657,6 +10712,9 @@ int AgentHost::ddbGetTaskData(UUID *id, spConnection con, UUID *thread, bool enu
 	this->dStore->GetTaskData(id, &lds, thread, enumTaskData);
 	Log.log(0, "AgentHost::ddbGetTaskData::Sending ddbGetTaskData response to agent %s", Log.formatUUID(0, &con->uuid));
 	this->sendAgentMessage(&con->uuid, MSG_RESPONSE, lds.stream(), lds.length());
+#ifdef LOG_RESPONSES
+	Log.log(LOG_LEVEL_NORMAL, "RESPONSE: ddbGetTaskData: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &con->uuid), Log.formatUUID(0, thread));
+#endif
 
 	lds.unlock();
 
@@ -10678,6 +10736,9 @@ int AgentHost::ddbTLRoundGetInfo(spConnection con, UUID *thread) {
 
 	Log.log(0, "AgentHost::ddbTLRoundGetInfo::Sending ddbTLRoundGetInfo response to agent %s", Log.formatUUID(0, &con->uuid ) );
 	this->sendAgentMessage(&con->uuid, MSG_RESPONSE, lds.stream(), lds.length());
+#ifdef LOG_RESPONSES
+	Log.log(LOG_LEVEL_NORMAL, "RESPONSE: ddbTLRoundGetInfo:  Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &con->uuid), Log.formatUUID(0, thread));
+#endif
 
 	lds.unlock();
 
@@ -10717,7 +10778,7 @@ int AgentHost::ddbAddQLearningData(bool onlyActions, char typeId, unsigned long 
 	return 0;
 }
 
-int AgentHost::ddbUpdateQLearningData(char instance, bool usefulAction, int key, float qVal, unsigned int expVal)
+int AgentHost::ddbUpdateQLearningData(char instance, bool usefulAction, float reward, int key, float qVal, unsigned int expVal)
 {
 	DataStream lds;
 
@@ -10725,6 +10786,7 @@ int AgentHost::ddbUpdateQLearningData(char instance, bool usefulAction, int key,
 	lds.packUUID(this->getUUID());
 	lds.packChar(instance);
 	lds.packBool(usefulAction);
+	lds.packFloat32(reward);
 	lds.packInt32(key);
 	lds.packFloat32(qVal);
 	lds.packUInt32(expVal);
@@ -10742,7 +10804,9 @@ int AgentHost::ddbGetQLearningData(spConnection con, UUID *thread, char instance
 	this->dStore->GetQLearningData(&lds, thread, instance);
 
 	this->sendAgentMessage(&con->uuid, MSG_RESPONSE, lds.stream(), lds.length());
-
+#ifdef LOG_RESPONSES
+	Log.log(LOG_LEVEL_NORMAL, "RESPONSE: ddbGetQLearningData: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &con->uuid), Log.formatUUID(0, thread));
+#endif
 	lds.unlock();
 
 	return 0;
@@ -11110,12 +11174,14 @@ int AgentHost::WritePerformanceData(mapDDBQLearningData * QLData)
 
 		unsigned long totalActions = 0;
 		unsigned long usefulActions = 0;
+		float reward = 0.0f;
 		time_t timeNow = time(0);		//Get current time (for timestamping data)
 		tm* utcTime = gmtime(&timeNow);
 
 		for (auto& qlIter : *QLData) {	//Gather all action data
 			totalActions = totalActions + qlIter.second.totalActions;
 			usefulActions = usefulActions + qlIter.second.usefulActions;
+			reward += qlIter.second.reward;
 		}
 
 		std::ifstream testIfExists;
@@ -11126,7 +11192,7 @@ int AgentHost::WritePerformanceData(mapDDBQLearningData * QLData)
 			Log.log(LOG_LEVEL_NORMAL, "AgentHost::WritePerformanceData: no performance records found, writing headers...");
 			testIfExists.close();
 			outputData.open("performanceData.csv", std::ios::app);
-			outputData << "Time," << "runNumber," << " totalActions," << "usefulActions," << "totalSimSteps" << "\n";
+			outputData << "Time," << "runNumber," << " totalActions," << "usefulActions," << "totalReward" << "," << "totalSimSteps" <<  "\n";
 			outputData.close();
 		}
 		else {					 //File exists, do not write headers
@@ -11137,9 +11203,9 @@ int AgentHost::WritePerformanceData(mapDDBQLearningData * QLData)
 
 		outputData.open("performanceData.csv", std::ios::app);
 		//outputData << asctime(utcTime) << "," << STATE(AgentHost)->runNumber << "," << totalActions << "," << usefulActions << "\n";
-		outputData << utcTime->tm_year + 1900 << "-" << setw(2) << setfill('0') << utcTime->tm_mon + 1 << "-" << utcTime->tm_mday;
-		outputData << " " << utcTime->tm_hour << ":" << utcTime->tm_min << ":" << utcTime->tm_sec << ",";
-		outputData << STATE(AgentHost)->runNumber << "," << totalActions << "," << usefulActions << "," << this->dStore->GetSimSteps() << "\n";
+		outputData << utcTime->tm_year + 1900 << "-" << setw(2) << setfill('0') << utcTime->tm_mon + 1 << "-" << setw(2) << setfill('0') << utcTime->tm_mday;
+		outputData << " " << setw(2) << setfill('0') << utcTime->tm_hour << ":" << setw(2) << setfill('0') << utcTime->tm_min << ":" << setw(2) << setfill('0') << utcTime->tm_sec << ",";
+		outputData << STATE(AgentHost)->runNumber << "," << totalActions << "," << usefulActions << "," << reward << "," << this->dStore->GetSimSteps() << "\n";
 		outputData.close();
 	}
 
@@ -11261,10 +11327,16 @@ int AgentHost::getFreePort( spConnection con, UUID *thread ) {
 		this->ds.packChar( 0 );
 		this->sendAgentMessage( &con->uuid, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
 		//this->sendMessage( con, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
+#ifdef LOG_RESPONSES
+		Log.log(LOG_LEVEL_NORMAL, "RESPONSE: getFreePort: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &con->uuid), Log.formatUUID(0, thread));
+#endif
 	} else { 
 		this->ds.packChar( 1 );
 		this->ds.packInt32( port );
 		this->sendAgentMessage( &con->uuid, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
+#ifdef LOG_RESPONSES
+		Log.log(LOG_LEVEL_NORMAL, "RESPONSE: getFreePort 2: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &con->uuid), Log.formatUUID(0, thread));
+#endif
 		//this->sendMessage( con, MSG_RESPONSE, this->ds.stream(), this->ds.length() );
 	}
 
@@ -11764,6 +11836,9 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 			lds.packUUID( &thread );
 			lds.packInt32( groupSize );
 			this->sendAgentMessage( &con->uuid, MSG_RESPONSE, lds.stream(), lds.length() );
+#ifdef LOG_RESPONSES
+			Log.log(LOG_LEVEL_NORMAL, "RESPONSE: case MSG_RGROUP_SIZE: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &con->uuid), Log.formatUUID(0, &thread));
+#endif
 			//this->sendMessage( con, MSG_RESPONSE, lds.stream(), lds.length() );
 			lds.unlock();
 		}
@@ -12560,6 +12635,7 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		UUID ownerId;
 		char instance;	//Type of avatar, stored in the mission file
 		bool usefulAction;
+		float reward;
 
 		int key;
 		float qVal;            
@@ -12569,11 +12645,12 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		lds.unpackUUID(&ownerId);		//Avatar id (owner of the data set)
 		instance = lds.unpackChar();
 		usefulAction = lds.unpackBool();
+		reward = lds.unpackFloat32();
 		key = lds.unpackInt32();
 		qVal = lds.unpackFloat32();
 		expVal = lds.unpackUInt32();
 		lds.unlock();
-		this->ddbUpdateQLearningData(instance, usefulAction, key, qVal, expVal);
+		this->ddbUpdateQLearningData(instance, usefulAction, reward, key, qVal, expVal);
 	}
 	break; 
 	case MSG_DDB_GET_QLEARNINGDATA:
@@ -12631,6 +12708,9 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		lds.packChar(DDBR_OK);
 		lds.packInt32((int)this->gmMemberList.size());
 		this->sendAgentMessage(&con->uuid, MSG_RESPONSE, lds.stream(), lds.length());
+#ifdef LOG_RESPONSES
+		Log.log(LOG_LEVEL_NORMAL, "RESPONSE: case MSG_DDB_RHOSTGROUPSIZE: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &con->uuid), Log.formatUUID(0, &uuid));
+#endif
 		lds.unlock();
 	}
 		break;
@@ -12699,6 +12779,9 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 			lds.packUUID(&thread); // thread
 			lds.packInt32(STATE(AgentHost)->runNumber);
 			this->sendAgentMessage(&con->uuid, MSG_RESPONSE, lds.stream(), lds.length());
+#ifdef LOG_RESPONSES
+			Log.log(LOG_LEVEL_NORMAL, "RESPONSE: case MSG_RRUNNUMBER: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &con->uuid), Log.formatUUID(0, &thread));
+#endif
 			lds.unlock();
 
 		}
@@ -13984,6 +14067,7 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		UUID sender;
 		char instance;	//Type of avatar, stored in the mission file
 		bool usefulAction;
+		float reward;
 
 		int key;
 		float qVal;
@@ -13993,12 +14077,13 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		lds.unpackUUID(&sender);		//Avatar id (owner of the data set)
 		instance = lds.unpackChar();
 		usefulAction = lds.unpackBool();
+		reward = lds.unpackFloat32();
 		key = lds.unpackInt32();
 		qVal = lds.unpackFloat32();
 		expVal = lds.unpackUInt32();
 		lds.unlock();
 
-		this->dStore->UpdateQLearningData(instance, usefulAction, key, qVal, expVal);
+		this->dStore->UpdateQLearningData(instance, usefulAction, reward, key, qVal, expVal);
 
 	}
 	break;

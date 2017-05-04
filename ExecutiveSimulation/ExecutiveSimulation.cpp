@@ -981,6 +981,9 @@ int ExecutiveSimulation::conProcessMessage( spConnection con, unsigned char mess
 			// reply
 		//	Log.log(0, "ExecutiveSimulation_MSGS::MSG_RAVATAR_OUTPUT:: conversation thread id: %s", Log.formatUUID(0, &thread));
 			this->sendMessage( this->hostCon, MSG_RESPONSE, lds.stream(), lds.length(), &owner );
+#ifdef LOG_RESPONSES
+			Log.log(LOG_LEVEL_NORMAL, "RESPONSE: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &owner), Log.formatUUID(0, &thread));
+#endif
 			lds.unlock();
 		}
 		break;
@@ -1242,8 +1245,8 @@ int SimAvatar::SimPreStep( _timeb *simTime, int dt ) {
 	dL = fdt*(this->state.vL + this->state.vR)/2;
 	dA = fdt*(this->state.vR - this->state.vL)/this->wheelBase;
 
-	dL = this->moveTargetL;
-	dA = this->moveTargetA;
+	//dL = this->moveTargetL;
+	//dA = this->moveTargetA;
 
 	sn = sin( this->state.r );
 	cs = cos( this->state.r );
@@ -1300,8 +1303,8 @@ int SimAvatar::SimStep( _timeb *simTime, int dt ) {
 	dL = fdt*(this->stateEst.vL + this->stateEst.vR)/2;
 	dA = fdt*(this->stateEst.vR - this->stateEst.vL)/this->wheelBaseEst;
 
-	dL = this->moveTargetL;
-	dA = this->moveTargetA;
+	//dL = this->moveTargetL;
+	//dA = this->moveTargetA;
 
 	sn = sin( this->stateEst.r );
 	cs = cos( this->stateEst.r );

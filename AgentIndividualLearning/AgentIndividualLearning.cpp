@@ -81,6 +81,7 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
 	STATE(AgentIndividualLearning)->runNumber = 0;
 
 	STATE(AgentIndividualLearning)->hasQLearningData = false;	//Use flag to prevent uploads before getting the stored data, used in sendAction()
+	STATE(AgentIndividualLearning)->latestReward = 0.0f;
 
     // initialize avatar and target info
     this->task.landmarkUUID = nilUUID;
@@ -263,7 +264,7 @@ int AgentIndividualLearning::configureParameters(DataStream *ds) {
 
 
 
-    // get mission region
+    //get mission region
     thread = this->conversationInitiate(AgentIndividualLearning_CBR_convMissionRegion, DDB_REQUEST_TIMEOUT);
     if (thread == nilUUID) {
         return 1;
@@ -274,6 +275,13 @@ int AgentIndividualLearning::configureParameters(DataStream *ds) {
     this->sendMessage(this->hostCon, MSG_DDB_RREGION, this->ds.stream(), this->ds.length());
     this->ds.unlock();
 
+	////Workaround
+
+	//STATE(AgentIndividualLearning)->missionRegion.x = 0.0f;
+	//STATE(AgentIndividualLearning)->missionRegion.y = 0.0f;
+	//STATE(AgentIndividualLearning)->missionRegion.w = 10.0f;
+	//STATE(AgentIndividualLearning)->missionRegion.h = 10.0f;
+	//STATE(AgentIndividualLearning)->missionRegionReceived = true;
 
 
 	//Request advice exchange agent
@@ -461,6 +469,8 @@ int AgentIndividualLearning::updateStateData() {
 */
 int AgentIndividualLearning::preActionUpdate() {
     // Get the current state vector
+
+	Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::preActionUpdate: Start");
     this->getStateVector();
     // Learn from the previous action
     this->learn();
@@ -501,22 +511,38 @@ int AgentIndividualLearning::formAction() {
 	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: TOP: this->q_avg is %f", this->q_avg);
 	this->q_avg = (this->q_vals[action - 1] + (float)this->totalActions*this->q_avg) / ((float)this->totalActions + 1);
 
+	float slowMove = 0.5f;
+	float fastMove = 1.0f;
+
+
 	// Form action
 	if (action == MOVE_FORWARD) {
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action MOVE_FORWARD");
 		STATE(AgentIndividualLearning)->action.action = MOVE_FORWARD; //	AvatarBase_Defs::AA_MOVE;
-		STATE(AgentIndividualLearning)->action.val = STATE(AgentIndividualLearning)->maxLinear;
+		if (STATE(AgentIndividualLearning)->avatarInstance == 0 || STATE(AgentIndividualLearning)->avatarInstance == 1 || STATE(AgentIndividualLearning)->avatarInstance == 4 || STATE(AgentIndividualLearning)->avatarInstance == 5)
+			STATE(AgentIndividualLearning)->action.val = slowMove;
+		else
+			STATE(AgentIndividualLearning)->action.val = fastMove;
 		//Store the reverse action in case the avatar ends up just out of bounds or inside an obstacle
 		STATE(AgentIndividualLearning)->stuckAction.action = MOVE_BACKWARD;
-		STATE(AgentIndividualLearning)->stuckAction.val = -STATE(AgentIndividualLearning)->maxLinear;
+		if (STATE(AgentIndividualLearning)->avatarInstance == 0 || STATE(AgentIndividualLearning)->avatarInstance == 1 || STATE(AgentIndividualLearning)->avatarInstance == 4 || STATE(AgentIndividualLearning)->avatarInstance == 5)
+			STATE(AgentIndividualLearning)->stuckAction.val = -slowMove;
+		else
+			STATE(AgentIndividualLearning)->stuckAction.val = -fastMove;
 	}
 	else if (action == MOVE_BACKWARD) {
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action MOVE_BACKWARD");
 		STATE(AgentIndividualLearning)->action.action = MOVE_BACKWARD; //AvatarBase_Defs::AA_MOVE;
-		STATE(AgentIndividualLearning)->action.val = STATE(AgentIndividualLearning)->maxLinear*this->backupFractionalSpeed;
+		if (STATE(AgentIndividualLearning)->avatarInstance == 0 || STATE(AgentIndividualLearning)->avatarInstance == 1 || STATE(AgentIndividualLearning)->avatarInstance == 4 || STATE(AgentIndividualLearning)->avatarInstance == 5)
+			STATE(AgentIndividualLearning)->action.val = slowMove*backupFractionalSpeed;
+		else
+			STATE(AgentIndividualLearning)->action.val = fastMove*backupFractionalSpeed;
 		//Store the reverse action in case the avatar ends up just out of bounds or inside an obstacle
 		STATE(AgentIndividualLearning)->stuckAction.action = MOVE_FORWARD;
-		STATE(AgentIndividualLearning)->stuckAction.val = -STATE(AgentIndividualLearning)->maxLinear*this->backupFractionalSpeed;
+		if (STATE(AgentIndividualLearning)->avatarInstance == 0 || STATE(AgentIndividualLearning)->avatarInstance == 1 || STATE(AgentIndividualLearning)->avatarInstance == 4 || STATE(AgentIndividualLearning)->avatarInstance == 5)
+			STATE(AgentIndividualLearning)->stuckAction.val = -slowMove*backupFractionalSpeed;
+		else
+			STATE(AgentIndividualLearning)->stuckAction.val = -fastMove*backupFractionalSpeed;
 	}
 	else if (action == ROTATE_LEFT) {
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action ROTATE_LEFT");
@@ -645,6 +671,7 @@ int AgentIndividualLearning::learn() {
     // TODO: Adjust learning frequency based on experience
     if ((this->learning_iterations_ % this->learning_frequency_ == 0) && (STATE(AgentIndividualLearning)->action.action > 0)) {
         float reward = this->determineReward();
+		STATE(AgentIndividualLearning)->latestReward = reward;
         Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::learn: Reward: %f", reward);
 
         this->q_learning_.learn(this->prevStateVector, this->stateVector, STATE(AgentIndividualLearning)->action.action, reward);
@@ -670,7 +697,7 @@ int AgentIndividualLearning::learn() {
 *
 */
 int AgentIndividualLearning::getStateVector() {
-
+	Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::getStateVector start");
     // Determine closest delivery location
     float dx, dy, DSq, bestDSq;
     bestDSq = 99999999.0f;
@@ -694,6 +721,7 @@ int AgentIndividualLearning::getStateVector() {
     // Check distance to all borders (left, right, top, down), then to all obstacles, and find
     // which is the closest.
 
+	Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::getStateVector 1");
     float leftBorderDist =  STATE(AgentIndividualLearning)->missionRegion.x - STATE(AgentIndividualLearning)->prev_pos_x;
     float rightBorderDist = STATE(AgentIndividualLearning)->missionRegion.x + STATE(AgentIndividualLearning)->missionRegion.w - STATE(AgentIndividualLearning)->prev_pos_x;
     float bottomBorderDist = STATE(AgentIndividualLearning)->missionRegion.y - STATE(AgentIndividualLearning)->prev_pos_x;
@@ -723,7 +751,7 @@ int AgentIndividualLearning::getStateVector() {
     float dist_rel_obst = 99999.0f;
     float dist_rel_obst_x = 99999.0f;
     float dist_rel_obst_y = 99999.0f;
-
+	Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::getStateVector 2");
     for (auto& obstIter : this->obstacleList) {				//Get distance to closest obstacle
 
         float rel_obst_x_high = obstIter.second.x + 0.5f;	//Magic number for now, TODO: Define obstacle width and height in a header file (autonomic.h?)
@@ -780,6 +808,14 @@ int AgentIndividualLearning::getStateVector() {
 
 
 	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateVector: pos_x %f, pos_y %f, prev_pos_x %f, prev_pos_y %f, distance travelled %f", pos_x, pos_y, STATE(AgentIndividualLearning)->prev_pos_x, STATE(AgentIndividualLearning)->prev_pos_y, sqrt(pow(pos_x - STATE(AgentIndividualLearning)->prev_pos_x, 2) + pow(pos_y - STATE(AgentIndividualLearning)->prev_pos_y, 2) ) );
+	if (STATE(AgentIndividualLearning)->action.action != MOVE_FORWARD && STATE(AgentIndividualLearning)->action.action != MOVE_BACKWARD) {
+		if (sqrt(pow(pos_x - STATE(AgentIndividualLearning)->prev_pos_x, 2) + pow(pos_y - STATE(AgentIndividualLearning)->prev_pos_y, 2)) > reward_activation_dist_) {	//IF distance travelled exceeds reward activation distance during rotate or interact
+			Log.log(0, "AgentIndividualLearning::getStateVector: REWARD ERROR! INCORRECT DISTANCE ASSIGNMENT.");
+			Log.log(0, "AgentIndividualLearning::getStateVector: ACTION IS %d", STATE(AgentIndividualLearning)->action.action);
+
+		}
+
+	}
 
 
     // Calculate relative distances
@@ -872,7 +908,7 @@ int AgentIndividualLearning::getStateVector() {
 */
 int AgentIndividualLearning::policy(std::vector<float> &quality) {
     int action = 1;     // Default to one
-	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: POLICY");
+	//Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: POLICY");
     // Maybe add error check for empty quality_vals?
 
     // Get the sum of all quality
@@ -880,7 +916,7 @@ int AgentIndividualLearning::policy(std::vector<float> &quality) {
     for (int i = 0; i < quality.size(); ++i) {
         quality_sum += quality[i];
     }
-	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: POLICY 1");
+	//Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: POLICY 1");
     if (quality_sum == 0.0f) {
         random_actions_++;
 		//srand(time(NULL));
@@ -903,7 +939,7 @@ int AgentIndividualLearning::policy(std::vector<float> &quality) {
 
     // Softmax action selection [Girard, 2015]
     // Determine temp from experience (form of function is 1 minus a sigmoid function)
-	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: POLICY 2");
+	//Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: POLICY 2");
     // Find exponents and sums for softmax distribution
     std::vector<float> exponents(num_actions_);
     float exponents_sum = 0;
@@ -936,7 +972,7 @@ int AgentIndividualLearning::policy(std::vector<float> &quality) {
         }
     }
 
-	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: POLICY 3");
+	//Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: POLICY 3");
     return action;
 }
 
@@ -1189,6 +1225,8 @@ int AgentIndividualLearning::spawnAgentAdviceExchange() {
 
 	#ifndef USE_ADVICE_EXCHANGE
 		STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned = 1;
+		if (STATE(AgentIndividualLearning)->missionRegionReceived && STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned)
+			this->finishConfigureParameters();
 	#else
 		if (STATE(AgentIndividualLearning)->missionRegionReceived && STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned)
 			this->finishConfigureParameters();
@@ -1264,6 +1302,7 @@ int AgentIndividualLearning::updateQLearningData()
 	bool usefulAction = !(this->task.landmarkUUID == nilUUID);
 	
 	lds.packBool(usefulAction);
+	lds.packFloat32(STATE(AgentIndividualLearning)->latestReward);
 
 	// Find corresponding row in table
 	int key = this->q_learning_.getKey(this->prevStateVector, STATE(AgentIndividualLearning)->action.action);
@@ -1645,6 +1684,9 @@ int AgentIndividualLearning::conProcessMessage(spConnection con, unsigned char m
 				lds_qvals.packFloat32(*q_iter);
 			}
 			this->sendAgentMessage(&sender, MSG_RESPONSE, lds_qvals.stream(), lds_qvals.length() );
+#ifdef LOG_RESPONSES
+			Log.log(LOG_LEVEL_NORMAL, "RESPONSE: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &con->uuid), Log.formatUUID(0, &conv));
+#endif
 			lds_qvals.unlock();
 			
 		}
@@ -1872,7 +1914,7 @@ bool AgentIndividualLearning::convGetAvatarInfo(void *vpConv) {
 
         // TODO try again?
     }
-
+	Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::convGetAvatarInfo: Finished");
     return 0;
 }
 
@@ -2116,6 +2158,7 @@ bool AgentIndividualLearning::convGetTargetInfo(void *vpConv) {
 * but only when AgentAdviceExchange has already been spawned.
 */
 bool AgentIndividualLearning::convMissionRegion(void *vpConv) {
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convMissionRegion");
 	DataStream lds;
     spConversation conv = (spConversation)vpConv;
 
@@ -2123,11 +2166,13 @@ bool AgentIndividualLearning::convMissionRegion(void *vpConv) {
         Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convMissionRegion: request timed out");
         return 0; // end conversation
     }
-
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convMissionRegion 1");
     lds.setData(conv->response, conv->responseLen);
     lds.unpackData(sizeof(UUID)); // discard thread
 
-    if (lds.unpackChar() == DDBR_OK) { // succeeded
+	char response = lds.unpackChar();
+
+    if (response == DDBR_OK) { // succeeded
         lds.unlock();
         STATE(AgentIndividualLearning)->missionRegion.x = lds.unpackFloat32();
         STATE(AgentIndividualLearning)->missionRegion.y = lds.unpackFloat32();
@@ -2135,14 +2180,14 @@ bool AgentIndividualLearning::convMissionRegion(void *vpConv) {
         STATE(AgentIndividualLearning)->missionRegion.h = lds.unpackFloat32();
 
         STATE(AgentIndividualLearning)->missionRegionReceived = true;
-
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convMissionRegion 2");
 		if (STATE(AgentIndividualLearning)->missionRegionReceived && STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned)
 			this->finishConfigureParameters();
     }
-    else {
+    else {	
         lds.unlock();
-        // TODO try again?
-    }
+		// TODO try again?
+		    }
 	recoveryCheck(&this->AgentIndividualLearning_recoveryLock3);
     return 0;
 }
@@ -2586,6 +2631,7 @@ bool AgentIndividualLearning::convDepositLandmark(void * vpConv) {
 * received.
 */
 bool AgentIndividualLearning::convRequestAgentAdviceExchange(void *vpConv) {
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAgentAdviceExchange");
 	DataStream lds;
 	spConversation conv = (spConversation)vpConv;
 
@@ -2685,6 +2731,7 @@ bool AgentIndividualLearning::convRequestAdvice(void *vpConv) {
 
 bool AgentIndividualLearning::convGetRunNumber(void * vpConv)
 {
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetRunNumber");
 	DataStream lds;
 	spConversation conv = (spConversation)vpConv;
 
@@ -2699,6 +2746,8 @@ bool AgentIndividualLearning::convGetRunNumber(void * vpConv)
 	Log.log(0, "My run number is: %d", STATE(AgentIndividualLearning)->runNumber);
 	STATE(AgentIndividualLearning)->hasReceivedRunNumber = true;
 	recoveryCheck(&this->AgentIndividualLearning_recoveryLock2);
+	if (STATE(AgentIndividualLearning)->missionRegionReceived && STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned)
+		this->finishConfigureParameters();
 	return false;
 }
 
@@ -2718,7 +2767,7 @@ bool AgentIndividualLearning::convGetQLearningData(void * vpConv)
 	if (response == DDBR_OK) { // succeeded
 		this->totalActions = lds.unpackUInt64();
 		this->usefulActions = lds.unpackUInt64();
-
+		lds.unpackFloat32(); //Discard reward value, unneeded
 		Log.log(0, "AgentIndividualLearning::convGetQLearningData: totalActions: %lu, usefulActions: %lu", this->totalActions, this->usefulActions);
 
 		float qVal; 

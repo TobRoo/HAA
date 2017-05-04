@@ -707,7 +707,7 @@ private:
 	int ddbTLRoundSetInfo(DataStream * ds);
 	int ddbTLRoundGetInfo(spConnection con, UUID * thread);
 	int ddbAddQLearningData(bool onlyActions, char typeId, unsigned long totalActions, unsigned long usefulActions, int tableSize, std::vector<float> qTable, std::vector<unsigned int> expTable);
-	int ddbUpdateQLearningData(char instance, bool usefulAction, int key, float qVal, unsigned int expVal);
+	int ddbUpdateQLearningData(char instance, bool usefulAction, float reward, int key, float qVal, unsigned int expVal);
 	int ddbGetQLearningData(spConnection con, UUID * thread, char instance);
 	int ddbAddAdviceData(char instance, float cq, float bq);
 	int ddbAddSimSteps(unsigned long long totalSimSteps);

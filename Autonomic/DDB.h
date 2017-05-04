@@ -544,6 +544,7 @@ typedef std::map<UUID, storagePair, UUIDless> mapDDBTaskData;
 struct QLStorage {
 	std::vector<float> qTable;
 	std::vector<unsigned int> expTable;
+	float reward;
 	long long totalActions;
 	long long usefulActions;
 };

@@ -267,6 +267,7 @@ int AvatarBase::parseMF_HandleLearning(bool individualLearning, bool teamLearnin
 
 	// Spawn the appropriate motion planner
 	if (individualLearning) {
+		Log.log(0, "AvatarBase::parseMF_HandleLearning: individualLearning agent spawn request");
 		this->motionPlanner = AgentIndividualLearning;
 		this->spawnAgentIndividualLearning();
 	}
@@ -277,6 +278,7 @@ int AvatarBase::parseMF_HandleLearning(bool individualLearning, bool teamLearnin
 
 	// Spawn team learning agent
 	if (teamLearning) {
+		Log.log(0, "AvatarBase::parseMF_HandleLearning: team learning agent spawn request");
 		this->spawnAgentTeamLearning();
 	}
 
@@ -1020,6 +1022,9 @@ int AvatarBase::setTargetPos( float x, float y, float r, char useRotation, UUID 
 		this->ds.packChar( false );
 		this->ds.packInt32( TP_NEW_TARGET );
 		this->sendMessage( this->hostCon, MSG_RESPONSE, this->ds.stream(), this->ds.length(), &STATE(AvatarBase)->targetInitiator );
+#ifdef LOG_RESPONSES
+		Log.log(LOG_LEVEL_NORMAL, "RESPONSE: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &STATE(AvatarBase)->targetInitiator), Log.formatUUID(0, &STATE(AvatarBase)->targetThread));
+#endif
 		this->ds.unlock();
 
 		// clear current actions
@@ -1084,7 +1089,7 @@ int AvatarBase::spawnAgentTeamLearning() {
 
 int AvatarBase::spawnAgentIndividualLearning() {
 	UUID thread;
-
+	this->apb->apbSleep(100);	//Wait for map etc - Workaround!
 	if (!STATE(AvatarBase)->agentIndividualLearningSpawned) {
 		UUID aAgentIndividualLearninguuid;
 		UuidFromString((RPC_WSTR)_T(AgentIndividualLearning_UUID), &aAgentIndividualLearninguuid);
@@ -1230,6 +1235,11 @@ int AvatarBase::clearActions( int reason, bool aborted ) {
 			this->ds.packInt32( reason );
 			this->ds.packData( &tb, sizeof(_timeb) );
 			this->sendMessage( this->hostCon, MSG_RESPONSE, this->ds.stream(), this->ds.length(), &iterAI->director );
+#ifdef LOG_RESPONSES
+			Log.log(LOG_LEVEL_NORMAL, "RESPONSE: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &iterAI->director), Log.formatUUID(0, &iterAI->thread));
+#endif
+
+
 			this->ds.unlock();
 		}
 
@@ -1268,6 +1278,10 @@ int AvatarBase::queueAction( UUID *director, UUID *thread, int action, void *dat
 			this->ds.packChar( AAR_ABORTED );
 			this->ds.packInt32( AvatarBase_Defs::TP_NOT_STARTED );
 			this->sendMessage( this->hostCon, MSG_RESPONSE, this->ds.stream(), this->ds.length(), director );
+#ifdef LOG_RESPONSES
+			Log.log(LOG_LEVEL_NORMAL, "RESPONSE: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, director), Log.formatUUID(0, thread));
+#endif
+
 			this->ds.unlock();
 		}
 
@@ -1315,6 +1329,10 @@ int AvatarBase::nextAction() {
 			this->ds.packChar( AAR_SUCCESS );
 			this->ds.packData( &tb, sizeof(_timeb) );
 			this->sendMessage( this->hostCon, MSG_RESPONSE, this->ds.stream(), this->ds.length(), &pAI->director );
+#ifdef LOG_RESPONSES
+			Log.log(LOG_LEVEL_NORMAL, "RESPONSE: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &pAI->director), Log.formatUUID(0, &pAI->thread));
+#endif
+
 			this->ds.unlock();
 		}
 
@@ -2026,8 +2044,10 @@ bool AvatarBase::convRequestAgentIndividualLearning(void *vpConv) {
 		return 0; // end conversation
 	}
 
+	UUID thread;
+
 	lds.setData(conv->response, conv->responseLen);
-	lds.unpackData(sizeof(UUID)); // discard thread
+	thread = *(UUID*)lds.unpackData(sizeof(UUID));
 
 	if (lds.unpackBool()) { // succeeded
 		lds.unpackUUID(&STATE(AvatarBase)->agentIndividualLearning);
@@ -2035,6 +2055,7 @@ bool AvatarBase::convRequestAgentIndividualLearning(void *vpConv) {
 		STATE(AvatarBase)->agentIndividualLearningSpawned = 1; // ready
 
 		Log.log(0, "AvatarBase::convRequestAgentIndividualLearning: Individual learning agent %s", Log.formatUUID(0, &STATE(AvatarBase)->agentIndividualLearning));
+		Log.log(0, "AvatarBase::convRequestAgentIndividualLearning: conversation thread %s", Log.formatUUID(0, &thread));
 
 		// register as agent watcher
 		lds.reset();
@@ -2092,8 +2113,11 @@ bool AvatarBase::convRequestAgentTeamLearning(void *vpConv) {
 		return 0; // end conversation
 	}
 
+	UUID thread;
+
 	lds.setData(conv->response, conv->responseLen);
-	lds.unpackData(sizeof(UUID)); // discard thread
+	thread = *(UUID*)lds.unpackData(sizeof(UUID)); // discard thread
+
 
 	if (lds.unpackBool()) { // succeeded
 		lds.unpackUUID(&STATE(AvatarBase)->agentTeamLearning);
@@ -2101,7 +2125,7 @@ bool AvatarBase::convRequestAgentTeamLearning(void *vpConv) {
 		STATE(AvatarBase)->agentTeamLearningSpawned = 1; // ready
 
 		Log.log(0, "AvatarBase::convRequestAgentTeamLearning: Team learning agent %s", Log.formatUUID(0, &STATE(AvatarBase)->agentTeamLearning));
-
+		Log.log(0, "AvatarBase::convRequestAgentTeamLearning: conversation thread %s", Log.formatUUID(0, &thread));
 		// register as agent watcher
 		lds.reset();
 		lds.packUUID(&STATE(AgentBase)->uuid);
@@ -2158,6 +2182,10 @@ bool AvatarBase::convPathPlannerSetTarget(void *vpConv) {
 		this->ds.packUUID(&STATE(AvatarBase)->targetThread);
 		this->ds.packChar(true);
 		this->sendMessage(this->hostCon, MSG_RESPONSE, this->ds.stream(), this->ds.length(), &STATE(AvatarBase)->targetInitiator);
+#ifdef LOG_RESPONSES
+		Log.log(LOG_LEVEL_NORMAL, "RESPONSE: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &STATE(AvatarBase)->targetInitiator), Log.formatUUID(0, &STATE(AvatarBase)->targetThread));
+#endif
+
 		this->ds.unlock();
 
 	}

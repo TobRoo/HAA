@@ -5039,12 +5039,12 @@ bool DDBStore::AddQLearningData(bool onlyActions, char instance, long long total
 		this->DDBQLearningDatas[instance].expTable = expTable;
 	}
 
-	
+	this->DDBQLearningDatas[instance].reward = 0.0f;	//Start with zero reward
 
 	return false;
 }
 
-bool DDBStore::UpdateQLearningData(char instance, bool usefulAction, int key, float qVal, unsigned int expVal)
+bool DDBStore::UpdateQLearningData(char instance, bool usefulAction, float reward, int key, float qVal, unsigned int expVal)
 {
 
 
@@ -5055,6 +5055,7 @@ bool DDBStore::UpdateQLearningData(char instance, bool usefulAction, int key, fl
 			this->DDBQLearningDatas[instance].totalActions++;
 			if (usefulAction)
 				this->DDBQLearningDatas[instance].usefulActions++;
+			this->DDBQLearningDatas[instance].reward += reward;
 		}
 		else {
 			Log->log(0, "DDBStore::UpdateQLearningData: Avatar instance %d not found.", instance);
@@ -5084,6 +5085,7 @@ int DDBStore::GetQLearningData(DataStream *ds, UUID *thread, char instance)
 	ds->packChar(DDBR_OK);
 	ds->packInt64(iter->second.totalActions);
 	ds->packInt64(iter->second.usefulActions);
+	ds->packFloat32(iter->second.reward);
 	_WRITE_STATE_VECTOR(float, &iter->second.qTable);
 	_WRITE_STATE_VECTOR(unsigned int, &iter->second.expTable);
 

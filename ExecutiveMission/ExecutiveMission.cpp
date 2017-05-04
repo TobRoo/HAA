@@ -669,6 +669,10 @@ int ExecutiveMission::avatarResourceRequest( DataStream *ds ) {
 				lds.packUUID( &thread );
 				lds.packChar( DDBR_ABORT );
 				this->sendMessage( this->hostCon, MSG_RESPONSE, lds.stream(), lds.length(), &agent );
+#ifdef LOG_RESPONSES
+				Log.log(LOG_LEVEL_NORMAL, "RESPONSE: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &agent), Log.formatUUID(0, &thread));
+#endif
+
 				lds.unlock();
 			} else { // got one
 				std::map<UUID,UUID,UUIDless>::iterator iAA;
@@ -687,6 +691,9 @@ int ExecutiveMission::avatarResourceRequest( DataStream *ds ) {
 				lds.packUUID( &thread );
 				lds.packChar( DDBR_OK );
 				this->sendMessage( this->hostCon, MSG_RESPONSE, lds.stream(), lds.length(), &agent );
+#ifdef LOG_RESPONSES
+				Log.log(LOG_LEVEL_NORMAL, "RESPONSE: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &agent), Log.formatUUID(0, &thread));
+#endif
 				lds.unlock();
 			}
 			

@@ -342,6 +342,11 @@ int AgentAdviceExchange::formAdvice() {
 		lds.packFloat32(*q_iter);
 		Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::formAdvice: *q_iter is %f", *q_iter);
 	}
+
+	#ifdef LOG_RESPONSES
+	Log.log(LOG_LEVEL_NORMAL, "RESPONSE: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0,this->getUUID()), Log.formatUUID(0, &STATE(AgentAdviceExchange)->ownerId), Log.formatUUID(0, &this->adviceRequestConv));
+	#endif
+
 	this->sendMessage(this->hostCon, MSG_RESPONSE, lds.stream(), lds.length(), &STATE(AgentAdviceExchange)->ownerId);
 	lds.unlock();
 	//this->backup();

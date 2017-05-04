@@ -122,6 +122,8 @@ public:
 
 		bool isStuck;
 
+		float latestReward;	//Reward given for the latest action performed, used for upload and performance tracking
+
     };
 
 //-----------------------------------------------------------------------------
