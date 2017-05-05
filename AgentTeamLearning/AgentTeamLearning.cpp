@@ -1328,6 +1328,8 @@ bool AgentTeamLearning::convGetTaskInfo(void * vpConv) {
 		// Has our task been completed?
 		if (taskId == this->lAllianceObject.myData.taskId && task->completed) {
 			this->lAllianceObject.finishTask();
+			this->mTaskList[taskId]->agentUUID = nilUUID;
+			this->mTaskList[taskId]->avatar = nilUUID;
 		}
 
 	}

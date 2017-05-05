@@ -174,7 +174,7 @@ int getMapContent(char* misFile, MAPCONTENT& mapContent)
 int generateRandomMap(char * misFile, char* newMisFile, char* newPathFile, char* newLandmarkFile, char* newTargetFile, char* newLayoutFile, MAPCONTENT & mapContent)
 {
 	float randomBorderPadding = 1.0f;	//TODO: Magic number for now, configured in the Matlab version - add in config file
-	float randomPosPadding = 1.5f;	//TODO: Magic number for now, configured in the Matlab version - add in config file
+	float randomPosPadding = 1.2f;	//TODO: Magic number for now, configured in the Matlab version - add in config file
 
 
 									// Total potential positions
@@ -228,7 +228,7 @@ int generateRandomMap(char * misFile, char* newMisFile, char* newPathFile, char*
 
 
 	while (!validPosFound) {
-		cout << "validPosFound!\n";
+		cout << "!validPosFound\n";
 		// Take random permutations of positions in each direction
 		std::random_shuffle(randomPositions.begin(), randomPositions.end());
 		//	Loop through assigning random positions, while checking if any new random
@@ -425,8 +425,8 @@ int generateRandomMap(char * misFile, char* newMisFile, char* newPathFile, char*
 		outTarget << "[forage]\n";
 		outTarget << "id=" << 200 + i << "\n";
 		outTarget << "pose=" << (targetPos[i][0] - 0.125f) << " " << (targetPos[i][1] - 0.125f) << " " << "0.25	0.25 1\n";
-		//outTarget << "landmark_type=" << i % 2 + 1<<"\n";	//Equal amounts of light and heavy objects
-		outTarget << "landmark_type=" << 1 << "\n";	//Equal amounts of light and heavy objects
+		outTarget << "landmark_type=" << i % 2 + 1<<"\n";	//Equal amounts of light and heavy objects
+		//outTarget << "landmark_type=" << 1 << "\n";	//Equal amounts of light and heavy objects
 		lmHigh = lmHigh + i;
 	}
 

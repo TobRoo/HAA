@@ -40,7 +40,7 @@
 
 #define CARGO_REQUEST_TIMEOUT 200	
 
-//#define USE_ADVICE_EXCHANGE
+#define USE_ADVICE_EXCHANGE
 
 using namespace AvatarBase_Defs;
 
@@ -111,12 +111,12 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
     this->softmax_temp_ = 0.10;
 
     // Reward parameters
-    this->item_closer_reward_ = 0.5f;
-    this->item_further_reward_ = -0.3f;
-    this->robot_closer_reward_ = 0.3f;
-    this->robot_further_reward_ = -0.1f;
-    this->return_reward_ = 10.0f;
-    this->empty_reward_value_ = -0.01f;
+    this->item_closer_reward_ = 5.0f;
+    this->item_further_reward_ = 0.1f;
+    this->robot_closer_reward_ = 5.0f;
+    this->robot_further_reward_ = 0.1f;
+    this->return_reward_ = 50.0f;
+    this->empty_reward_value_ = 1.0f;
 
     // Action parameters
     this->backupFractionalSpeed = -0.5f;
@@ -245,8 +245,14 @@ int AgentIndividualLearning::configureParameters(DataStream *ds) {
 
 	// Set the reward activation distance
 	// (must move at least at a 45 degree angle relative to target or goal)
-	this->reward_activation_dist_ = 0.707f*STATE(AgentIndividualLearning)->maxLinear*0.5f;	//0.2 is set in AvatarSimulation (not anymore), as opposed to 1.0 //times 0.5 due to reverse speed being half of top speed
-
+	if (STATE(AgentIndividualLearning)->avatarInstance == 0 || STATE(AgentIndividualLearning)->avatarInstance == 1 || STATE(AgentIndividualLearning)->avatarInstance == 4 || STATE(AgentIndividualLearning)->avatarInstance == 5)
+	{
+		this->reward_activation_dist_ = 0.707f*0.4f*0.5f;	//0.2 is set in AvatarSimulation (not anymore), as opposed to 1.0 //times 0.5 due to reverse speed being half of top speed //slow move
+	}
+	else
+	{
+		this->reward_activation_dist_ = 0.707f*0.8f*0.5f;	//0.2 is set in AvatarSimulation (not anymore), as opposed to 1.0 //times 0.5 due to reverse speed being half of top speed //fast move
+	}
 
     Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::configureParameters: ownerId %s", Log.formatUUID(LOG_LEVEL_NORMAL, &STATE(AgentIndividualLearning)->ownerId));
 	Log.log(0, "My instance is: %d", STATE(AgentIndividualLearning)->avatarInstance);
@@ -511,8 +517,8 @@ int AgentIndividualLearning::formAction() {
 	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: TOP: this->q_avg is %f", this->q_avg);
 	this->q_avg = (this->q_vals[action - 1] + (float)this->totalActions*this->q_avg) / ((float)this->totalActions + 1);
 
-	float slowMove = 0.5f;
-	float fastMove = 1.0f;
+	float slowMove = 0.4f;
+	float fastMove = 0.8f;
 
 
 	// Form action
@@ -652,8 +658,8 @@ int AgentIndividualLearning::formAction() {
 	if (!this->validAction(STATE(AgentIndividualLearning)->action)) {
 		STATE(AgentIndividualLearning)->action.val = 0.0;
 	}
-	if (STATE(AgentIndividualLearning)->isStuck)	//If stuck in forbidden terrain, immediately reverse
-		STATE(AgentIndividualLearning)->action = STATE(AgentIndividualLearning)->stuckAction;
+	//if (STATE(AgentIndividualLearning)->isStuck)	//If stuck in forbidden terrain, immediately reverse
+	//	STATE(AgentIndividualLearning)->action = STATE(AgentIndividualLearning)->stuckAction;
 
 	// Send the action to AvatarBase
 	this->sendAction(STATE(AgentIndividualLearning)->action);
@@ -1000,7 +1006,7 @@ float AgentIndividualLearning::determineReward() {
     if (this->task.landmarkUUID == nilUUID && !this->hasDelivered) {	//Also check that the last action was not delivery (which sets the task to nilUUID if no other tasks are available)
         if (delta_goal_dist < -reward_activation_dist_) {
 			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::determineReward: No target, moved closer to goal area, congregation reward");
-            return 1.0f;
+            return 2*empty_reward_value_;
         }
         else {
 			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::determineReward: No action, empty_reward_value_");

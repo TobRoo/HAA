@@ -50,10 +50,10 @@ AgentAdviceExchange::AgentAdviceExchange(spAddressPort ap, UUID *ticket, int log
 	// Initialize advice parameters
 	this->num_state_vrbls_ = 7;
 	this->num_actions_ = 5;
-	this->alpha = 0.80f;
-	this->beta = 0.95f;
-	this->delta = 0.0f;
-	this->rho = 1.00f;
+	this->alpha = 0.9f;
+	this->beta = 0.9f;
+	this->delta = 0.9f;
+	this->rho = 0.9f;
 
 	// Initialize this agents performance metrics
 	this->cq = 0.0f;
