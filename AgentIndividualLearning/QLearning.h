@@ -73,6 +73,8 @@ public:
 
 	std::vector<float> getElements(std::vector<unsigned int> &state_vector);
 
+	std::vector<unsigned int> getExpElements(std::vector<unsigned int>& state_vector);
+
     void reset();
 
     int getKey(std::vector<unsigned int> &state_vector, int &action_id);

@@ -25,11 +25,11 @@ namespace AgentAdviceExchange_MSGS {
 	};
 	
 	static const unsigned int MSG_SIZE[] = { // array of message size by MSGID - MSG_FIRST
-		-2,					// MSG_CONFIGURE
+		sizeof(UUID) + sizeof(int) + sizeof(UUID) + 2*sizeof(int),					// MSG_CONFIGURE
 		-2,                 // MSG_REQUEST_ADVICE
 		-2,                 // MSG_REQUEST_Q_VALUES
-		-2,					//MSG_REQUEST_CAPACITY
-		-2,					//MSG_CAPACITY_REPLY
+		sizeof(UUID),					//MSG_REQUEST_CAPACITY
+		sizeof(UUID) + 2 * sizeof(int),					//MSG_CAPACITY_REPLY
 	};
 
 }

@@ -149,6 +149,7 @@ protected:
 
     QLearning q_learning_;				   	    // QLearning object
 	std::vector<float> q_vals;                  // Vector of quality values (for the current state vector)
+	std::vector<unsigned int> exp_vals;                // Vector of experience values (for the current state vector)
     std::vector<unsigned int> stateVector;		// Current state vector
     std::vector<unsigned int> prevStateVector;	// Previous state vector
 	float q_avg;                                // Cumulative average quality for selected action
@@ -228,7 +229,7 @@ private:
     int preActionUpdate();
 	int formAction();
     int getStateVector();
-    int policy(std::vector<float> &quality);
+    int policy(std::vector<float> &quality, std::vector<unsigned int> &experience);
 	int requestAdvice(std::vector<float> &quality, std::vector<unsigned int> &state_vector);
     int sendAction(ActionPair action);
     int learn();

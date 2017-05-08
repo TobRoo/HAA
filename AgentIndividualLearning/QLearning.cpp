@@ -131,6 +131,21 @@ std::vector<float> QLearning::getElements(std::vector<unsigned int> &state_vecto
 	return q_values;
 }// end getQValue
 
+std::vector<unsigned int> QLearning::getExpElements(std::vector<unsigned int> &state_vector) {
+
+	// Find rows corresponding to state vector
+	int uselessAction = 1;
+	int row = getKey(state_vector, uselessAction);
+
+	// Retrieve quality and experience
+	std::vector<unsigned int> exp_values;
+	for (unsigned int i = 0; i < num_actions_; i++) {
+		exp_values.push_back(this->exp_table_[row + i]);
+	}// end for
+
+	return exp_values;
+}// end getExpValue
+
 
 /* storeElements
  *

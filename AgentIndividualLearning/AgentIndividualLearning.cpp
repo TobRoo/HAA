@@ -42,6 +42,13 @@
 
 #define USE_ADVICE_EXCHANGE
 
+//#define USE_SOFTMAX_POLICY
+#define USE_GLIE_POLICY
+
+#ifdef USE_GLIE_POLICY
+#define GLIE_min_p  0.02; // Optional minimum allowable probability with GLIE policy
+#endif
+
 using namespace AvatarBase_Defs;
 
 #ifdef _DEBUG
@@ -484,6 +491,8 @@ int AgentIndividualLearning::preActionUpdate() {
 
     // Get quality from state vector
     this->q_vals = this->q_learning_.getElements(this->stateVector);
+	this->exp_vals = this->q_learning_.getExpElements(this->stateVector);
+
 	for (auto& valIter: q_vals) {
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::preActionUpdate: received q_val: %f", valIter);
 	}
@@ -507,7 +516,7 @@ int AgentIndividualLearning::preActionUpdate() {
 int AgentIndividualLearning::formAction() {
 	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: TOP");
 	// Select action based quality
-	int action = this->policy(this->q_vals);
+	int action = this->policy(this->q_vals, this->exp_vals);
 	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: TOP: action is %d", action);
 	// Update average quality
 	for (auto& valIter : q_vals) {
@@ -912,71 +921,120 @@ int AgentIndividualLearning::getStateVector() {
 * OUTPUTS:
 * action = The ID number of the selected action
 */
-int AgentIndividualLearning::policy(std::vector<float> &quality) {
-    int action = 1;     // Default to one
+int AgentIndividualLearning::policy(std::vector<float> &quality, std::vector<unsigned int> &experience) {
+	int action = 1;     // Default to one
 	//Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: POLICY");
-    // Maybe add error check for empty quality_vals?
+	// Maybe add error check for empty quality_vals?
 
-    // Get the sum of all quality
-    float quality_sum = 0.0f;
-    for (int i = 0; i < quality.size(); ++i) {
-        quality_sum += quality[i];
-    }
+	// Get the sum of all quality
+	float quality_sum = 0.0f;
+	for (int i = 0; i < quality.size(); ++i) {
+		quality_sum += quality[i];
+	}
 	//Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: POLICY 1");
-    if (quality_sum == 0.0f) {
-        random_actions_++;
+	if (quality_sum == 0.0f) {
+		random_actions_++;
 		//srand(time(NULL));
-        int action = (int)ceil(randomGenerator->Uniform01() * num_actions_);
+		int action = (int)ceil(randomGenerator->Uniform01() * num_actions_);
 		//action = rand() % 5 + 1;
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::policy: All zero quality, selecting a random action");
-        return action;
-    }
-    else {
-        learned_actions_++;
-    }// end if
+		return action;
+	}
+	else {
+		learned_actions_++;
+	}// end if
 
-    // Make all actions with zero quality equal to 0.005*sum(Total Quality),
-    // giving it 0.5% probability to help discover new actions
-    for (int i = 0; i < quality.size(); ++i) {
-        if (quality[i] == 0) {
-            quality[i] = 0.005f*quality_sum;
-        }
-    }
+	// Make all actions with zero quality equal to 0.005*sum(Total Quality),
+	// giving it 0.5% probability to help discover new actions
+	for (int i = 0; i < quality.size(); ++i) {
+		if (quality[i] == 0) {
+			quality[i] = 0.005f*quality_sum;
+		}
+	}
 
-    // Softmax action selection [Girard, 2015]
-    // Determine temp from experience (form of function is 1 minus a sigmoid function)
+#ifdef USE_SOFTMAX_POLICY
+	// Softmax action selection [Girard, 2015]
+	// Determine temp from experience (form of function is 1 minus a sigmoid function)
 	//Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: POLICY 2");
-    // Find exponents and sums for softmax distribution
-    std::vector<float> exponents(num_actions_);
-    float exponents_sum = 0;
-    std::vector<float> action_prob(num_actions_);
+	// Find exponents and sums for softmax distribution
+	std::vector<float> exponents(num_actions_);
+	float exponents_sum = 0;
+	std::vector<float> action_prob(num_actions_);
 
-    for (int i = 0; i < num_actions_; ++i) {
-        exponents[i] = (float)exp(quality[i] / softmax_temp_);
-        exponents_sum += exponents[i];
-    }
+	for (int i = 0; i < num_actions_; ++i) {
+		exponents[i] = (float)exp(quality[i] / softmax_temp_);
+		exponents_sum += exponents[i];
+	}
 
-    for (int i = 0; i < num_actions_; ++i) {
-        action_prob[i] = exponents[i] / exponents_sum;
-    }
+	for (int i = 0; i < num_actions_; ++i) {
+		action_prob[i] = exponents[i] / exponents_sum;
+	}
 
-    float rand_val = randomGenerator->Uniform01();
-	
+#endif
+#ifdef USE_GLIE_POLICY
+
+	//  Greedy in the Limit Infinite Exploration(using boltzmann
+	//	exploration)[Convergence Results for Single - Step
+	//	On - Policy Reinforcement Learning Algorithms, Singh et al., 2000]
+	//	with a modification to set a minimum allowable probability
+	//	(voids greedy in the limit with >0)
+
+	unsigned experience_sum = 0;
+	float exponents_sum = 0.0f;
+	std::vector<float> exponents(num_actions_);
+	std::vector<float> action_prob(num_actions_);
+
+	for (int i = 0; i < num_actions_; ++i) {
+		experience_sum += experience[i];
+	}
+
+	float minQ = 9999999.0f;
+	float maxQ = -9999999.0f;
+
+	for (int i = 0; i < num_actions_; ++i) {
+		if (quality[i] < minQ)
+			minQ = quality[i];
+		if (quality[i] > maxQ)
+			maxQ = quality[i];
+	}
+
+
+
+	if (experience_sum >= 1 || quality_sum != 0.0f){
+		unsigned int n = this->num_actions_;
+		float alpha = GLIE_min_p;
+		float tau = log((1 - n*alpha) / experience_sum + n*alpha) / (minQ - maxQ);
+
+		for (int i = 0; i < num_actions_; ++i) {
+			exponents[i] = (float)exp(min(tau*quality[i] , 100)); // Need to prevent infinity
+			exponents_sum += exponents[i];
+		}
+
+		for (int i = 0; i < num_actions_; ++i) {
+			action_prob[i] = exponents[i] / exponents_sum;
+		}
+
+	}
+#endif
+
+	float rand_val = randomGenerator->Uniform01();
+
 	float action_prob_sum = action_prob[0];
 
-    // Loop through actions to select one
-    for (int i = 0; i < num_actions_; ++i) {
-        if (rand_val < action_prob_sum) {
-            action = i + 1;
-            break;
-        }
-        else if (i == (num_actions_ - 1)) {
-            action = i + 1;
-        }
-        else {
-            action_prob_sum += action_prob[i + 1];
-        }
-    }
+	// Loop through actions to select one
+	for (int i = 0; i < num_actions_; ++i) {
+		if (rand_val < action_prob_sum) {
+			action = i + 1;
+			break;
+		}
+		else if (i == (num_actions_ - 1)) {
+			action = i + 1;
+		}
+		else {
+			action_prob_sum += action_prob[i + 1];
+		}
+	}
+
 
 	//Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: POLICY 3");
     return action;
@@ -1187,7 +1245,7 @@ bool AgentIndividualLearning::validAction(ActionPair &action) {
 */
 int AgentIndividualLearning::requestAdvice(std::vector<float> &q_vals, std::vector<unsigned int> &state_vector) {
 
-//	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getAdvice: Sending request for advice");
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getAdvice: Sending request for advice");
 
 	// Start the conversation
 	STATE(AgentIndividualLearning)->adviceRequestConv = this->conversationInitiate(AgentIndividualLearning_CBR_convRequestAdvice, ADVICE_REQUEST_TIMEOUT);
@@ -2828,6 +2886,7 @@ int	AgentIndividualLearning::writeState(DataStream *ds, bool top) {
 	_WRITE_STATE_VECTOR(unsigned int, &this->q_learning_.exp_vals_);
 
 	_WRITE_STATE_VECTOR(float, &this->q_vals);
+	_WRITE_STATE_VECTOR(unsigned int, &this->exp_vals);
 	_WRITE_STATE_VECTOR(unsigned int, &this->stateVector);
 	_WRITE_STATE_VECTOR(unsigned int, &this->prevStateVector);
 	ds->packFloat32(q_avg);
@@ -2885,6 +2944,7 @@ int	AgentIndividualLearning::readState(DataStream *ds, bool top) {
 	_READ_STATE_VECTOR(unsigned int, &this->q_learning_.exp_vals_);
 
 	_READ_STATE_VECTOR(float, &this->q_vals);
+	_READ_STATE_VECTOR(unsigned int, &this->exp_vals);
 	_READ_STATE_VECTOR(unsigned int, &this->stateVector);
 	_READ_STATE_VECTOR(unsigned int, &this->prevStateVector);
 	q_avg = ds->unpackFloat32();
@@ -2945,6 +3005,7 @@ int AgentIndividualLearning::writeBackup(DataStream *ds) {
 	_WRITE_STATE_VECTOR(unsigned int, &this->q_learning_.exp_vals_);*/
 
 	_WRITE_STATE_VECTOR(float, &this->q_vals);
+	_WRITE_STATE_VECTOR(unsigned int, &this->exp_vals);
 	_WRITE_STATE_VECTOR(unsigned int, &this->stateVector);
 	_WRITE_STATE_VECTOR(unsigned int, &this->prevStateVector);
 	ds->packFloat32(q_avg);
@@ -2989,6 +3050,7 @@ int AgentIndividualLearning::readBackup(DataStream *ds) {
 	//_READ_STATE_VECTOR(unsigned int, &this->q_learning_.exp_vals_);
 
 	_READ_STATE_VECTOR(float, &this->q_vals);
+	_READ_STATE_VECTOR(unsigned int, &this->exp_vals);
 	_READ_STATE_VECTOR(unsigned int, &this->stateVector);
 	_READ_STATE_VECTOR(unsigned int, &this->prevStateVector);
 	q_avg = ds->unpackFloat32();
