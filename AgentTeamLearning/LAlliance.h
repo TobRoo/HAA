@@ -79,9 +79,9 @@ public:
     /* updateTaskProperties
      *
      * Performs all the necessary updates to the tracking metrics. Must be
-     * called before chooseTask.
+     * called before chooseTask. Returns a bool indicating if a task was acquiesced.
      */
-    int updateTaskProperties(const taskList &tasks);
+    bool updateTaskProperties(const taskList &tasks);
 
 
     /* chooseTask
@@ -110,7 +110,7 @@ public:
      *
      * Impatience is set to zero for completed tasks and the assigned task.
      */
-    int updateImpatience(const taskList &tasks);
+    int updateImpatience(const taskList &tasks, bool hasAcquiesced);
 
 
     /* updateMotivation
@@ -120,7 +120,7 @@ public:
      *
      * Updated according to Equation (1) in [Lynne Parker, 1998]
      */
-    int updateMotivation(const taskList &tasks);
+    int updateMotivation(const taskList &tasks, bool hasAcquiesced);
 
 
     /* finishTask

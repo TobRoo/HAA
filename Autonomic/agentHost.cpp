@@ -11153,7 +11153,7 @@ int AgentHost::WriteLearningData(DataStream *taskDataDS, DataStream *taskDS, map
 		tempLearningData << "\nexpTable=" << "\n";
 		for (auto exptIter : QLIter.second.expTable) {
 			if (exptIter > 0)
-				Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: Saving expVal %f", exptIter);
+				Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: Saving expVal %d", exptIter);
 			tempLearningData << exptIter << "\n";
 		}
 		tempLearningData << "\n";

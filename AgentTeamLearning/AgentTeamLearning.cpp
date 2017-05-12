@@ -513,7 +513,10 @@ int AgentTeamLearning::checkRoundStatus() {
 
 		// Perform the L-Alliance algorithm
 		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Round %d: Updating and performing task selection.", STATE(AgentTeamLearning)->round_number);
-		this->lAllianceObject.updateTaskProperties(this->mTaskList);
+		if (this->lAllianceObject.updateTaskProperties(this->mTaskList)) {	//If updateTaskProperties returns true, the assigned task was acquiesced
+			this->mTaskList[prev_task_id]->agentUUID = nilUUID;
+			this->mTaskList[prev_task_id]->avatar = nilUUID;
+		}
 		this->lAllianceObject.chooseTask(this->mTaskList);
 		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Round %d: My task is: %s", STATE(AgentTeamLearning)->round_number, Log.formatUUID(0, &this->lAllianceObject.myData.taskId));
 		// Upload the new task data (DDBTask), and 

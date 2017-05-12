@@ -30,7 +30,7 @@
 LAlliance::LAlliance(AgentTeamLearning *parentAgent) {
 
     //// Algorithm variables (TODO: Load these in from a config file)
-	maxTaskTime = 500;// 2000;//50000;// 50;//500;//2000;
+	maxTaskTime = 1000;// 2000;//50000;// 50;//500;//2000;
     motivFreq = 5;
     impatienceRateTheta = 1.0f;
     stochasticUpdateTheta2 = 15.0f;
@@ -87,7 +87,9 @@ int LAlliance::addTask(UUID id) {
  * called before chooseTask.
  */
 
-int LAlliance::updateTaskProperties(const taskList &tasks) {
+bool LAlliance::updateTaskProperties(const taskList &tasks) {
+
+	bool hasAcquiesced;
 
     // Increment time on task
     if (myData.taskId != nilUUID) {
@@ -97,13 +99,17 @@ int LAlliance::updateTaskProperties(const taskList &tasks) {
     // Check if the task should be acquiesced
     if (myData.psi >= delta) {
         acquiesce(myData.taskId);
+		hasAcquiesced = true;
     }
+	else {
+		hasAcquiesced = false;
+	}
 
     // Update impatience and motivation
-    updateImpatience(tasks);
-    updateMotivation(tasks);
+    updateImpatience(tasks, hasAcquiesced);
+    updateMotivation(tasks, hasAcquiesced);
 
-    return 0;
+    return hasAcquiesced;
 }
 
 
@@ -276,7 +282,7 @@ int LAlliance::chooseTask(const taskList &tasks) {
  * Impatience is set to zero for completed tasks and the assigned task.
  */
 
-int LAlliance::updateImpatience(const taskList &tasks) {
+int LAlliance::updateImpatience(const taskList &tasks, bool hasAcquiesced) {
 
     // Loop through each task, since impatience rates vary
     std::map<UUID, TASK, UUIDless>::const_iterator taskIter;
@@ -290,7 +296,7 @@ int LAlliance::updateImpatience(const taskList &tasks) {
 
         // Only use the slow update rate [Girard, 2015]
         // Only update for tasks not assigned to this avatar
-        if (taskIter->second->avatar != id) {
+        if (taskIter->second->avatar != id && !hasAcquiesced) {		//If the agent has just acquiesced, not ask is assigned
             // Avatar assigned to task, so grow at slow rate
             myData.impatience[taskIter->first] = impatienceRateTheta / myData.tau[taskIter->first];
         } else {
@@ -310,7 +316,7 @@ int LAlliance::updateImpatience(const taskList &tasks) {
  * Updated according to Equation (1) in [Lynne Parker, 1998]
  */
 
-int LAlliance::updateMotivation(const taskList &tasks) {
+int LAlliance::updateMotivation(const taskList &tasks, bool hasAcquiesced) {
 
     // Update for each task tasks
     std::map<UUID, TASK, UUIDless>::const_iterator iter;

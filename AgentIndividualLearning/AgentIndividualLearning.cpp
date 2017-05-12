@@ -40,7 +40,7 @@
 
 #define CARGO_REQUEST_TIMEOUT 200	
 
-//#define USE_ADVICE_EXCHANGE
+#define USE_ADVICE_EXCHANGE
 
 //#define USE_SOFTMAX_POLICY
 #define USE_GLIE_POLICY
@@ -934,10 +934,13 @@ int AgentIndividualLearning::policy(std::vector<float> &quality, std::vector<uns
 	//Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: POLICY 1");
 	if (quality_sum == 0.0f) {
 		random_actions_++;
-		//srand(time(NULL));
-		int action = (int)ceil(randomGenerator->Uniform01() * num_actions_);
-		//action = rand() % 5 + 1;
+
+		float randFactor = randomGenerator->Uniform01();
+		srand(time(NULL));
+		int action = (int)ceil(randFactor * num_actions_);
+		int randFactor2 = rand() % 5 + 1;
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::policy: All zero quality, selecting a random action");
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::policy: RandomGenerator: %f, action %d, rand(): %d", randFactor, action, randFactor2);
 		return action;
 	}
 	else {
@@ -979,7 +982,7 @@ int AgentIndividualLearning::policy(std::vector<float> &quality, std::vector<uns
 	//	with a modification to set a minimum allowable probability
 	//	(voids greedy in the limit with >0)
 
-	unsigned experience_sum = 0;
+	unsigned int experience_sum = 0;
 	float exponents_sum = 0.0f;
 	std::vector<float> exponents(num_actions_);
 	std::vector<float> action_prob(num_actions_);
@@ -1006,18 +1009,22 @@ int AgentIndividualLearning::policy(std::vector<float> &quality, std::vector<uns
 		float tau = log((1 - n*alpha) / experience_sum + n*alpha) / (minQ - maxQ);
 
 		for (int i = 0; i < num_actions_; ++i) {
-			exponents[i] = (float)exp(min(tau*quality[i] , 100)); // Need to prevent infinity
+			exponents[i] = (float)exp(min(tau*quality[i] , 50)); // Need to prevent infinity
 			exponents_sum += exponents[i];
+			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::policy: i: %d, exponents[i]: %f", i, exponents[i]);
 		}
 
 		for (int i = 0; i < num_actions_; ++i) {
 			action_prob[i] = exponents[i] / exponents_sum;
+			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::policy: i: %d, actionProb[i]: %f", i, action_prob[i]);
 		}
 
 	}
 #endif
 
 	float rand_val = randomGenerator->Uniform01();
+
+
 
 	float action_prob_sum = action_prob[0];
 
@@ -1034,6 +1041,11 @@ int AgentIndividualLearning::policy(std::vector<float> &quality, std::vector<uns
 			action_prob_sum += action_prob[i + 1];
 		}
 	}
+
+	srand(time(NULL));
+	int randFactor2 = rand() % 5 + 1;
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::policy: RandomGenerator: %f, action %d, rand(): %d", rand_val, action, randFactor2);
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::policy: action_prob_sum: %f, exponents_sum %f", action_prob_sum, exponents_sum);
 
 
 	//Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: POLICY 3");
