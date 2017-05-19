@@ -471,9 +471,7 @@ int AgentTeamLearning::step() {
 */
 int AgentTeamLearning::checkRoundStatus() {
 //	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus");
-	// Only proceed if we have not participated in this round yet
-	if (this->TLAgentData[STATE(AgentBase)->uuid].response)
-		return 0;
+
 	
 	int n = 0;                 // Count of how many agents ahead of us left to participate
 	this->last_agent = false;   // Flag for if we are the last agent in the round (and need to initiate the next round)
@@ -495,6 +493,15 @@ int AgentTeamLearning::checkRoundStatus() {
 
 		count++;
 	}
+
+	// Only proceed if we have not participated in this round yet
+	if (this->TLAgentData[STATE(AgentBase)->uuid].response) {
+		// Do we need to initiate the next round?
+		if (last_agent)		//need to check if we are last in case we have just recovered/been transferred, which sets the response flag to prevent participation immediately following a recovery/transfer, but still requires a new round to be broadcast if we're last
+			this->initiateNextRound();
+		return 0;
+	}
+
 	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Waiting for %d agents ahead of us.", n);
 
 
@@ -1683,7 +1690,7 @@ int	AgentTeamLearning::readState(DataStream *ds, bool top) {
 
 
 
-
+	this->TLAgentData[STATE(AgentBase)->uuid].response = true; //Directly after a transfer, do not participate in task negotiations to prevent double assignments due to missed notifications
 	return AgentBase::readState(ds, false);
 }// end readState
 
@@ -1691,6 +1698,7 @@ int AgentTeamLearning::recoveryFinish() {
 	if (AgentBase::recoveryFinish())
 		return 1;
 
+	this->TLAgentData[STATE(AgentBase)->uuid].response = true; //Directly after reading a backup, do not participate in task negotiations to prevent double assignments due to missed notifications
 
 	//DataStream sds;
 
@@ -1920,7 +1928,6 @@ int AgentTeamLearning::readBackup(DataStream *ds) {
 	//else {
 
 	//}
-
 	return AgentBase::readBackup(ds);
 }// end readBackup
 
