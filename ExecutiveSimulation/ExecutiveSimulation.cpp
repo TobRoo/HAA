@@ -1435,6 +1435,10 @@ int SimAvatar::SimStep( _timeb *simTime, int dt ) {
 		stateEst = state;
 	}
 
+	#ifdef NO_RANDOM_ERROR
+		stateEst = state;
+	#endif
+
 
 	//verify that we are within bounds (quick fix)
 

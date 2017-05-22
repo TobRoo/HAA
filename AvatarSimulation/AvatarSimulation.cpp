@@ -274,6 +274,10 @@ int AvatarSimulation::parseParticleFilter( FILE *fp ) {
 	STATE(AvatarBase)->pfUpdateSigma[1] = updateSigma[1];
 	STATE(AvatarBase)->pfUpdateSigma[2] = updateSigma[2];
 
+#ifdef NO_RANDOM_ERROR
+	STATE(AvatarBase)->pfNumParticles = 1;
+#endif
+
 	return 0;
 }
 
