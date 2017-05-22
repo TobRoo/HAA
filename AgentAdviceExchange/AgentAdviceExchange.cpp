@@ -595,23 +595,23 @@ int AgentAdviceExchange::ddbNotification(char *data, int len) {
 			sds.unlock();
 		}
 	}
-	if (evt == DDBE_UPDATE) {
-		if (type == DDB_AGENT) {
-			// request agent info
-			UUID thread = this->conversationInitiate(AgentAdviceExchange_CBR_convGetAgentInfo, DDB_REQUEST_TIMEOUT);
-			if (thread == nilUUID) {
-				return 1;
-			}
-			sds.reset();
-			sds.packUUID(&uuid); // Agent id 
-			sds.packInt32(DDBAGENTINFO_RTYPE| DDBAGENTINFO_RPARENT);
-			sds.packUUID(&thread);
-			this->sendMessage(this->hostCon, MSG_DDB_RAGENTINFO, sds.stream(), sds.length());
-			sds.unlock();
+	//if (evt == DDBE_UPDATE) {
+	//	if (type == DDB_AGENT) {
+	//		// request agent info
+	//		UUID thread = this->conversationInitiate(AgentAdviceExchange_CBR_convGetAgentInfo, DDB_REQUEST_TIMEOUT);
+	//		if (thread == nilUUID) {
+	//			return 1;
+	//		}
+	//		sds.reset();
+	//		sds.packUUID(&uuid); // Agent id 
+	//		sds.packInt32(DDBAGENTINFO_RTYPE| DDBAGENTINFO_RPARENT);
+	//		sds.packUUID(&thread);
+	//		this->sendMessage(this->hostCon, MSG_DDB_RAGENTINFO, sds.stream(), sds.length());
+	//		sds.unlock();
 
 
-		}
-	}
+	//	}
+	//}
 
 
 	lds.unlock();
@@ -823,6 +823,20 @@ bool AgentAdviceExchange::convGetAgentList(void *vpConv) {
 		Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::convGetAgentList: Found %d advisers.", this->adviserData.size());
 
 		lds.unlock();
+
+
+		//Unsubscribe from agent updates, got all the agent info we need
+
+		// unregister as agent watcher
+		Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::convGetAgentList: unregistering as agent watcher");
+		lds.reset();
+		lds.packUUID(&STATE(AgentBase)->uuid);
+		lds.packInt32(DDB_AGENT);
+		this->sendMessage(this->hostCon, MSG_DDB_STOP_WATCHING_TYPE, lds.stream(), lds.length());
+		lds.unlock();
+
+
+
 	}
 	//this->finishConfigureParameters();
 	return 0;

@@ -1159,6 +1159,16 @@ bool AgentTeamLearning::convGetAgentList(void *vpConv) {
 		STATE(AgentTeamLearning)->receivedAllTeamLearningAgents = true;
 		this->finishConfigureParameters();
 
+		//Unsubscribe from agent updates, got all the agent info we need
+
+		// unregister as agent watcher
+		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetAgentList: unregistering as agent watcher");
+		lds.reset();
+		lds.packUUID(&STATE(AgentBase)->uuid);
+		lds.packInt32(DDB_AGENT);
+		this->sendMessage(this->hostCon, MSG_DDB_STOP_WATCHING_TYPE, lds.stream(), lds.length());
+		lds.unlock();
+
 	}// end response Ok
 
 	return 0;

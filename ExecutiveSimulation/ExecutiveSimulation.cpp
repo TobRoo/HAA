@@ -15,7 +15,7 @@
 
 #define LOG_TRUE_POSITIONS 1000 // every second
 
-#define MAX_ITERATION_COUNT 1000000	//Simulation ends after this many iterations, regardless of completion
+#define MAX_ITERATION_COUNT 400000	//Simulation ends after this many iterations, regardless of completion
 
 //*****************************************************************************
 // ExecutiveSimulation
