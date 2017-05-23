@@ -61,7 +61,6 @@ protected:
 	UUID AgentTeamLearning_recoveryLock2;
 	UUID AgentTeamLearning_recoveryLock3;
 	taskList  mTaskList;
-	UUID	  previousTaskId;
 
 	// V2 for team learning comms
 	std::map<UUID, TLAgentDataStruct, UUIDless> TLAgentData;

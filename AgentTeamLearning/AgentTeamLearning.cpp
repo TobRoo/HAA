@@ -206,7 +206,6 @@ int	AgentTeamLearning::finishConfigureParameters() {
 		&& STATE(AgentTeamLearning)->hasReceivedRunNumber == true){
 
 		STATE(AgentTeamLearning)->isSetupComplete = true;
-		this->previousTaskId = nilUUID;
 		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::finishConfigureParameters");
 
 		//Read in data from previous run (if any)
@@ -1620,7 +1619,6 @@ int	AgentTeamLearning::writeState(DataStream *ds, bool top) {
 		ds->packUUID(&(UUID)taskIter.first);
 		ds->packData(taskIter.second, sizeof(DDBTask));
 	}
-	ds->packUUID(&previousTaskId);
 	_WRITE_STATE_MAP_LESS(UUID, TLAgentDataStruct, UUIDless, &TLAgentData);
 	_WRITE_STATE_VECTOR(UUID, &TLAgents);
 	
@@ -1685,7 +1683,6 @@ int	AgentTeamLearning::readState(DataStream *ds, bool top) {
 		Log.log(0, "AgentTeamLearning::readState : Task is: %s", Log.formatUUID(0,&taskId));
 	}
 
-	ds->unpackUUID(&previousTaskId);
 
 	_READ_STATE_MAP(UUID, TLAgentDataStruct, &TLAgentData);
 	_READ_STATE_VECTOR(UUID, &TLAgents);
@@ -1747,8 +1744,8 @@ int AgentTeamLearning::writeBackup(DataStream *ds) {
 
 	_WRITE_STATE(AgentTeamLearning);
 
-	ds->packUUID(&lAllianceObject.id);
-	ds->packTaskData(&lAllianceObject.myData);
+	//ds->packUUID(&lAllianceObject.id);
+	//ds->packTaskData(&lAllianceObject.myData);
 
 
 	////ds->packUUID(&lAllianceObject.myData.taskId);
@@ -1763,12 +1760,12 @@ int AgentTeamLearning::writeBackup(DataStream *ds) {
 	////ds->packData(&lAllianceObject.myData.updateTime, sizeof(_timeb));
 	////ds->packInt32(lAllianceObject.myData.round_number);
 
-	ds->packInt32(lAllianceObject.teammatesData.size());
+	//ds->packInt32(lAllianceObject.teammatesData.size());
 
-	for (auto tmDataIter : lAllianceObject.teammatesData) {
+	//for (auto tmDataIter : lAllianceObject.teammatesData) {
 	//	//ds->packInt32((lAllianceObject.teammatesData.size()));
-		ds->packUUID(&(UUID)tmDataIter.first);
-		ds->packTaskData(&tmDataIter.second);
+	//	ds->packUUID(&(UUID)tmDataIter.first);
+	//	ds->packTaskData(&tmDataIter.second);
 	//	/*ds->packUUID(&tmDataIter.second.taskId);
 	//	ds->packUUID(&tmDataIter.second.agentId);
 	//	_WRITE_STATE_MAP_LESS(UUID, float, UUIDless, &tmDataIter.second.tau);
@@ -1780,14 +1777,14 @@ int AgentTeamLearning::writeBackup(DataStream *ds) {
 	//	ds->packInt32(tmDataIter.second.psi);
 	//	ds->packData(&tmDataIter.second.updateTime, sizeof(_timeb));
 	//	ds->packInt32(tmDataIter.second.round_number);*/
-	}
-	ds->packInt32(mTaskList.size());
+	//}
+	//ds->packInt32(mTaskList.size());
 
-	for (auto taskIter : this->mTaskList) {
-		ds->packUUID(&(UUID)taskIter.first);
-		ds->packData(taskIter.second, sizeof(DDBTask));
-	}
-	ds->packUUID(&previousTaskId);
+	//for (auto taskIter : this->mTaskList) {
+	//	ds->packUUID(&(UUID)taskIter.first);
+	//	ds->packData(taskIter.second, sizeof(DDBTask));
+	//}
+	//ds->packUUID(&previousTaskId);
 	//_WRITE_STATE_MAP_LESS(UUID, TLAgentDataStruct, UUIDless, &TLAgentData);
 	//_WRITE_STATE_VECTOR(UUID, &TLAgents);
 
@@ -1816,8 +1813,8 @@ int AgentTeamLearning::readBackup(DataStream *ds) {
 	 _READ_STATE(AgentTeamLearning);
 
 	//Log.log(0, "AgentTeamLearning::readBackup : STATE WILL BE READ 1 ");
-	ds->unpackUUID(&lAllianceObject.id);
-	ds->unpackTaskData(&lAllianceObject.myData);
+	//ds->unpackUUID(&lAllianceObject.id);
+	//ds->unpackTaskData(&lAllianceObject.myData);
 	///*
 	//ds->unpackUUID(&lAllianceObject.myData.taskId);
 	//ds->unpackUUID(&lAllianceObject.myData.agentId);
@@ -1831,37 +1828,37 @@ int AgentTeamLearning::readBackup(DataStream *ds) {
 	//lAllianceObject.myData.updateTime =*(_timeb*)ds->unpackData(sizeof(_timeb));
 	//lAllianceObject.myData.round_number = ds->unpackInt32();*/
 
-	UUID tmId;	//Teammate id
-	DDBTaskData newTaskData;
+	//UUID tmId;	//Teammate id
+	//DDBTaskData newTaskData;
 
-	int tDSize = ds->unpackInt32();
-	Log.log(0, "AgentTeamLearning::readState : TDSIZE is %d", tDSize);
-	for (int i = 0; i < tDSize; i++) {
-		ds->unpackUUID(&tmId);
-		Log.log(0, "tmId is %s", Log.formatUUID(0, &tmId));
-		ds->unpackTaskData(&newTaskData);
-		lAllianceObject.teammatesData[tmId] = newTaskData;
-	}
+	//int tDSize = ds->unpackInt32();
+	//Log.log(0, "AgentTeamLearning::readState : TDSIZE is %d", tDSize);
+	//for (int i = 0; i < tDSize; i++) {
+	//	ds->unpackUUID(&tmId);
+	//	Log.log(0, "tmId is %s", Log.formatUUID(0, &tmId));
+	//	ds->unpackTaskData(&newTaskData);
+	//	lAllianceObject.teammatesData[tmId] = newTaskData;
+	//}
 
-	Log.log(0, "AgentTeamLearning::readState : STATE WILL BE READ 3");
-	UUID taskId;
-	int numTasks = ds->unpackInt32();
+	//Log.log(0, "AgentTeamLearning::readState : STATE WILL BE READ 3");
+	//UUID taskId;
+	//int numTasks = ds->unpackInt32();
 
-	for (int i = 0; i < numTasks; i++) {
+	//for (int i = 0; i < numTasks; i++) {
 
-		ds->unpackUUID(&taskId);
-		free(mTaskList[taskId]);
-		this->mTaskList[taskId] = (DDBTask *)malloc(sizeof(DDBTask));
-		DDBTask task = *(DDBTask*)ds->unpackData(sizeof(DDBTask));
-		this->mTaskList[taskId]->landmarkUUID = task.landmarkUUID;
-		this->mTaskList[taskId]->agentUUID = task.agentUUID;
-		this->mTaskList[taskId]->avatar = task.avatar;
-		this->mTaskList[taskId]->type = task.type;
-		this->mTaskList[taskId]->completed = task.completed;
-		Log.log(0, "AgentTeamLearning::readBackup : Task is: %s", Log.formatUUID(0, &taskId));
-	}
+	//	ds->unpackUUID(&taskId);
+	//	free(mTaskList[taskId]);
+	//	this->mTaskList[taskId] = (DDBTask *)malloc(sizeof(DDBTask));
+	//	DDBTask task = *(DDBTask*)ds->unpackData(sizeof(DDBTask));
+	//	this->mTaskList[taskId]->landmarkUUID = task.landmarkUUID;
+	//	this->mTaskList[taskId]->agentUUID = task.agentUUID;
+	//	this->mTaskList[taskId]->avatar = task.avatar;
+	//	this->mTaskList[taskId]->type = task.type;
+	//	this->mTaskList[taskId]->completed = task.completed;
+	//	Log.log(0, "AgentTeamLearning::readBackup : Task is: %s", Log.formatUUID(0, &taskId));
+	//}
 
-	ds->unpackUUID(&previousTaskId);
+	//ds->unpackUUID(&previousTaskId);
 
 
 
