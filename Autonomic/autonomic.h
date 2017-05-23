@@ -18,6 +18,9 @@
 //#define NO_LOGGING		//Shuts off logging for running machine learning experiments (would otherwise fill the disk)
 //#define NO_RANDOM_ERROR		//Shuts of random noise for sensor readings
 //#define LOG_RESPONSES		//Log the recipients of all responses (for finding source of unknown conversation in AvatarSimulation)	//TODO - Fix this, causes a crash somewhere (reading uninitialized memory, most likely)
+#define MAX_ITERATION_COUNT 500000	//Simulation ends after this many iterations, regardless of completion
+
+
 
 #include <winsock2.h>
 #include <ws2tcpip.h>

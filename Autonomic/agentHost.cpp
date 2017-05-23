@@ -11006,17 +11006,17 @@ int AgentHost::LearningDataDump()
 
 		WritePerformanceData(&QLData);
 
-
-		WCHAR tempLearningDataFile[512];
-		wsprintf(tempLearningDataFile, _T("learningData%d.tmp"), STATE(AgentHost)->runNumber);
-		std::ifstream    tempLearningData(tempLearningDataFile);
-		bool fileExists = tempLearningData.good();
-		if (fileExists) {		//Only dump learning data if there is no file with the current run number in the bin folder
-			return 0;
+		if (this->dStore->GetSimSteps() < MAX_ITERATION_COUNT) {	//Only store data if the run was not a failed run (something got stuck or otherwise failed, simulation-wise), otherwise the run will be repeated
+			WCHAR tempLearningDataFile[512];
+			wsprintf(tempLearningDataFile, _T("learningData%d.tmp"), STATE(AgentHost)->runNumber);
+			std::ifstream    tempLearningData(tempLearningDataFile);
+			bool fileExists = tempLearningData.good();
+			if (fileExists) {		//Only dump learning data if there is no file with the current run number in the bin folder
+				return 0;
+			}
+			tempLearningData.close();
+			WriteLearningData(&taskDataDS, &taskDS, &QLData, &adviceData);
 		}
-		tempLearningData.close();
-		WriteLearningData(&taskDataDS, &taskDS, &QLData, &adviceData);
-
 		taskDataDS.unlock();
 		taskDS.unlock();
 	}
@@ -11186,6 +11186,8 @@ int AgentHost::WritePerformanceData(mapDDBQLearningData * QLData)
 
 		std::ifstream testIfExists;
 		std::ofstream outputData;
+		std::ofstream failedRun;
+		std::ifstream testIfFailExists;
 
 		testIfExists.open("performanceData.csv");
 		if (!testIfExists.good()) {  //File does not exist, write headers
@@ -11199,14 +11201,28 @@ int AgentHost::WritePerformanceData(mapDDBQLearningData * QLData)
 			testIfExists.close();
 		}
 
-		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WritePerformanceData: appending data...");
+		if (this->dStore->GetSimSteps() >= MAX_ITERATION_COUNT) {	//Failed run (something got stuck or otherwise failed, simulation-wise)
+			testIfFailExists.open("failedRun.tmp");
+			if (!testIfFailExists.good()) {		//File does not exist, create new
+				testIfFailExists.close();
+				failedRun.open("failedRun.tmp", std::ios::app);		//Create empty failedRun file, handled by batch launch file, decrementing counter
+				failedRun.close();
+			}
+			else {
+				testIfFailExists.close();
+			}
+		}
+		else {
 
-		outputData.open("performanceData.csv", std::ios::app);
-		//outputData << asctime(utcTime) << "," << STATE(AgentHost)->runNumber << "," << totalActions << "," << usefulActions << "\n";
-		outputData << utcTime->tm_year + 1900 << "-" << setw(2) << setfill('0') << utcTime->tm_mon + 1 << "-" << setw(2) << setfill('0') << utcTime->tm_mday;
-		outputData << " " << setw(2) << setfill('0') << utcTime->tm_hour << ":" << setw(2) << setfill('0') << utcTime->tm_min << ":" << setw(2) << setfill('0') << utcTime->tm_sec << ",";
-		outputData << STATE(AgentHost)->runNumber << "," << totalActions << "," << usefulActions << "," << reward << "," << this->dStore->GetSimSteps() << "\n";
-		outputData.close();
+			Log.log(LOG_LEVEL_NORMAL, "AgentHost::WritePerformanceData: appending data...");
+
+			outputData.open("performanceData.csv", std::ios::app);
+			//outputData << asctime(utcTime) << "," << STATE(AgentHost)->runNumber << "," << totalActions << "," << usefulActions << "\n";
+			outputData << utcTime->tm_year + 1900 << "-" << setw(2) << setfill('0') << utcTime->tm_mon + 1 << "-" << setw(2) << setfill('0') << utcTime->tm_mday;
+			outputData << " " << setw(2) << setfill('0') << utcTime->tm_hour << ":" << setw(2) << setfill('0') << utcTime->tm_min << ":" << setw(2) << setfill('0') << utcTime->tm_sec << ",";
+			outputData << STATE(AgentHost)->runNumber << "," << totalActions << "," << usefulActions << "," << reward << "," << this->dStore->GetSimSteps() << "\n";
+			outputData.close();
+		}
 	}
 
 
