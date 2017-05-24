@@ -564,7 +564,7 @@ typedef std::map<char, AdviceStorage> mapDDBAdviceData;
 
 struct RoundInfoStruct {
 	int roundNumber;
-	int newRoundNumber;
+	//int newRoundNumber;
 	_timeb startTime;
 	std::vector<UUID> TLAgents;
 };

@@ -59,6 +59,9 @@ AgentTeamLearning::AgentTeamLearning(spAddressPort ap, UUID *ticket, int logLeve
 	//this->delta_learn_time = 3000; // [ms]
 	//this->round_timout = 200;  // [ms]
 	this->last_agent = false;
+
+	STATE(AgentTeamLearning)->cbTLUpdateId = nilUUID;
+	STATE(AgentTeamLearning)->cbTLNextRoundId = nilUUID;
 	
 	// Prepare callbacks
 	this->callback[AgentTeamLearning_CBR_convGetAgentList] = NEW_MEMBER_CB(AgentTeamLearning, convGetAgentList);
@@ -71,7 +74,7 @@ AgentTeamLearning::AgentTeamLearning(spAddressPort ap, UUID *ticket, int logLeve
 	this->callback[AgentTeamLearning_CBR_convGetRunNumber] = NEW_MEMBER_CB(AgentTeamLearning, convGetRunNumber);
 	this->callback[AgentTeamLearning_CBR_convGetRoundInfo] = NEW_MEMBER_CB(AgentTeamLearning, convGetRoundInfo);
 	this->callback[AgentTeamLearning_CBR_cbUpdateTLData] = NEW_MEMBER_CB(AgentTeamLearning, convUpdateTLData);
-	
+	this->callback[AgentTeamLearning_CBR_cbInitiateNewRound] = NEW_MEMBER_CB(AgentTeamLearning, convInitiateNewRound);
 	
 }// end constructor
 
@@ -365,6 +368,7 @@ int AgentTeamLearning::start(char *missionFile) {
 	// Find out if we are first and need to initiate the first round (later round are initiated by the last agent
 
 	if (this->TLAgents.at(0) == STATE(AgentBase)->uuid) {
+		Log.log(LOG_LEVEL_NORMAL, "I'm first, initiating first round");
 		this->initiateNextRound();
 	}
 	STATE(AgentBase)->started = true;
@@ -390,80 +394,80 @@ int AgentTeamLearning::stop() {
 // Step
 
 int AgentTeamLearning::step() {
-	
-	if (!STATE(AgentBase)->stopFlag) {	//Only proceed if we're not stopping (otherwise, might perform task selection and upload AFTER a crash but before complete shutdown, using old data)
+	//
+	//if (!STATE(AgentBase)->stopFlag) {	//Only proceed if we're not stopping (otherwise, might perform task selection and upload AFTER a crash but before complete shutdown, using old data)
 
-		if (this->recoveryLocks.size() == 0)
-		{	//Only proceed if there are no locks and recovery is complete
+	//	if (this->recoveryLocks.size() == 0)
+	//	{	//Only proceed if there are no locks and recovery is complete
 
-		//this->tempCounter++;
+	//	//this->tempCounter++;
 
-	//	if (tempCounter == 100) {
-			//Log.log(0, "My agent id is %s, my task id is %s", Log.formatUUID(0,this->getUUID()), Log.formatUUID(0, &this->lAllianceObject.myData.taskId));
-			//Log.log(0, "TASKLIST \n");
-			//for (auto& taskIter : mTaskList) {
-			//	Log.log(0, "Task: %s, agent:%s, avatar:%s, completed:%d", Log.formatUUID(0, &(UUID)taskIter.first), Log.formatUUID(0, &taskIter.second->agentUUID), Log.formatUUID(0, &taskIter.second->avatar), taskIter.second->completed);
-			//}
-			//Log.log(0, "TASKDATA \n");
-			//for (auto& tdIter : lAllianceObject.teammatesData) {
-			//	Log.log(0, "Task: %s, agent:%s, avatar:%s", Log.formatUUID(0, &tdIter.second.taskId), Log.formatUUID(0, &tdIter.second.agentId), Log.formatUUID(0, &(UUID)tdIter.first));
-			//}
-		//	tempCounter = 0;
+	////	if (tempCounter == 100) {
+	//		//Log.log(0, "My agent id is %s, my task id is %s", Log.formatUUID(0,this->getUUID()), Log.formatUUID(0, &this->lAllianceObject.myData.taskId));
+	//		//Log.log(0, "TASKLIST \n");
+	//		//for (auto& taskIter : mTaskList) {
+	//		//	Log.log(0, "Task: %s, agent:%s, avatar:%s, completed:%d", Log.formatUUID(0, &(UUID)taskIter.first), Log.formatUUID(0, &taskIter.second->agentUUID), Log.formatUUID(0, &taskIter.second->avatar), taskIter.second->completed);
+	//		//}
+	//		//Log.log(0, "TASKDATA \n");
+	//		//for (auto& tdIter : lAllianceObject.teammatesData) {
+	//		//	Log.log(0, "Task: %s, agent:%s, avatar:%s", Log.formatUUID(0, &tdIter.second.taskId), Log.formatUUID(0, &tdIter.second.agentId), Log.formatUUID(0, &(UUID)tdIter.first));
+	//		//}
+	//	//	tempCounter = 0;
 
+	////	}
+
+	//	// Don't perform learning/task allocation every single step
+	//		_timeb currentTime;
+	//		_ftime64_s(&currentTime);
+
+	//		//int n = 0;                 // Count of how many agents ahead of us left to participate
+	//		//this->last_agent = false;   // Flag for if we are the last agent in the round (and need to initiate the next round)
+
+	//		//							// Find the number of agents ahead that still need to participate
+	//		//std::vector<UUID>::iterator iter;
+	//		//int count = 1;
+	//		//for (iter = this->TLAgents.begin(); iter != this->TLAgents.end(); ++iter) {
+	//		//	// Stop counting once we've found ourself
+	//		//	if (*iter == STATE(AgentBase)->uuid) {
+	//		//		this->last_agent = (count == this->TLAgents.size());
+	//		//		break;
+	//		//	}
+
+	//		//	// Increment counter (but reset when encountering an agent that has participated, because if they
+	//		//	// defaulted to participating after a previous agent failed, we don't want to count that extra agent)
+	//		//	n = !this->TLAgentData[*iter].response*(n + 1);
+
+	//		//	count++;
+	//		//}
+
+
+	//		//Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::step: currentTime: %I64d, timeout at: %I64d, diff: %I64d,", (currentTime.time * 1000 + currentTime.millitm) , (this->last_response_time.time * 1000 + this->last_response_time.millitm + n*this->round_timout), (this->last_response_time.time * 1000 + this->last_response_time.millitm + n*this->round_timout) - (currentTime.time * 1000 + currentTime.millitm));
+	//		//Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::step: currentTime: %I64d, round start at: %I64d, diff: %I64d,", (currentTime.time * 1000 + currentTime.millitm), (this->round_start_time.time * 1000 + this->round_start_time.millitm), (this->round_start_time.time * 1000 + this->round_start_time.millitm) - (currentTime.time * 1000 + currentTime.millitm));
+	//	//	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::step: round start in: %I64d milliseconds", (this->round_start_time.time * 1000 + this->round_start_time.millitm) - (currentTime.time * 1000 + currentTime.millitm));
+
+	//		bool round_started = (currentTime.time * 1000 + currentTime.millitm) > (this->round_start_time.time * 1000 + this->round_start_time.millitm);
+	//		bool update_round_info = (currentTime.time * 1000 + currentTime.millitm) > (this->round_info_receive_time.time * 1000 + this->round_info_receive_time.millitm + this->round_timout);
+
+
+	//		if (STATE(AgentTeamLearning)->round_number > 0) {
+	//			// Round info is updated here after one timeout, to allow messages to come in, and cutting off any
+	//			// that are too old (since they are rejected based on their round number)
+	//			if (update_round_info && !this->round_info_set) {
+	//				Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::step: update_round_info");
+	//				STATE(AgentTeamLearning)->round_number = this->new_round_number;
+	//				this->lAllianceObject.myData.round_number = this->new_round_number;
+	//				//this->TLAgents = this->new_round_order;
+	//				this->round_info_set = true;
+	//				this->last_response_time = this->round_start_time;
+	//			}
+
+	//			if (round_started) {
+	//				// See if any action is required this round
+	//				this->checkRoundStatus();
+	//			}
+	//		}
 	//	}
-
-		// Don't perform learning/task allocation every single step
-			_timeb currentTime;
-			_ftime64_s(&currentTime);
-
-			//int n = 0;                 // Count of how many agents ahead of us left to participate
-			//this->last_agent = false;   // Flag for if we are the last agent in the round (and need to initiate the next round)
-
-			//							// Find the number of agents ahead that still need to participate
-			//std::vector<UUID>::iterator iter;
-			//int count = 1;
-			//for (iter = this->TLAgents.begin(); iter != this->TLAgents.end(); ++iter) {
-			//	// Stop counting once we've found ourself
-			//	if (*iter == STATE(AgentBase)->uuid) {
-			//		this->last_agent = (count == this->TLAgents.size());
-			//		break;
-			//	}
-
-			//	// Increment counter (but reset when encountering an agent that has participated, because if they
-			//	// defaulted to participating after a previous agent failed, we don't want to count that extra agent)
-			//	n = !this->TLAgentData[*iter].response*(n + 1);
-
-			//	count++;
-			//}
-
-
-			//Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::step: currentTime: %I64d, timeout at: %I64d, diff: %I64d,", (currentTime.time * 1000 + currentTime.millitm) , (this->last_response_time.time * 1000 + this->last_response_time.millitm + n*this->round_timout), (this->last_response_time.time * 1000 + this->last_response_time.millitm + n*this->round_timout) - (currentTime.time * 1000 + currentTime.millitm));
-			//Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::step: currentTime: %I64d, round start at: %I64d, diff: %I64d,", (currentTime.time * 1000 + currentTime.millitm), (this->round_start_time.time * 1000 + this->round_start_time.millitm), (this->round_start_time.time * 1000 + this->round_start_time.millitm) - (currentTime.time * 1000 + currentTime.millitm));
-		//	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::step: round start in: %I64d milliseconds", (this->round_start_time.time * 1000 + this->round_start_time.millitm) - (currentTime.time * 1000 + currentTime.millitm));
-
-			bool round_started = (currentTime.time * 1000 + currentTime.millitm) > (this->round_start_time.time * 1000 + this->round_start_time.millitm);
-			bool update_round_info = (currentTime.time * 1000 + currentTime.millitm) > (this->round_info_receive_time.time * 1000 + this->round_info_receive_time.millitm + this->round_timout);
-
-
-			if (STATE(AgentTeamLearning)->round_number > 0) {
-				// Round info is updated here after one timeout, to allow messages to come in, and cutting off any
-				// that are too old (since they are rejected based on their round number)
-				if (update_round_info && !this->round_info_set) {
-					Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::step: update_round_info");
-					STATE(AgentTeamLearning)->round_number = this->new_round_number;
-					this->lAllianceObject.myData.round_number = this->new_round_number;
-					//this->TLAgents = this->new_round_order;
-					this->round_info_set = true;
-					this->last_response_time = this->round_start_time;
-				}
-
-				if (round_started) {
-					// See if any action is required this round
-					this->checkRoundStatus();
-				}
-			}
-		}
-	}
+	//}
 	return AgentBase::step();
 }// end step
 
@@ -478,105 +482,105 @@ int AgentTeamLearning::step() {
 * round (i.e. distributing a new randomized round order) by calling initiateNextRound.
 */
 int AgentTeamLearning::checkRoundStatus() {
-//	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus");
-
-	
-	int n = 0;                 // Count of how many agents ahead of us left to participate
-	this->last_agent = false;   // Flag for if we are the last agent in the round (and need to initiate the next round)
-	
-	// Find the number of agents ahead that still need to participate
-	std::vector<UUID>::iterator iter;
-	int count = 1;
-	for (iter = this->TLAgents.begin(); iter != this->TLAgents.end(); ++iter) {
-		//Log.log(0, " AgentTeamLearning::checkRoundStatus:: last agent iter %s", Log.formatUUID(0, &*iter));
-		// Stop counting once we've found ourself
-		if (*iter == STATE(AgentBase)->uuid) {
-			this->last_agent = (count == this->TLAgents.size());
-			break;
-		}
-
-		// Increment counter (but reset when encountering an agent that has participated, because if they
-		// defaulted to participating after a previous agent failed, we don't want to count that extra agent)
-		n = !this->TLAgentData[*iter].response*(n + 1);
-
-		count++;
-	}
-
-	// Only proceed if we have not participated in this round yet
-	if (this->TLAgentData[STATE(AgentBase)->uuid].response) {
-		// Do we need to initiate the next round?
-		if (last_agent)		//need to check if we are last in case we have just recovered/been transferred, which sets the response flag to prevent participation immediately following a recovery/transfer, but still requires a new round to be broadcast if we're last
-			this->initiateNextRound();
-		return 0;
-	}
-
-	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Waiting for %d agents ahead of us.", n);
-
-
-	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Round %d: n is: %d", STATE(AgentTeamLearning)->round_number, n );
-
-	// Perform task allocation, only when we are next in line or previous agents have timed out
-	_timeb currentTime;
-	_ftime64_s(&currentTime);
-	if (n == 0 || (currentTime.time * 1000 + currentTime.millitm) > (this->last_response_time.time * 1000 + this->last_response_time.millitm + n*this->round_timout)) {
-		
-		if (n > 0)
-			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Round %d: Timed out waiting for response.", STATE(AgentTeamLearning)->round_number);
-		
-		// Record our previous task
-		UUID prev_task_id = this->lAllianceObject.myData.taskId;
-
-		// Perform the L-Alliance algorithm
-		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Round %d: Updating and performing task selection.", STATE(AgentTeamLearning)->round_number);
-		if (this->lAllianceObject.updateTaskProperties(this->mTaskList)) {	//If updateTaskProperties returns true, the assigned task was acquiesced
-			this->mTaskList[prev_task_id]->agentUUID = nilUUID;
-			this->mTaskList[prev_task_id]->avatar = nilUUID;
-		}
-		this->lAllianceObject.chooseTask(this->mTaskList);
-		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Round %d: My task is: %s", STATE(AgentTeamLearning)->round_number, Log.formatUUID(0, &this->lAllianceObject.myData.taskId));
-		// Upload the new task data (DDBTask), and 
-		UUID new_task_id = this->lAllianceObject.myData.taskId;
-		if (new_task_id == nilUUID) {
-			//Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus:HURDURR???");
-
-			// When voluntarily leaving a task upload nil task data (DDBTask) to DDB to reset the task
-			uploadTask(prev_task_id, nilUUID, nilUUID, false);
-		}
-		else {
-			this->mTaskList[new_task_id]->agentUUID = *this->getUUID();
-			this->mTaskList[new_task_id]->avatar = STATE(AgentTeamLearning)->ownerId;
-
-
-//			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Round %d: Uploaded task is: %s, uploaded agent id is %s, uploaded avatar id is: %s, and the uploaded task status is: %d", STATE(AgentTeamLearning)->round_number, Log.formatUUID(0, &new_task_id), Log.formatUUID(0, &this->mTaskList[new_task_id]->agentUUID), Log.formatUUID(0, &this->mTaskList[new_task_id]->avatar), this->mTaskList[new_task_id]->completed);
-			this->uploadTask(prev_task_id, nilUUID, nilUUID, false);
-			this->uploadTask(new_task_id, this->mTaskList[new_task_id]->agentUUID, this->mTaskList[new_task_id]->avatar, this->mTaskList[new_task_id]->completed);
-		}
-
-		// Upload the L-Alliance data (DDBTaskData)
-		this->uploadTaskDataInfo();
-
-		Log.log(0, "My agent id is %s, my task id is %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &this->lAllianceObject.myData.taskId));
-		Log.log(0, "TASKLIST \n");
-		for (auto& taskIter : mTaskList) {
-			Log.log(0, "Task: %s, agent:%s, avatar:%s, type: %d completed:%d", Log.formatUUID(0, &(UUID)taskIter.first), Log.formatUUID(0, &taskIter.second->agentUUID), Log.formatUUID(0, &taskIter.second->avatar), taskIter.second->type, taskIter.second->completed);
-		}
-		Log.log(0, "TASKDATA \n");
-		for (auto& tdIter : lAllianceObject.teammatesData) {
-			Log.log(0, "Task: %s, agent:%s, avatar:%s", Log.formatUUID(0, &tdIter.second.taskId), Log.formatUUID(0, &tdIter.second.agentId), Log.formatUUID(0, &(UUID)tdIter.first));
-		}
-
-
-
-		// Mark our participation
-		this->TLAgentData[STATE(AgentBase)->uuid].response = true;
-
-		// Do we need to initiate the next round?
-		if (last_agent)
-			this->initiateNextRound();
-
-		this->backup();
-	}
-
+////	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus");
+//
+//	
+//	int n = 0;                 // Count of how many agents ahead of us left to participate
+//	this->last_agent = false;   // Flag for if we are the last agent in the round (and need to initiate the next round)
+//	
+//	// Find the number of agents ahead that still need to participate
+//	std::vector<UUID>::iterator iter;
+//	int count = 1;
+//	for (iter = this->TLAgents.begin(); iter != this->TLAgents.end(); ++iter) {
+//		//Log.log(0, " AgentTeamLearning::checkRoundStatus:: last agent iter %s", Log.formatUUID(0, &*iter));
+//		// Stop counting once we've found ourself
+//		if (*iter == STATE(AgentBase)->uuid) {
+//			this->last_agent = (count == this->TLAgents.size());
+//			break;
+//		}
+//
+//		// Increment counter (but reset when encountering an agent that has participated, because if they
+//		// defaulted to participating after a previous agent failed, we don't want to count that extra agent)
+//		n = !this->TLAgentData[*iter].response*(n + 1);
+//
+//		count++;
+//	}
+//
+//	// Only proceed if we have not participated in this round yet
+//	if (this->TLAgentData[STATE(AgentBase)->uuid].response) {
+//		// Do we need to initiate the next round?
+//		if (last_agent)		//need to check if we are last in case we have just recovered/been transferred, which sets the response flag to prevent participation immediately following a recovery/transfer, but still requires a new round to be broadcast if we're last
+//			this->initiateNextRound();
+//		return 0;
+//	}
+//
+//	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Waiting for %d agents ahead of us.", n);
+//
+//
+//	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Round %d: n is: %d", STATE(AgentTeamLearning)->round_number, n );
+//
+//	// Perform task allocation, only when we are next in line or previous agents have timed out
+//	_timeb currentTime;
+//	_ftime64_s(&currentTime);
+//	if (n == 0 || (currentTime.time * 1000 + currentTime.millitm) > (this->last_response_time.time * 1000 + this->last_response_time.millitm + n*this->round_timout)) {
+//		
+//		if (n > 0)
+//			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Round %d: Timed out waiting for response.", STATE(AgentTeamLearning)->round_number);
+//		
+//		// Record our previous task
+//		UUID prev_task_id = this->lAllianceObject.myData.taskId;
+//
+//		// Perform the L-Alliance algorithm
+//		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Round %d: Updating and performing task selection.", STATE(AgentTeamLearning)->round_number);
+//		if (this->lAllianceObject.updateTaskProperties(this->mTaskList)) {	//If updateTaskProperties returns true, the assigned task was acquiesced
+//			this->mTaskList[prev_task_id]->agentUUID = nilUUID;
+//			this->mTaskList[prev_task_id]->avatar = nilUUID;
+//		}
+//		this->lAllianceObject.chooseTask(this->mTaskList);
+//		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Round %d: My task is: %s", STATE(AgentTeamLearning)->round_number, Log.formatUUID(0, &this->lAllianceObject.myData.taskId));
+//		// Upload the new task data (DDBTask), and 
+//		UUID new_task_id = this->lAllianceObject.myData.taskId;
+//		if (new_task_id == nilUUID) {
+//			//Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus:HURDURR???");
+//
+//			// When voluntarily leaving a task upload nil task data (DDBTask) to DDB to reset the task
+//			uploadTask(prev_task_id, nilUUID, nilUUID, false);
+//		}
+//		else {
+//			this->mTaskList[new_task_id]->agentUUID = *this->getUUID();
+//			this->mTaskList[new_task_id]->avatar = STATE(AgentTeamLearning)->ownerId;
+//
+//
+////			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Round %d: Uploaded task is: %s, uploaded agent id is %s, uploaded avatar id is: %s, and the uploaded task status is: %d", STATE(AgentTeamLearning)->round_number, Log.formatUUID(0, &new_task_id), Log.formatUUID(0, &this->mTaskList[new_task_id]->agentUUID), Log.formatUUID(0, &this->mTaskList[new_task_id]->avatar), this->mTaskList[new_task_id]->completed);
+//			this->uploadTask(prev_task_id, nilUUID, nilUUID, false);
+//			this->uploadTask(new_task_id, this->mTaskList[new_task_id]->agentUUID, this->mTaskList[new_task_id]->avatar, this->mTaskList[new_task_id]->completed);
+//		}
+//
+//		// Upload the L-Alliance data (DDBTaskData)
+//		this->uploadTaskDataInfo();
+//
+//		Log.log(0, "My agent id is %s, my task id is %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &this->lAllianceObject.myData.taskId));
+//		Log.log(0, "TASKLIST \n");
+//		for (auto& taskIter : mTaskList) {
+//			Log.log(0, "Task: %s, agent:%s, avatar:%s, type: %d completed:%d", Log.formatUUID(0, &(UUID)taskIter.first), Log.formatUUID(0, &taskIter.second->agentUUID), Log.formatUUID(0, &taskIter.second->avatar), taskIter.second->type, taskIter.second->completed);
+//		}
+//		Log.log(0, "TASKDATA \n");
+//		for (auto& tdIter : lAllianceObject.teammatesData) {
+//			Log.log(0, "Task: %s, agent:%s, avatar:%s", Log.formatUUID(0, &tdIter.second.taskId), Log.formatUUID(0, &tdIter.second.agentId), Log.formatUUID(0, &(UUID)tdIter.first));
+//		}
+//
+//
+//
+//		// Mark our participation
+//		this->TLAgentData[STATE(AgentBase)->uuid].response = true;
+//
+//		// Do we need to initiate the next round?
+//		if (last_agent)
+//			this->initiateNextRound();
+//
+//		this->backup();
+//	}
+//
 	return 0;
 }
 
@@ -590,14 +594,14 @@ int AgentTeamLearning::checkRoundStatus() {
 * upon receiving the message sent by this method.
 */
 int AgentTeamLearning::initiateNextRound() { 
-//	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::initiateNextRound: Round %d: Sending info for the next round.", STATE(AgentTeamLearning)->round_number);
+	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::initiateNextRound: Round %d: Sending info for the next round.", STATE(AgentTeamLearning)->round_number);
 
 	//// Increment our own round counters (others will increment when they receive the message)
 	//STATE(AgentTeamLearning)->round_number++;
 	//this->lAllianceObject.myData.round_number = STATE(AgentTeamLearning)->round_number;
 
 	STATE(AgentTeamLearning)->round_number++;
-//	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::initiateNextRound: New round number is: %d.", this->new_round_number);
+	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::initiateNextRound: New round number is: %d.", STATE(AgentTeamLearning)->round_number);
 
 	// Set the next round start time
 	_ftime64_s(&this->round_start_time);
@@ -1479,6 +1483,7 @@ bool AgentTeamLearning::convGetRoundInfo(void * vpConv)
 	lds.unpackData(sizeof(UUID)); // discard thread
 	char response = lds.unpackChar();
 	int pos = 0;
+	int count = 0;
 //	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 1");
 	if (response == DDBR_OK) { // succeeded
 //		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 2");
@@ -1490,7 +1495,7 @@ bool AgentTeamLearning::convGetRoundInfo(void * vpConv)
 //		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 5");
 		this->round_start_time = *(_timeb*)lds.unpackData(sizeof(_timeb));
 //		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 6");
-		int count = lds.unpackInt32();
+		count = lds.unpackInt32();
 //		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 7");
 		this->TLAgents.clear();
 //		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 8");
@@ -1511,18 +1516,49 @@ bool AgentTeamLearning::convGetRoundInfo(void * vpConv)
 
 		}
 
-		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo: Received info for new round %d, our position is %d.", STATE(AgentTeamLearning)->round_number, pos);
-
 
 	}
 	lds.unlock();
 
-	STATE(AgentTeamLearning)->cbTLUpdateId = this->addTimeout(DELTA_LEARN_TIME+(pos-1)*TL_AGENT_TIMEOUT, AgentTeamLearning_CBR_cbUpdateTLData);
+	// Set time for next TL data update
+
+	_timeb currentTime;
+	_ftime64_s(&currentTime);	//Current time
+	int timeUntilNextRound = this->round_start_time.time * 1000 + this->round_start_time.millitm - (currentTime.time * 1000 + currentTime.millitm);	//Get diff in millisecs to 
+
+	Log.log(0, "AgentTeamLearning::DDB_TL_ROUND_INFO:: Removing timeouts with ids %s and %s", Log.formatUUID(0, &STATE(AgentTeamLearning)->cbTLUpdateId), Log.formatUUID(0, &STATE(AgentTeamLearning)->cbTLNextRoundId));
+
+	this->removeTimeout(&STATE(AgentTeamLearning)->cbTLUpdateId);
+	if(timeUntilNextRound > 0)
+		this->removeTimeout(&STATE(AgentTeamLearning)->cbTLNextRoundId);
+	else
+		Log.log(0, "AgentTeamLearning::DDB_TL_ROUND_INFO:: Negative time to next round, keeping timeout");
+
+
+
+
+	STATE(AgentTeamLearning)->cbTLUpdateId = this->addTimeout(timeUntilNextRound +(pos-1)*TL_AGENT_TIMEOUT, AgentTeamLearning_CBR_cbUpdateTLData);
 	if (STATE(AgentTeamLearning)->cbTLUpdateId == nilUUID) {
-		Log.log(0, "AgentTeamLearning::convGetRoundInfo: addTimeout failed");
+		Log.log(0, "AgentTeamLearning::convGetRoundInfo:cbTLUpdateId: addTimeout failed");
 		return 1;
 	}
 
+	if (pos == count) {	//Last agent
+		pos = 0;	//For round initiation, the last agent is first
+	}
+	STATE(AgentTeamLearning)->cbTLNextRoundId = this->addTimeout(timeUntilNextRound + (count)*TL_AGENT_TIMEOUT + (1+pos)*TL_AGENT_TIMEOUT, AgentTeamLearning_CBR_cbInitiateNewRound);
+	if (STATE(AgentTeamLearning)->cbTLNextRoundId == nilUUID) {
+		Log.log(0, "AgentTeamLearning::convGetRoundInfo:cbTLNextRoundId: addTimeout failed");
+		return 1;
+	}
+
+	if (pos == 0) {	//Last agent
+		pos = count;	//For round initiation, the last agent is first
+	}
+
+	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo: Received info for new round %d, our position is %d.", STATE(AgentTeamLearning)->round_number, pos);
+	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo: I make my next task selection in %d milliseconds.", timeUntilNextRound + (pos - 1)*TL_AGENT_TIMEOUT);
+	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo: I initiate a new round in %d milliseconds.", timeUntilNextRound + (count)*TL_AGENT_TIMEOUT + pos*TL_AGENT_TIMEOUT);
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -1582,13 +1618,13 @@ bool AgentTeamLearning::convUpdateTLData(void * vpConv)
 	UUID prev_task_id = this->lAllianceObject.myData.taskId;
 
 	// Perform the L-Alliance algorithm
-	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Round %d: Updating and performing task selection.", STATE(AgentTeamLearning)->round_number);
-	if (this->lAllianceObject.updateTaskProperties(this->mTaskList)) {	//If updateTaskProperties returns true, the assigned task was acquiesced
+	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convUpdateTLData: Round %d: Updating and performing task selection.", STATE(AgentTeamLearning)->round_number);
+	if (this->lAllianceObject.updateTaskProperties(this->mTaskList)) {	//If updateTaskProperties returns true, the assigned task was acquiesced or finished
 		this->mTaskList[prev_task_id]->agentUUID = nilUUID;
 		this->mTaskList[prev_task_id]->avatar = nilUUID;
 	}
 	this->lAllianceObject.chooseTask(this->mTaskList);
-	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Round %d: My task is: %s", STATE(AgentTeamLearning)->round_number, Log.formatUUID(0, &this->lAllianceObject.myData.taskId));
+	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convUpdateTLData: Round %d: My task is: %s", STATE(AgentTeamLearning)->round_number, Log.formatUUID(0, &this->lAllianceObject.myData.taskId));
 	// Upload the new task data (DDBTask), and 
 	UUID new_task_id = this->lAllianceObject.myData.taskId;
 	if (new_task_id == nilUUID) {
@@ -1622,18 +1658,24 @@ bool AgentTeamLearning::convUpdateTLData(void * vpConv)
 
 
 
-
-
-
-	// Do we need to initiate the next round?
-	if (last_agent)
-		this->initiateNextRound();
+	//// Do we need to initiate the next round?
+	//if (last_agent)
+	//	this->initiateNextRound();
 
 	this->backup();
 
 
 
 
+	return false;
+}
+
+bool AgentTeamLearning::convInitiateNewRound(void * vpConv)
+{
+	if (this->TLAgents.back() != STATE(AgentBase)->uuid)
+		Log.log(0, "AgentTeamLearning::convInitiateNewRound: We are not the last agent of the previous round, at least one agent has failed. Proceeding to initiate next round.");
+
+	this->initiateNextRound();
 	return false;
 }
 
@@ -1699,8 +1741,8 @@ int	AgentTeamLearning::writeState(DataStream *ds, bool top) {
 	ds->packData(&round_start_time, sizeof(_timeb));
 	ds->packData(&last_response_time, sizeof(_timeb));
 	ds->packData(&round_info_receive_time, sizeof(_timeb));
-	ds->packInt32(new_round_number);
-	_WRITE_STATE_VECTOR(UUID, &new_round_order);
+	//ds->packInt32(new_round_number);
+	//_WRITE_STATE_VECTOR(UUID, &new_round_order);
 	ds->packBool(round_info_set);
 	ds->packBool(last_agent);
 	
@@ -1764,8 +1806,8 @@ int	AgentTeamLearning::readState(DataStream *ds, bool top) {
 	round_start_time = *(_timeb*)ds->unpackData(sizeof(_timeb));
 	last_response_time = *(_timeb*)ds->unpackData(sizeof(_timeb));
 	round_info_receive_time = *(_timeb*)ds->unpackData(sizeof(_timeb));
-	new_round_number = ds->unpackInt32();
-	_READ_STATE_VECTOR(UUID, &new_round_order);
+	//new_round_number = ds->unpackInt32();
+	//_READ_STATE_VECTOR(UUID, &new_round_order);
 	round_info_set = ds->unpackBool();
 	last_agent = ds->unpackBool();
 
@@ -1885,6 +1927,9 @@ int AgentTeamLearning::readBackup(DataStream *ds) {
 
 
 	 _READ_STATE(AgentTeamLearning);
+
+	 this->removeTimeout(&STATE(AgentTeamLearning)->cbTLUpdateId);
+	 this->removeTimeout(&STATE(AgentTeamLearning)->cbTLNextRoundId);
 
 	//Log.log(0, "AgentTeamLearning::readBackup : STATE WILL BE READ 1 ");
 	//ds->unpackUUID(&lAllianceObject.id);

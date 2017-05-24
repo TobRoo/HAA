@@ -53,7 +53,8 @@ public:
 		// V2 team learning comms
 		int round_number;  // Counter for the current task allocation round
 
-		UUID cbTLUpdateId;
+		UUID cbTLUpdateId;	//callback id for the team learning data update
+		UUID cbTLNextRoundId; //callback id for the team learning next round initiation 
 	};
 
 	// Random number generator
@@ -130,6 +131,7 @@ public:
 		AgentTeamLearning_CBR_convGetRunNumber,
 		AgentTeamLearning_CBR_convGetRoundInfo,
 		AgentTeamLearning_CBR_cbUpdateTLData,
+		AgentTeamLearning_CBR_cbInitiateNewRound,
 	};
 
 	// Define callback functions (make sure they match CallbackRef above and are added to this->callback during agent creation)
@@ -143,6 +145,7 @@ public:
 	bool convGetRunNumber(void *vpConv);
 	bool convGetRoundInfo(void *vpConv);
 	bool convUpdateTLData(void *vpConv);
+	bool convInitiateNewRound(void *vpConv);
 
 protected:
 	virtual int	  freeze( UUID *ticket );

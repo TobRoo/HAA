@@ -1830,7 +1830,7 @@ bool ExecutiveMission::convGetTaskInfo(void * vpConv)
 		}
 
 		lds.unlock();
-		Log.log(LOG_LEVEL_NORMAL, "ExecutiveMission::convGetTaskList:  task completed, checking full list for scenario completion...");
+		Log.log(LOG_LEVEL_NORMAL, "ExecutiveMission::convGetTaskInfo:  task completed, checking full list for scenario completion...");
 		
 		// request list of tasks
 		UUID thread = this->conversationInitiate(ExecutiveMission_CBR_convGetTaskList, DDB_REQUEST_TIMEOUT);

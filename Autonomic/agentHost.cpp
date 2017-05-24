@@ -13993,7 +13993,7 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		break;
 	case OAC_DDB_TL_ROUND_INFO:
 		{
-		Log.log(0, "YEAH!");
+		Log.log(0, "OAC_DDB_TL_ROUND_INFO received at host");
 		UUID sender;
 		RoundInfoStruct newRoundInfo;
 
@@ -14001,7 +14001,7 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 		lds.unpackUUID(&sender);
 
 		newRoundInfo.roundNumber = lds.unpackInt32();  // Current round number
-		newRoundInfo.newRoundNumber = lds.unpackInt32();  // Next round number
+		//newRoundInfo.newRoundNumber = lds.unpackInt32();  // Next round number
 		newRoundInfo.startTime = *(_timeb *)lds.unpackData(sizeof(_timeb)); // Next round start time
 																			
 		int numberOfAgents = lds.unpackInt32();
@@ -14015,7 +14015,7 @@ int AgentHost::conProcessMessage( spConnection con, unsigned char message, char 
 
 		lds.unlock();
 		this->dStore->SetTLRoundInfo(&newRoundInfo);
-		Log.log(0, "Sending new round info: Current round number %d, new round number %d.", newRoundInfo.roundNumber, newRoundInfo.newRoundNumber);
+		Log.log(0, "Sending new round info: Round number %d", newRoundInfo.roundNumber);
 
 		this->_ddbNotifyWatchers(this->getUUID(), DDB_TL_ROUND_INFO, DDBE_UPDATE, &nilUUID);
 		this->globalStateChangeForward(message, data, len); // forward to mirrors and sponsees

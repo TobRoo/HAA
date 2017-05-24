@@ -4987,7 +4987,7 @@ int DDBStore::SetTLRoundInfo(RoundInfoStruct *newRoundInfo) {
 
 
 	this->DDBTLRoundInfo.roundNumber = newRoundInfo->roundNumber;
-	this->DDBTLRoundInfo.newRoundNumber = newRoundInfo->newRoundNumber;
+//	this->DDBTLRoundInfo.newRoundNumber = newRoundInfo->newRoundNumber;
 	this->DDBTLRoundInfo.startTime = newRoundInfo->startTime;
 	this->DDBTLRoundInfo.TLAgents = newRoundInfo->TLAgents;
 
@@ -5003,7 +5003,7 @@ int DDBStore::GetTLRoundInfo(DataStream *ds, UUID *thread) {
 	// send task data
 	ds->packChar(DDBR_OK);
 	ds->packInt32(this->DDBTLRoundInfo.roundNumber);
-	ds->packInt32(this->DDBTLRoundInfo.newRoundNumber);
+//	ds->packInt32(this->DDBTLRoundInfo.newRoundNumber);
 	ds->packData(&this->DDBTLRoundInfo.startTime, sizeof(_timeb));
 	ds->packInt32(this->DDBTLRoundInfo.TLAgents.size());
 	for (auto tlAIter : this->DDBTLRoundInfo.TLAgents) {

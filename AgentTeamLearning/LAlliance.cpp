@@ -91,6 +91,13 @@ bool LAlliance::updateTaskProperties(const taskList &tasks) {
 
 	bool hasAcquiesced;
 
+	if (myData.taskId != nilUUID) {
+		if (tasks.at(myData.taskId)->completed) {	//may have completed while we were in failure mode
+			finishTask();
+			hasAcquiesced = true;	//So that mTaskList is properly updated in AgentTeamLearning
+		}
+	}
+
     // Increment time on task
     if (myData.taskId != nilUUID) {
         myData.psi += motivFreq;
@@ -296,7 +303,7 @@ int LAlliance::updateImpatience(const taskList &tasks, bool hasAcquiesced) {
 
         // Only use the slow update rate [Girard, 2015]
         // Only update for tasks not assigned to this avatar
-        if (taskIter->second->avatar != id && !hasAcquiesced) {		//If the agent has just acquiesced, not ask is assigned
+        if (taskIter->second->avatar != id && !hasAcquiesced) {		//If the agent has just acquiesced, no task is assigned
             // Avatar assigned to task, so grow at slow rate
             myData.impatience[taskIter->first] = impatienceRateTheta / myData.tau[taskIter->first];
         } else {
