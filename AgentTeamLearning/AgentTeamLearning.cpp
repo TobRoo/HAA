@@ -16,6 +16,7 @@
 
 using namespace AvatarBase_Defs;
 
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -52,14 +53,12 @@ AgentTeamLearning::AgentTeamLearning(spAddressPort ap, UUID *ticket, int logLeve
 
 	// V2 team learning stuff
 	STATE(AgentTeamLearning)->round_number = 0;
-	this->new_round_number = 0;
+	//this->new_round_number = 0;
 	this->lAllianceObject.myData.round_number = 0;
 	this->round_info_set = true;
-	this->delta_learn_time = 3000; // [ms]
-	this->round_timout = 200;  // [ms]
+	//this->delta_learn_time = 3000; // [ms]
+	//this->round_timout = 200;  // [ms]
 	this->last_agent = false;
-
-	this->tempCounter = -300;
 	
 	// Prepare callbacks
 	this->callback[AgentTeamLearning_CBR_convGetAgentList] = NEW_MEMBER_CB(AgentTeamLearning, convGetAgentList);
@@ -71,6 +70,8 @@ AgentTeamLearning::AgentTeamLearning(spAddressPort ap, UUID *ticket, int logLeve
 	this->callback[AgentTeamLearning_CBR_convReqMotReset] = NEW_MEMBER_CB(AgentTeamLearning, convReqMotReset);
 	this->callback[AgentTeamLearning_CBR_convGetRunNumber] = NEW_MEMBER_CB(AgentTeamLearning, convGetRunNumber);
 	this->callback[AgentTeamLearning_CBR_convGetRoundInfo] = NEW_MEMBER_CB(AgentTeamLearning, convGetRoundInfo);
+	this->callback[AgentTeamLearning_CBR_cbUpdateTLData] = NEW_MEMBER_CB(AgentTeamLearning, convUpdateTLData);
+	
 	
 }// end constructor
 
@@ -358,6 +359,14 @@ int AgentTeamLearning::start(char *missionFile) {
 		lds.unlock();
 	}
 	Log.log(LOG_LEVEL_NORMAL, "My instance is: %d", STATE(AgentTeamLearning)->avatarInstance);
+
+
+
+	// Find out if we are first and need to initiate the first round (later round are initiated by the last agent
+
+	if (this->TLAgents.at(0) == STATE(AgentBase)->uuid) {
+		this->initiateNextRound();
+	}
 	STATE(AgentBase)->started = true;
 	//this->checkRoundStatus();
 	return 0;
@@ -587,62 +596,62 @@ int AgentTeamLearning::initiateNextRound() {
 	//STATE(AgentTeamLearning)->round_number++;
 	//this->lAllianceObject.myData.round_number = STATE(AgentTeamLearning)->round_number;
 
-	this->new_round_number++;
+	STATE(AgentTeamLearning)->round_number++;
 //	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::initiateNextRound: New round number is: %d.", this->new_round_number);
 
 	// Set the next round start time
 	_ftime64_s(&this->round_start_time);
-	this->round_start_time.millitm += this->delta_learn_time;
+	this->round_start_time.millitm += DELTA_LEARN_TIME;
 
 	// Randomize the agent list
 	std::random_shuffle(this->TLAgents.begin(), this->TLAgents.end());
 
 	// Send the info for the next round
 	DataStream lds;
-	std::vector<UUID>::iterator iter_outer;
+	//std::vector<UUID>::iterator iter_outer;
 	std::vector<UUID>::iterator iter_inner;
-	int pos = 1;
-	for (iter_outer = this->TLAgents.begin(); iter_outer != this->TLAgents.end(); ++iter_outer) {
+	//int pos = 1;
+	//for (iter_outer = this->TLAgents.begin(); iter_outer != this->TLAgents.end(); ++iter_outer) {
 
-		//// Zero everyone's response
-		//this->TLAgentData[*iter_outer].response = false;
+	//	//// Zero everyone's response
+	//	//this->TLAgentData[*iter_outer].response = false;
 
-		// Don't send to ourselves
-		if (*iter_outer == STATE(AgentBase)->uuid) {
-			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::initiateNextRound: Round %d: This round our position is %d.", this->new_round_number, pos);
-		}
-		//else {
-			pos++;
+	//	// Don't send to ourselves
+	//	//if (*iter_outer == STATE(AgentBase)->uuid) {
+	//	//	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::initiateNextRound: Round %d: This round our position is %d.", this->new_round_number, pos);
+	//	//}
+	//	//else {
+	//		//pos++;
 
-			// Send the data
-	//		lds.reset();
-	//		lds.packUUID(this->getUUID());	//Sender id
-	//		lds.packInt32(this->new_round_number);  // Next round number
-	//		lds.packData(&this->round_start_time, sizeof(_timeb));  // Next round start time
+	//		// Send the data
+	////		lds.reset();
+	////		lds.packUUID(this->getUUID());	//Sender id
+	////		lds.packInt32(this->new_round_number);  // Next round number
+	////		lds.packData(&this->round_start_time, sizeof(_timeb));  // Next round start time
 
-	//		// Pack the new (randomized) list
-	//		for (iter_inner = this->TLAgents.begin(); iter_inner != this->TLAgents.end(); ++iter_inner) {
-	//			lds.packUUID(&*iter_inner);
-	//		}
+	////		// Pack the new (randomized) list
+	////		for (iter_inner = this->TLAgents.begin(); iter_inner != this->TLAgents.end(); ++iter_inner) {
+	////			lds.packUUID(&*iter_inner);
+	////		}
 
-	////		this->sendMessageEx(this->hostCon, MSGEX(AgentTeamLearning_MSGS, MSG_ROUND_INFO), lds.stream(), lds.length(), &*iter_outer);
-	//		lds.unlock();
-		/*}*/
+	//////		this->sendMessageEx(this->hostCon, MSGEX(AgentTeamLearning_MSGS, MSG_ROUND_INFO), lds.stream(), lds.length(), &*iter_outer);
+	////		lds.unlock();
+	//	/*}*/
 
-			//Try DDB upload for better reliability in case of failures
+	//		//Try DDB upload for better reliability in case of failures
 
-	}
+	//}
 
 	lds.reset();
 	lds.packUUID(this->getUUID());	//Sender id
 	lds.packInt32(STATE(AgentTeamLearning)->round_number);		//Current round number
-	lds.packInt32(this->new_round_number);  // Next round number
+	//lds.packInt32(this->new_round_number);  // Next round number
 	lds.packData(&this->round_start_time, sizeof(_timeb));  // Next round start time
 	lds.packInt32(this->TLAgents.size());
 
 	// Pack the new (randomized) list
-	for (iter_inner = this->TLAgents.begin(); iter_inner != this->TLAgents.end(); ++iter_inner) {
-		lds.packUUID(&*iter_inner);
+	for (auto &iter : this->TLAgents) {
+		lds.packUUID(&iter);
 	}
 	this->sendMessage(this->hostCon, MSG_DDB_TL_ROUND_INFO, lds.stream(), lds.length());
 	lds.unlock();
@@ -1129,29 +1138,29 @@ bool AgentTeamLearning::convGetAgentList(void *vpConv) {
 			this->TLAgents.push_back(*iter);
 		}
 
-		// Set the next round start time
-		_ftime64_s(&this->round_start_time);
-		this->round_start_time.millitm += this->delta_learn_time;
-		//_ftime64_s(&this->last_response_time);
-		this->last_response_time = this->round_start_time;
-		STATE(AgentTeamLearning)->round_number++;
-		this->new_round_number++;
-		this->lAllianceObject.myData.round_number++;
+		//// Set the next round start time
+		//_ftime64_s(&this->round_start_time);
+		//this->round_start_time.millitm += this->delta_learn_time;
+		////_ftime64_s(&this->last_response_time);
+		//this->last_response_time = this->round_start_time;
+		//STATE(AgentTeamLearning)->round_number++;
+		//this->new_round_number++;
+		//this->lAllianceObject.myData.round_number++;
 
-		int pos = 1;
+		//int pos = 1;
 
-		for (auto iter_outer: this->TLAgents) {
+		//for (auto iter_outer: this->TLAgents) {
 
-			//// Zero everyone's response
-			//this->TLAgentData[*iter_outer].response = false;
+		//	//// Zero everyone's response
+		//	//this->TLAgentData[*iter_outer].response = false;
 
-			// Don't send to ourselves
-			if (iter_outer == STATE(AgentBase)->uuid) {
-				Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetAgentList: Round %d: This round our position is %d.", this->new_round_number, pos);
-			}
-			//else {
-			pos++;
-		}
+		//	// Don't send to ourselves
+		//	if (iter_outer == STATE(AgentBase)->uuid) {
+		//		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetAgentList: Round %d: This round our position is %d.", this->new_round_number, pos);
+		//	}
+		//	//else {
+		//	pos++;
+		//}
 
 
 
@@ -1394,23 +1403,23 @@ bool AgentTeamLearning::convGetTaskDataInfo(void * vpConv) {
 		// Only add data about other agent's tasks, ours is handled in ddbNotification
 		if (avatarId != STATE(AgentTeamLearning)->ownerId) {
 
-			if (taskData.round_number >= STATE(AgentTeamLearning)->round_number) {
+			//if (taskData.round_number >= STATE(AgentTeamLearning)->round_number) {
 
-				if (taskData.round_number > STATE(AgentTeamLearning)->round_number)
-					STATE(AgentTeamLearning)->round_number = taskData.round_number;		//If we receive a higher round number, we are lagging behind, update...
+			//	if (taskData.round_number > STATE(AgentTeamLearning)->round_number)
+			//		STATE(AgentTeamLearning)->round_number = taskData.round_number;		//If we receive a higher round number, we are lagging behind, update...
 
-				// Valid data
+			//	// Valid data
 				lAllianceObject.teammatesData[avatarId] = taskData;
-				Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetTaskDataInfo: Received response regarding round %d.", taskData.round_number);
-				// Mark that we have received a response from this agent
-				if (STATE(AgentTeamLearning)->round_number == this->new_round_number)	//If we have received a new round number, but not yet started, do not mark as response for next round
-					this->TLAgentData[taskData.agentId].response = true;
-				_ftime64_s(&this->last_response_time);
-			}
-			else {
-				// Invalid data, corrupt or from an old round
-				Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetTaskDataInfo: Round %d: Received invalid round number (%d != %d) from %s", STATE(AgentTeamLearning)->round_number, taskData.round_number, STATE(AgentTeamLearning)->round_number, Log.formatUUID(0, &taskData.agentId));
-			}
+			//	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetTaskDataInfo: Received response regarding round %d.", taskData.round_number);
+			//	// Mark that we have received a response from this agent
+			//	if (STATE(AgentTeamLearning)->round_number == this->new_round_number)	//If we have received a new round number, but not yet started, do not mark as response for next round
+			//		this->TLAgentData[taskData.agentId].response = true;
+			//	_ftime64_s(&this->last_response_time);
+			//}
+			//else {
+			//	// Invalid data, corrupt or from an old round
+			//	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetTaskDataInfo: Round %d: Received invalid round number (%d != %d) from %s", STATE(AgentTeamLearning)->round_number, taskData.round_number, STATE(AgentTeamLearning)->round_number, Log.formatUUID(0, &taskData.agentId));
+			//}
 			
 		}
 		lds.unlock();
@@ -1459,22 +1468,23 @@ bool AgentTeamLearning::convGetRoundInfo(void * vpConv)
 	}
 
 	// The round number and agent order will be updated in the step method, once the timeout time has passed
-	this->round_info_set = false;
+	//this->round_info_set = false;
 
 	// Record when we received this message
-	_ftime64_s(&this->round_info_receive_time);
-	_ftime64_s(&this->last_response_time);
+	//_ftime64_s(&this->round_info_receive_time);
+	//_ftime64_s(&this->last_response_time);
 
 
 	lds.setData(conv->response, conv->responseLen);
 	lds.unpackData(sizeof(UUID)); // discard thread
 	char response = lds.unpackChar();
+	int pos = 0;
 //	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 1");
 	if (response == DDBR_OK) { // succeeded
 //		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 2");
 		STATE(AgentTeamLearning)->round_number = lds.unpackInt32();
 //		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 3");
-		this->new_round_number = lds.unpackInt32();
+//		this->new_round_number = lds.unpackInt32();
 //		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 4");
 		this->lAllianceObject.myData.round_number = STATE(AgentTeamLearning)->round_number;
 //		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 5");
@@ -1486,7 +1496,6 @@ bool AgentTeamLearning::convGetRoundInfo(void * vpConv)
 //		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 8");
 		UUID newUUID;
 //		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 9");
-		int pos;
 //		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 10");
 		for (int i = 0; i < count; i++) {
 //			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo 11.%d",i);
@@ -1502,14 +1511,17 @@ bool AgentTeamLearning::convGetRoundInfo(void * vpConv)
 
 		}
 
-		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo: Round %d: Received info for new round %d, our position is %d.", STATE(AgentTeamLearning)->round_number, this->new_round_number, pos);
+		Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::convGetRoundInfo: Received info for new round %d, our position is %d.", STATE(AgentTeamLearning)->round_number, pos);
 
 
 	}
 	lds.unlock();
 
-
-
+	STATE(AgentTeamLearning)->cbTLUpdateId = this->addTimeout(DELTA_LEARN_TIME+(pos-1)*TL_AGENT_TIMEOUT, AgentTeamLearning_CBR_cbUpdateTLData);
+	if (STATE(AgentTeamLearning)->cbTLUpdateId == nilUUID) {
+		Log.log(0, "AgentTeamLearning::convGetRoundInfo: addTimeout failed");
+		return 1;
+	}
 
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1559,6 +1571,68 @@ bool AgentTeamLearning::convGetRoundInfo(void * vpConv)
 
 
 	recoveryCheck(&this->AgentTeamLearning_recoveryLock3);
+
+	return false;
+}
+
+bool AgentTeamLearning::convUpdateTLData(void * vpConv)
+{
+
+	// Record our previous task
+	UUID prev_task_id = this->lAllianceObject.myData.taskId;
+
+	// Perform the L-Alliance algorithm
+	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Round %d: Updating and performing task selection.", STATE(AgentTeamLearning)->round_number);
+	if (this->lAllianceObject.updateTaskProperties(this->mTaskList)) {	//If updateTaskProperties returns true, the assigned task was acquiesced
+		this->mTaskList[prev_task_id]->agentUUID = nilUUID;
+		this->mTaskList[prev_task_id]->avatar = nilUUID;
+	}
+	this->lAllianceObject.chooseTask(this->mTaskList);
+	Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Round %d: My task is: %s", STATE(AgentTeamLearning)->round_number, Log.formatUUID(0, &this->lAllianceObject.myData.taskId));
+	// Upload the new task data (DDBTask), and 
+	UUID new_task_id = this->lAllianceObject.myData.taskId;
+	if (new_task_id == nilUUID) {
+		//Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus:HURDURR???");
+
+		// When voluntarily leaving a task upload nil task data (DDBTask) to DDB to reset the task
+		uploadTask(prev_task_id, nilUUID, nilUUID, false);
+	}
+	else {
+		this->mTaskList[new_task_id]->agentUUID = *this->getUUID();
+		this->mTaskList[new_task_id]->avatar = STATE(AgentTeamLearning)->ownerId;
+
+
+		//			Log.log(LOG_LEVEL_NORMAL, "AgentTeamLearning::checkRoundStatus: Round %d: Uploaded task is: %s, uploaded agent id is %s, uploaded avatar id is: %s, and the uploaded task status is: %d", STATE(AgentTeamLearning)->round_number, Log.formatUUID(0, &new_task_id), Log.formatUUID(0, &this->mTaskList[new_task_id]->agentUUID), Log.formatUUID(0, &this->mTaskList[new_task_id]->avatar), this->mTaskList[new_task_id]->completed);
+		this->uploadTask(prev_task_id, nilUUID, nilUUID, false);
+		this->uploadTask(new_task_id, this->mTaskList[new_task_id]->agentUUID, this->mTaskList[new_task_id]->avatar, this->mTaskList[new_task_id]->completed);
+	}
+
+	// Upload the L-Alliance data (DDBTaskData)
+	this->uploadTaskDataInfo();
+
+	Log.log(0, "My agent id is %s, my task id is %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &this->lAllianceObject.myData.taskId));
+	Log.log(0, "TASKLIST \n");
+	for (auto& taskIter : mTaskList) {
+		Log.log(0, "Task: %s, agent:%s, avatar:%s, type: %d completed:%d", Log.formatUUID(0, &(UUID)taskIter.first), Log.formatUUID(0, &taskIter.second->agentUUID), Log.formatUUID(0, &taskIter.second->avatar), taskIter.second->type, taskIter.second->completed);
+	}
+	Log.log(0, "TASKDATA \n");
+	for (auto& tdIter : lAllianceObject.teammatesData) {
+		Log.log(0, "Task: %s, agent:%s, avatar:%s", Log.formatUUID(0, &tdIter.second.taskId), Log.formatUUID(0, &tdIter.second.agentId), Log.formatUUID(0, &(UUID)tdIter.first));
+	}
+
+
+
+
+
+
+	// Do we need to initiate the next round?
+	if (last_agent)
+		this->initiateNextRound();
+
+	this->backup();
+
+
+
 
 	return false;
 }

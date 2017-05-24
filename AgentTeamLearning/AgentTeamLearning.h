@@ -9,6 +9,11 @@
 
 #include "LAlliance.h"
 
+#define DELTA_LEARN_TIME 3000 //time in ms between team learning iterations
+#define TL_AGENT_TIMEOUT 200	//The time in ms allowed for an agent to update its learning data in a round before it is assumed to have failed
+
+
+
 typedef struct TLAgentDataStruct{
 	UUID id;
 	UUID parentId;
@@ -47,6 +52,8 @@ public:
 
 		// V2 team learning comms
 		int round_number;  // Counter for the current task allocation round
+
+		UUID cbTLUpdateId;
 	};
 
 	// Random number generator
@@ -66,18 +73,16 @@ protected:
 	std::map<UUID, TLAgentDataStruct, UUIDless> TLAgentData;
 	std::vector<UUID> TLAgents;
 	_timeb round_start_time;          // Start time of the current round of learning/task allocation [ms]
-	long long round_timout;           // Maximum time for an agent to respond in a round [ms]
-	long long delta_learn_time;       // Time between rounds of learning/task allocation
+	//long long round_timout;           // Maximum time for an agent to respond in a round [ms]
+	//long long delta_learn_time;       // Time between rounds of learning/task allocation
 	_timeb last_response_time;        // Time of the last message from another agent performing task allocation
 
 	_timeb round_info_receive_time;
-	int new_round_number;
-	std::vector<UUID> new_round_order;
+	//int new_round_number;
+	//std::vector<UUID> new_round_order;
 	bool round_info_set;
 	bool last_agent;
 
-	int tempCounter;
-	
 //-----------------------------------------------------------------------------
 // Functions	
 
@@ -124,6 +129,7 @@ public:
 		AgentTeamLearning_CBR_convReqMotReset,
 		AgentTeamLearning_CBR_convGetRunNumber,
 		AgentTeamLearning_CBR_convGetRoundInfo,
+		AgentTeamLearning_CBR_cbUpdateTLData,
 	};
 
 	// Define callback functions (make sure they match CallbackRef above and are added to this->callback during agent creation)
@@ -136,6 +142,7 @@ public:
 	bool convReqMotReset(void *vpConv);
 	bool convGetRunNumber(void *vpConv);
 	bool convGetRoundInfo(void *vpConv);
+	bool convUpdateTLData(void *vpConv);
 
 protected:
 	virtual int	  freeze( UUID *ticket );
