@@ -639,6 +639,8 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 	break;
 	case AgentAdviceExchange_MSGS::MSG_REQUEST_ADVICE:
 	{
+		if (!this->recoveryInProgress && STATE(AgentAdviceExchange)->parametersSet){	//Only go if fully initialized and not in recovery
+
 		Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage: Received request for advice.");
 
 		// Clear the old data
@@ -653,7 +655,7 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 
 		// Unpack the epoch average quality
 		this->q_avg_epoch = lds.unpackFloat32();
-	
+
 		// Unpack Q values
 		for (int i = 0; i < this->num_actions_; i++) {
 			this->q_vals_in.push_back(lds.unpackFloat32());
@@ -666,9 +668,13 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 		lds.unlock();
 
 		// Proceed to ask adviser for advice
-	    this->askAdviser();
+		this->askAdviser();
 		//this->formAdvice();
 		//this->backup();
+		}
+		else {
+			Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage: Received request for advice, not ready, no replying.");
+		}
 	}
 	break;
 	case AgentAdviceExchange_MSGS::MSG_REQUEST_CAPACITY:
