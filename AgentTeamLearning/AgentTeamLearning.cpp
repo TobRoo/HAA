@@ -1529,10 +1529,9 @@ bool AgentTeamLearning::convGetRoundInfo(void * vpConv)
 	Log.log(0, "AgentTeamLearning::DDB_TL_ROUND_INFO:: Removing timeouts with ids %s and %s", Log.formatUUID(0, &STATE(AgentTeamLearning)->cbTLUpdateId), Log.formatUUID(0, &STATE(AgentTeamLearning)->cbTLNextRoundId));
 
 	this->removeTimeout(&STATE(AgentTeamLearning)->cbTLUpdateId);
-	if(timeUntilNextRound > 0)
-		this->removeTimeout(&STATE(AgentTeamLearning)->cbTLNextRoundId);
-	else
-		Log.log(0, "AgentTeamLearning::DDB_TL_ROUND_INFO:: Negative time to next round, keeping timeout");
+	this->removeTimeout(&STATE(AgentTeamLearning)->cbTLNextRoundId);
+
+
 
 
 
@@ -1546,6 +1545,12 @@ bool AgentTeamLearning::convGetRoundInfo(void * vpConv)
 	if (pos == count) {	//Last agent
 		pos = 0;	//For round initiation, the last agent is first
 	}
+
+	if (timeUntilNextRound < 0 && TLAgents.back() == STATE(AgentBase)->uuid) {
+		Log.log(0, "AgentTeamLearning::DDB_TL_ROUND_INFO:: Negative time to next round, we are last, initiating new round");
+		timeUntilNextRound = TL_AGENT_TIMEOUT;
+	}
+
 	STATE(AgentTeamLearning)->cbTLNextRoundId = this->addTimeout(timeUntilNextRound + (count)*TL_AGENT_TIMEOUT + (1+pos)*TL_AGENT_TIMEOUT, AgentTeamLearning_CBR_cbInitiateNewRound);
 	if (STATE(AgentTeamLearning)->cbTLNextRoundId == nilUUID) {
 		Log.log(0, "AgentTeamLearning::convGetRoundInfo:cbTLNextRoundId: addTimeout failed");

@@ -255,7 +255,7 @@ int AgentBase::simulateCrash() {
 	STATE(AgentBase)->stopFlag = true;
 
 	//apb->apbSleep( 30000 ); // sleep for 30 seconds
-	apb->apbSleep(15000); // sleep for 10 seconds
+	apb->apbSleep(10000); // sleep for 10 seconds
 
 	// force close all connections
 	mapConnection::iterator iterCon = this->connection.begin();
