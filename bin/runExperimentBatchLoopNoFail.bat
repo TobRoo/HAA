@@ -1,3 +1,4 @@
+@echo off
 @set /a "loopCount = 200"
 @set /a "A = 1"
 :startLoop
