@@ -233,7 +233,7 @@
       <Profile>true</Profile>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(OutDir)$(ProjectName).exe $(SolutionDir)\bin\$(ProjectName).exe</Command>
+      <Command>copy $(OutDir)$(ProjectName).exe $(SolutionDir)\bin\$(ProjectName)1.exe &amp;&amp; copy $(OutDir)$(ProjectName).exe $(SolutionDir)\bin\$(ProjectName)2.exe &amp;&amp; copy $(OutDir)$(ProjectName).exe $(SolutionDir)\bin\$(ProjectName)3.exe</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MEX64|x64'">

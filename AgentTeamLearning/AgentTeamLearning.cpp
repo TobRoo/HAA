@@ -1651,12 +1651,12 @@ bool AgentTeamLearning::convUpdateTLData(void * vpConv)
 	// Upload the L-Alliance data (DDBTaskData)
 	this->uploadTaskDataInfo();
 
-	Log.log(0, "My agent id is %s, my task id is %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &this->lAllianceObject.myData.taskId));
+	Log.log(0, "My agent id is %s, my task id is %s, my psi is %d", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &this->lAllianceObject.myData.taskId), this->lAllianceObject.myData.psi);
 	Log.log(0, "TASKLIST \n");
 	for (auto& taskIter : mTaskList) {
 		Log.log(0, "Task: %s, agent:%s, avatar:%s, type: %d completed:%d", Log.formatUUID(0, &(UUID)taskIter.first), Log.formatUUID(0, &taskIter.second->agentUUID), Log.formatUUID(0, &taskIter.second->avatar), taskIter.second->type, taskIter.second->completed);
 	}
-	Log.log(0, "TASKDATA \n");
+	Log.log(0, "TASKDATA LIST \n");
 	for (auto& tdIter : lAllianceObject.teammatesData) {
 		Log.log(0, "Task: %s, agent:%s, avatar:%s", Log.formatUUID(0, &tdIter.second.taskId), Log.formatUUID(0, &tdIter.second.agentId), Log.formatUUID(0, &(UUID)tdIter.first));
 	}
@@ -1816,7 +1816,7 @@ int	AgentTeamLearning::readState(DataStream *ds, bool top) {
 	round_info_set = ds->unpackBool();
 	last_agent = ds->unpackBool();
 
-
+	Log.log(LOG_LEVEL_NORMAL, "My instance is: %d", STATE(AgentTeamLearning)->avatarInstance);
 
 	this->TLAgentData[STATE(AgentBase)->uuid].response = true; //Directly after a transfer, do not participate in task negotiations to prevent double assignments due to missed notifications
 	return AgentBase::readState(ds, false);
@@ -1857,7 +1857,7 @@ int AgentTeamLearning::recoveryFinish() {
 	//this->checkRoundStatus();
 	////this->initiateNextRound();
 	//STATE(AgentTeamLearning)->returningFromRecovery = true;
-	
+	Log.log(LOG_LEVEL_NORMAL, "My instance is: %d", STATE(AgentTeamLearning)->avatarInstance);
 	return 0;
 }// end recoveryFinish
 

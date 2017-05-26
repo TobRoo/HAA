@@ -3,15 +3,15 @@
 @set /a "A = 3"
 :startLoop
 @ECHO Current run number is: %A%
-@start "hostLocal1" %~dp0\Autonomic.exe hostCfgs\Experiment2RCISLHighFail\hostLocal1.cfg %A% %A% data\missions\missionRCISLExperiment2HighFailure.ini
-@start "hostLocal2" %~dp0\Autonomic.exe hostCfgs\Experiment2RCISLHighFail\hostLocal2.cfg %A% %A%
-@start "hostLocal3" %~dp0\Autonomic.exe hostCfgs\Experiment2RCISLHighFail\hostLocal3.cfg %A% %A%
-@start "hostLocal4" %~dp0\Autonomic.exe hostCfgs\Experiment2RCISLHighFail\hostLocal4.cfg %A% %A%
-@start "hostExclusive" %~dp0\Autonomic.exe hostCfgs\Experiment2RCISLHighFail\hostExclusive.cfg %A% %A%
-
+@start "hostLocal1" %~dp0\Autonomic2.exe hostCfgs\Experiment2RCISLHighFail\hostLocal1.cfg %A% %A% data\missions\missionRCISLExperiment2HighFailure.ini
+@start "hostLocal2" %~dp0\Autonomic2.exe hostCfgs\Experiment2RCISLHighFail\hostLocal2.cfg %A% %A%
+@start "hostLocal3" %~dp0\Autonomic2.exe hostCfgs\Experiment2RCISLHighFail\hostLocal3.cfg %A% %A%
+@start "hostLocal4" %~dp0\Autonomic2.exe hostCfgs\Experiment2RCISLHighFail\hostLocal4.cfg %A% %A%
+@start "hostExclusive" %~dp0\Autonomic2.exe hostCfgs\Experiment2RCISLHighFail\hostExclusive.cfg %A% %A%
+goto RUNNING
 :WATCHDOG
 
-tasklist /nh /fi "imagename eq autonomic.exe" | find /i "autonomic.exe" >nul && (
+tasklist /nh /fi "imagename eq autonomic2.exe" | find /i "autonomic2.exe" >nul && (
 goto RUNNING
 )
 echo No hosts running, starting a new run...
@@ -19,7 +19,10 @@ goto NEWRUN
 :RUNNING
 echo At least one host is running, now searching for crashed ones...
 
-tasklist /nh /fi "imagename eq autonomic.exe" /fi "STATUS eq UNKNOWN" | find /i "autonomic.exe" >nul && (
+tasklist /nh /fi "imagename eq autonomic2.exe" /fi "STATUS eq UNKNOWN" | find /i "autonomic2.exe" >nul && (
+goto CRASHED
+)
+tasklist /nh /fi "imagename eq autonomic1.exe" /fi "STATUS eq NOT RESPONDING" | find /i "autonomic1.exe" >nul && (
 goto CRASHED
 )
 echo No crashed hosts, sleeping for 10 seconds...
@@ -28,7 +31,7 @@ goto WATCHDOG
 :CRASHED
 echo At least one host has crashed unexpectedly, restarting run...
 echo Killing all hosts...
-taskkill /F /IM autonomic.exe
+taskkill /F /IM autonomic2.exe
 goto REPEATRUN
 :NEWRUN
 echo Newrun
@@ -47,6 +50,7 @@ echo Newrun
 goto FIN
 :REPEATRUN
 echo Repeatrun
+timeout /t 10 /nobreak > nul
 GOTO :startLoop
 goto FIN
 :FIN

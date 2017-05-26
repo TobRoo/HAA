@@ -30,7 +30,7 @@
 LAlliance::LAlliance(AgentTeamLearning *parentAgent) {
 
     //// Algorithm variables (TODO: Load these in from a config file)
-	maxTaskTime = 1000;// 2000;//50000;// 50;//500;//2000;
+	maxTaskTime = 250;// 2000;//50000;// 50;//500;//2000;
     motivFreq = 5;
     impatienceRateTheta = 1.0f;
     stochasticUpdateTheta2 = 15.0f;
@@ -193,7 +193,9 @@ int LAlliance::chooseTask(const taskList &tasks) {
 
                     // Check if another avatar is more motivated
                     if (avatarIter->second.motivation.at(taskIter->first) > myData.motivation.at(taskIter->first)) {
-                        mostMotivated = false;
+						if (avatarIter->second.taskId == nilUUID || avatarIter->second.taskId == taskIter->first) {	//Only count the agents who do not have a task currently assigned, or are assigned to the task in question
+							mostMotivated = false;
+						}
                     }
 
                 }

@@ -2977,7 +2977,7 @@ int	AgentIndividualLearning::readState(DataStream *ds, bool top) {
 	this->totalActions = *(unsigned long*)ds->unpackData(sizeof(unsigned long));
 	this->usefulActions = *(unsigned long*)ds->unpackData(sizeof(unsigned long));
 	this->reward_activation_dist_= ds->unpackFloat32();
-
+	Log.log(0, "My instance is: %d", STATE(AgentIndividualLearning)->avatarInstance);
     return AgentBase::readState(ds, false);
 }// end readState
 
@@ -2986,7 +2986,7 @@ int AgentIndividualLearning::recoveryFinish() {
         return 1;
 
 
-
+	Log.log(0, "My instance is: %d", STATE(AgentIndividualLearning)->avatarInstance);
 
 	int action = (int)ceil(randomGenerator->Uniform01() * num_actions_);
 	Log.log(0, "RecoveryFinish actionTest: num_actions_ %d", num_actions_);
