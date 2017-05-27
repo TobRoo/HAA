@@ -17,16 +17,27 @@ echo Total Autonomic3.exe tasks running: %number%
 if %number% geq 3 (
 goto RUNNING
 )
+echo Not running...
 if %number% == 0 (
 echo No hosts running, starting a new run...
 goto NEWRUN
 )
-if %number% leq 2(
-goto CRASHED
+
+echo 1 or 2 hosts running, sleeping and checking again...
+timeout /t 20 /nobreak > nul
+set number=0
+for /f "skip=3" %%x in ('tasklist /FI "IMAGENAME eq Autonomic3.exe"') do set /a number=number+1
+echo Total Autonomic3.exe tasks running: %number%
+
+if %number% == 0 (
+echo No hosts running, starting a new run...
+goto NEWRUN
 )
+goto CRASHED
+
 
 :RUNNING
-rem echo At least one host is running, now searching for crashed ones...
+echo At least one host is running, now searching for crashed ones...
 
 tasklist /nh /fi "imagename eq Autonomic3.exe" /fi "STATUS eq UNKNOWN" | find /i "Autonomic3.exe" >nul && (
 goto CRASHED
@@ -34,7 +45,7 @@ goto CRASHED
 tasklist /nh /fi "imagename eq Autonomic3.exe" /fi "STATUS eq NOT RESPONDING" | find /i "Autonomic3.exe" >nul && (
 goto CRASHED
 )
-rem echo No crashed hosts, sleeping for 10 seconds...
+echo No crashed hosts, sleeping for 10 seconds...
 timeout /t 10 /nobreak > nul
 goto WATCHDOG
 :CRASHED
@@ -48,13 +59,14 @@ echo Newrun
 @	rem file exists, this run failed -> delete failedRun.tmp and decrement loop variable, redoing the run
 @	del "failedRun.tmp"
 @	ECHO Failed run, restarting...
+	timeout /t 10 /nobreak > nul
 	goto startLoop
 ) 
 
 
 @	set /a "A = A + 1"
-@	TIMEOUT /t 10 /nobreak > nul
-@if %A% leq %loopCount% (
+    timeout /t 10 /nobreak > nul
+@	if %A% leq %loopCount% (
 	GOTO startLoop
 )
 
