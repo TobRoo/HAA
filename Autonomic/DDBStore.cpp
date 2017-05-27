@@ -1487,12 +1487,17 @@ int DDBStore::LandmarkSetInfo( UUID *id, int infoFlags, DataStream *ds ) {
 		lm->collected = true;
 		lm->x = ds->unpackFloat32();
 		lm->y = ds->unpackFloat32();
+		lm->trueX = lm->x;
+		lm->trueY = lm->y;
+
 		Log->log(0, "DDBStore: COLLECTED at %f %f", lm->x, lm->y);
 	}
 	if (infoFlags & DDBLANDMARKINFO_DEPOSITED) {
 		lm->collected = false;
 		lm->x = ds->unpackFloat32();
 		lm->y = ds->unpackFloat32();
+		lm->trueX = lm->x;
+		lm->trueY = lm->y;
 		Log->log(0, "DDBStore: DEPOSITED at %f %f", lm->x, lm->y);
 	}
 	return infoFlags;
@@ -4151,6 +4156,15 @@ int DDBStore::AvatarGetInfo( UUID *id, int infoFlags, DataStream *ds, UUID *thre
 			if ( iterA->second->retired )
 				ds->packData( &iterA->second->endTime, sizeof(_timeb) );
 		}
+
+		if (infoFlags & DDBAVATARINFO_RTRUEPOS) {
+			ds->packUUID(&(UUID)iterA->first);
+			ds->packFloat32(iterA->second->trueX);
+			ds->packFloat32(iterA->second->trueY);
+			ds->packFloat32(iterA->second->trueR);
+		}
+
+
 	}
 
 	return 0;
@@ -4216,6 +4230,11 @@ int DDBStore::AvatarSetInfo( UUID *id, int infoFlags, DataStream *ds ) {
 		iterA->second->endTime = *(_timeb *)ds->unpackData(sizeof(_timeb));
 	}
 
+	if (infoFlags & DDBAVATARINFO_TRUEPOS) {
+		iterA->second->trueX = ds->unpackFloat32();
+		iterA->second->trueY = ds->unpackFloat32();
+		iterA->second->trueR = ds->unpackFloat32();
+	}
 	return infoFlags;
 }
 

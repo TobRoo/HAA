@@ -559,6 +559,7 @@ int AvatarSimulation::parseAvatarOutput( DataStream *ds ) {
 			break;
 		case ExecutiveSimulation_Defs::SAE_POSE_UPDATE:
 			{
+		//	Log.log(0, "AvatarSimulation::parseAvatarOutput: POSE UPDATE");
 				_timeb *t;
 				float x, y, r;
 
@@ -571,6 +572,21 @@ int AvatarSimulation::parseAvatarOutput( DataStream *ds ) {
 				STATE(AvatarSimulation)->lastUpdateVelAng = ds->unpackFloat32();
 
 				this->updateSimPos( x, y, r, t );
+
+#ifdef NO_RANDOM_ERROR
+				// update avatar capacity
+				lds.reset();
+				lds.packUUID(&STATE(AvatarBase)->avatarUUID);
+				lds.packInt32(DDBAVATARINFO_TRUEPOS);
+				lds.packFloat32(x);
+				lds.packFloat32(y);
+				lds.packFloat32(r);
+				this->sendMessage(this->hostCon, MSG_DDB_AVATARSETINFO, lds.stream(), lds.length());
+				lds.unlock();
+
+#endif
+
+
 			}
 			break;
 		case ExecutiveSimulation_Defs::SAE_SENSOR_SONAR:

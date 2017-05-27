@@ -8,30 +8,39 @@
 @start "hostLocal3" %~dp0\Autonomic1.exe hostCfgs\Experiment1RCISLNoFail\hostLocal3.cfg %A% %A%
 @start "hostLocal4" %~dp0\Autonomic1.exe hostCfgs\Experiment1RCISLNoFail\hostLocal4.cfg %A% %A%
 @start "hostExclusive" %~dp0\Autonomic1.exe hostCfgs\Experiment1RCISLNoFail\hostExclusive.cfg %A% %A%
+timeout /t 10 /nobreak > nul
 goto RUNNING
 :WATCHDOG
-
-tasklist /nh /fi "imagename eq autonomic1.exe" | find /i "autonomic1.exe" >nul && (
+set number=0
+for /f "skip=3" %%x in ('tasklist /FI "IMAGENAME eq Autonomic1.exe"') do set /a number=number+1
+echo Total Autonomic1.exe tasks running: %number%
+if %number% geq 3 (
 goto RUNNING
 )
+if %number% == 0 (
 echo No hosts running, starting a new run...
 goto NEWRUN
-:RUNNING
-echo At least one host is running, now searching for crashed ones...
+)
+if %number% leq 2(
+goto CRASHED
+)
 
-tasklist /nh /fi "imagename eq autonomic1.exe" /fi "STATUS eq UNKNOWN" | find /i "autonomic1.exe" >nul && (
+:RUNNING
+rem echo At least one host is running, now searching for crashed ones...
+
+tasklist /nh /fi "imagename eq Autonomic1.exe" /fi "STATUS eq UNKNOWN" | find /i "Autonomic1.exe" >nul && (
 goto CRASHED
 )
-tasklist /nh /fi "imagename eq autonomic1.exe" /fi "STATUS eq NOT RESPONDING" | find /i "autonomic1.exe" >nul && (
+tasklist /nh /fi "imagename eq Autonomic1.exe" /fi "STATUS eq NOT RESPONDING" | find /i "Autonomic1.exe" >nul && (
 goto CRASHED
 )
-echo No crashed hosts, sleeping for 10 seconds...
+rem echo No crashed hosts, sleeping for 10 seconds...
 timeout /t 10 /nobreak > nul
 goto WATCHDOG
 :CRASHED
 echo At least one host has crashed unexpectedly, restarting run...
 echo Killing all hosts...
-taskkill /F /IM autonomic1.exe
+taskkill /F /IM Autonomic1.exe
 goto REPEATRUN
 :NEWRUN
 echo Newrun
@@ -39,19 +48,23 @@ echo Newrun
 @	rem file exists, this run failed -> delete failedRun.tmp and decrement loop variable, redoing the run
 @	del "failedRun.tmp"
 @	ECHO Failed run, restarting...
-) ELSE (
+	goto startLoop
+) 
+
+
 @	set /a "A = A + 1"
-)
 @	TIMEOUT /t 10 /nobreak > nul
 @if %A% leq %loopCount% (
-	GOTO :startLoop
+	GOTO startLoop
 )
 
 goto FIN
 :REPEATRUN
 echo Repeatrun
 timeout /t 10 /nobreak > nul
-GOTO :startLoop
+GOTO startLoop
 goto FIN
 :FIN
 echo Simulation complete, %loopCount% runs performed
+pause
+rem tasklist /nh /fi "imagename eq Autonomic1.exe" | find /i "Autonomic1.exe" >nul && (

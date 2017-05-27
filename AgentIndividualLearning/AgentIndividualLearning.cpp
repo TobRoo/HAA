@@ -300,7 +300,7 @@ int AgentIndividualLearning::configureParameters(DataStream *ds) {
 	//Request advice exchange agent
 	this->spawnAgentAdviceExchange();
 
-    this->backup();
+    //this->backup();
 	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::configureParameters: done.");
     // finishConfigureParameters will be called once the mission region info and run number are received
 
@@ -434,7 +434,7 @@ int AgentIndividualLearning::updateStateData() {
     _timeb tb; // just a dummy
     STATE(AgentIndividualLearning)->updateId++;
     this->avatar.locValid = false;
-
+#ifndef NO_RANDOM_ERROR
     //Request this avatar's location
     lds.reset();
     lds.packUUID((UUID *)&this->avatarId);
@@ -444,13 +444,30 @@ int AgentIndividualLearning::updateStateData() {
     if (convoThread == nilUUID) {
         return 0;
     }
-    lds.reset();
-    lds.packUUID(&this->avatar.pf);
-    lds.packInt32(DDBPFINFO_CURRENT);
-    lds.packData(&tb, sizeof(_timeb)); // dummy
-    lds.packUUID(&convoThread);
-    this->sendMessage(this->hostCon, MSG_DDB_RPFINFO, lds.stream(), lds.length());
-    lds.unlock();
+
+
+	lds.reset();
+	lds.packUUID(&this->avatar.pf);
+	lds.packInt32(DDBPFINFO_CURRENT);
+	lds.packData(&tb, sizeof(_timeb)); // dummy
+	lds.packUUID(&convoThread);
+	this->sendMessage(this->hostCon, MSG_DDB_RPFINFO, lds.stream(), lds.length());
+	lds.unlock();
+#else
+	//Request this avatar's location
+	convoThread = this->conversationInitiate(AgentIndividualLearning_CBR_convRequestAvatarLoc, DDB_REQUEST_TIMEOUT);
+	if (convoThread == nilUUID) {
+		return 0;
+	}
+	
+	lds.reset();
+	lds.packUUID(&this->avatarId);
+	lds.packInt32(DDBAVATARINFO_RTRUEPOS);
+	lds.packUUID(&convoThread);
+	this->sendMessage(this->hostCon, MSG_DDB_AVATARGETINFO, lds.stream(), lds.length());
+	lds.unlock();
+#endif // !NO_RANDOM_ERROR
+#ifndef NO_RANDOM_ERROR
     //Request teammates locations
     std::map<UUID, AVATAR_INFO, UUIDless>::iterator avatarIter;
     for (avatarIter = this->otherAvatars.begin(); avatarIter != this->otherAvatars.end(); avatarIter++) {
@@ -462,6 +479,7 @@ int AgentIndividualLearning::updateStateData() {
         if (convoThread == nilUUID) {
             return 0;
         }
+
         lds.reset();
         lds.packUUID(&avatarIter->second.pf);
         lds.packInt32(DDBPFINFO_CURRENT);
@@ -469,6 +487,22 @@ int AgentIndividualLearning::updateStateData() {
         lds.packUUID(&convoThread);
         this->sendMessage(this->hostCon, MSG_DDB_RPFINFO, lds.stream(), lds.length());
         lds.unlock();
+#else
+	//Request teammates locations
+	std::map<UUID, AVATAR_INFO, UUIDless>::iterator avatarIter;
+	for (avatarIter = this->otherAvatars.begin(); avatarIter != this->otherAvatars.end(); avatarIter++) {
+		convoThread = this->conversationInitiate(AgentIndividualLearning_CBR_convRequestAvatarLoc, DDB_REQUEST_TIMEOUT);
+		if (convoThread == nilUUID) {
+			return 0;
+		}
+		
+		lds.reset();
+		lds.packUUID(&(UUID)avatarIter->first);
+		lds.packInt32(DDBAVATARINFO_RTRUEPOS);
+		lds.packUUID(&convoThread);
+		this->sendMessage(this->hostCon, MSG_DDB_AVATARGETINFO, lds.stream(), lds.length());
+		lds.unlock();
+#endif // !NO_RANDOM_ERROR
     }
 
 }
@@ -652,6 +686,11 @@ int AgentIndividualLearning::formAction() {
 
 
 			}
+		}
+		else {
+			STATE(AgentIndividualLearning)->depositRequestSent = false;
+			STATE(AgentIndividualLearning)->collectRequestSent = false;
+			this->backup();
 		}
 		STATE(AgentIndividualLearning)->action.action = INTERACT;//AvatarBase_Defs::AA_WAIT;
 		STATE(AgentIndividualLearning)->action.val = 0.0;
@@ -2032,7 +2071,10 @@ bool AgentIndividualLearning::convGetLandmarkList(void * vpConv) {
 		for (i = 0; i < count; i++) {
 			lds.unpackUUID(&landmarkId);
 			landmark = *(DDBLandmark *)lds.unpackData(sizeof(DDBLandmark)); // avatar type
-
+#ifdef NO_RANDOM_ERROR
+			landmark.x = landmark.trueX;
+			landmark.y = landmark.trueY;
+#endif
 			if (landmark.landmarkType == NON_COLLECTABLE) {
 				// This is an obstacle
 				this->obstacleList[landmark.code] = landmark;
@@ -2061,6 +2103,9 @@ bool AgentIndividualLearning::convRequestAvatarLoc(void *vpConv) {
     int infoFlags;
     char response;
     UUID avatarId;
+#ifndef NO_RANDOM_ERROR
+
+
     int updateId;
 
     lds.setData((char *)conv->data, conv->dataLen);
@@ -2136,6 +2181,73 @@ bool AgentIndividualLearning::convRequestAvatarLoc(void *vpConv) {
         Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAvatarLoc: request failed %d", response);
     }
 
+#else
+
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAvatarLoc");
+	if (conv->response == NULL) {
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAvatarLoc: request timed out");
+		return 0; // end conversation
+	}
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAvatarLoc1");
+	lds.setData(conv->response, conv->responseLen);
+	lds.unpackData(sizeof(UUID)); // discard thread
+	response = lds.unpackChar();
+	if (response == DDBR_OK) { // succeeded
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAvatarLoc2");
+							   // handle info
+		infoFlags = lds.unpackInt32();
+
+		if (infoFlags != DDBAVATARINFO_RTRUEPOS) {
+			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAvatarLoc: Incorrect response");
+			lds.unlock();
+			return 0; // what happened?
+		}
+		lds.unpackUUID(&avatarId);
+		if (avatarId == this->avatarId) {
+			// This is our avatar
+			// Save the previous position
+			STATE(AgentIndividualLearning)->prev_pos_x = this->avatar.x;
+			STATE(AgentIndividualLearning)->prev_pos_y = this->avatar.y;
+			STATE(AgentIndividualLearning)->prev_orient = this->avatar.r;
+
+			// Update the new position
+			this->avatar.x = lds.unpackFloat32();
+			this->avatar.y = lds.unpackFloat32();
+			this->avatar.r = lds.unpackFloat32();
+			this->avatar.locValid = true;
+			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAvatarLoc3");
+			//Update target location, actual landmark will be updated when cargo is dropped off
+
+			if (this->hasCargo) {
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAvatarLoc: UPDATING CARGO POS");
+				STATE(AgentIndividualLearning)->prev_target_x = this->target.x;
+				STATE(AgentIndividualLearning)->prev_target_y = this->target.y;
+				this->target.x = this->avatar.x;
+				this->target.y = this->avatar.y;
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAvatarLoc: prev_target_x %f, prev_target_y %f, this->target.x %f, this->target.y %f", STATE(AgentIndividualLearning)->prev_target_x, STATE(AgentIndividualLearning)->prev_target_y, this->target.x, this->target.y);
+
+			}
+
+			this->preActionUpdate();
+		}
+		else if (this->otherAvatars.count(avatarId)) {
+			// This is a teammate
+			// Update the new position
+			this->otherAvatars[avatarId].x = lds.unpackFloat32();
+			this->otherAvatars[avatarId].y = lds.unpackFloat32();
+			this->otherAvatars[avatarId].r = lds.unpackFloat32();
+			this->otherAvatars[avatarId].locValid = true;
+		}
+	}
+	else {
+		lds.unlock();
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convRequestAvatarLoc: request failed %d", response);
+	}
+
+
+
+
+#endif // !NO_RANDOM_ERROR
     return 0;
 }
 
@@ -2162,7 +2274,10 @@ bool AgentIndividualLearning::convLandmarkInfo(void *vpConv) {
     if (response == DDBR_OK) { // succeeded
         DDBLandmark newLandmark = *(DDBLandmark *)lds.unpackData(sizeof(DDBLandmark));
         lds.unlock();
-
+#ifdef NO_RANDOM_ERROR
+		newLandmark.x = newLandmark.trueX;
+		newLandmark.y = newLandmark.trueY;
+#endif
 		if (newLandmark.landmarkType == NON_COLLECTABLE) {			
 			// Obstacle, cannot be collected
 			this->obstacleList[newLandmark.code] = newLandmark;
@@ -2205,6 +2320,10 @@ bool AgentIndividualLearning::convGetTargetInfo(void *vpConv) {
 		if (this->target.owner == nilUUID) {
 			// There was no previous target, so set it to the new one
 			this->target = *(DDBLandmark *)lds.unpackData(sizeof(DDBLandmark));
+#ifdef NO_RANDOM_ERROR
+			this->target.x = this->target.trueX;
+			this->target.y = this->target.trueY;
+#endif
 			STATE(AgentIndividualLearning)->prev_target_x = this->target.x;
 			STATE(AgentIndividualLearning)->prev_target_y = this->target.y;
 		}
@@ -2213,6 +2332,10 @@ bool AgentIndividualLearning::convGetTargetInfo(void *vpConv) {
 			STATE(AgentIndividualLearning)->prev_target_x = this->target.x;
 			STATE(AgentIndividualLearning)->prev_target_y = this->target.y;
 			this->target = *(DDBLandmark *)lds.unpackData(sizeof(DDBLandmark));
+#ifdef NO_RANDOM_ERROR
+			this->target.x = this->target.trueX;
+			this->target.y = this->target.trueY;
+#endif
 			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convGetTargetInfo: prev_target_x %f, prev_target_y %f, this->target.x %f, this->target.y %f", STATE(AgentIndividualLearning)->prev_target_x, STATE(AgentIndividualLearning)->prev_target_y, this->target.x, this->target.y);
 
 		}

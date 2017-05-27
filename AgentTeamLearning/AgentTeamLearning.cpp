@@ -1654,9 +1654,10 @@ bool AgentTeamLearning::convUpdateTLData(void * vpConv)
 	Log.log(0, "My agent id is %s, my task id is %s, my psi is %d", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &this->lAllianceObject.myData.taskId), this->lAllianceObject.myData.psi);
 	Log.log(0, "TASKLIST \n");
 	for (auto& taskIter : mTaskList) {
-		Log.log(0, "Task: %s, agent:%s, avatar:%s, type: %d completed:%d", Log.formatUUID(0, &(UUID)taskIter.first), Log.formatUUID(0, &taskIter.second->agentUUID), Log.formatUUID(0, &taskIter.second->avatar), taskIter.second->type, taskIter.second->completed);
+		Log.log(0, "Task: %s, agent:%s, avatar:%s, type: %d completed:%d, my motivation is : %f, my impatience is %f, my tau is %f", Log.formatUUID(0, &(UUID)taskIter.first), Log.formatUUID(0, &taskIter.second->agentUUID), Log.formatUUID(0, &taskIter.second->avatar), taskIter.second->type, taskIter.second->completed, this->lAllianceObject.myData.motivation.at(taskIter.first), this->lAllianceObject.myData.impatience.at(taskIter.first), this->lAllianceObject.myData.tau.at(taskIter.first));
 	}
 	Log.log(0, "TASKDATA LIST \n");
+	Log.log(0, "Task: %s, agent:%s, avatar:%s", Log.formatUUID(0, &this->lAllianceObject.myData.taskId), Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &(UUID)STATE(AgentTeamLearning)->ownerId));
 	for (auto& tdIter : lAllianceObject.teammatesData) {
 		Log.log(0, "Task: %s, agent:%s, avatar:%s", Log.formatUUID(0, &tdIter.second.taskId), Log.formatUUID(0, &tdIter.second.agentId), Log.formatUUID(0, &(UUID)tdIter.first));
 	}

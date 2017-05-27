@@ -30,7 +30,7 @@
 LAlliance::LAlliance(AgentTeamLearning *parentAgent) {
 
     //// Algorithm variables (TODO: Load these in from a config file)
-	maxTaskTime = 250;// 2000;//50000;// 50;//500;//2000;
+	maxTaskTime = 500;// 2000;//50000;// 50;//500;//2000;
     motivFreq = 5;
     impatienceRateTheta = 1.0f;
     stochasticUpdateTheta2 = 15.0f;
@@ -89,7 +89,7 @@ int LAlliance::addTask(UUID id) {
 
 bool LAlliance::updateTaskProperties(const taskList &tasks) {
 
-	bool hasAcquiesced;
+	bool hasAcquiesced = false;
 
 	if (myData.taskId != nilUUID) {
 		if (tasks.at(myData.taskId)->completed) {	//may have completed while we were in failure mode
@@ -193,9 +193,9 @@ int LAlliance::chooseTask(const taskList &tasks) {
 
                     // Check if another avatar is more motivated
                     if (avatarIter->second.motivation.at(taskIter->first) > myData.motivation.at(taskIter->first)) {
-						if (avatarIter->second.taskId == nilUUID || avatarIter->second.taskId == taskIter->first) {	//Only count the agents who do not have a task currently assigned, or are assigned to the task in question
+						//if (avatarIter->second.taskId == nilUUID || avatarIter->second.taskId == taskIter->first) {	//Only count the agents who do not have a task currently assigned, or are assigned to the task in question
 							mostMotivated = false;
-						}
+						//}
                     }
 
                 }
@@ -295,24 +295,32 @@ int LAlliance::updateImpatience(const taskList &tasks, bool hasAcquiesced) {
 
     // Loop through each task, since impatience rates vary
     std::map<UUID, TASK, UUIDless>::const_iterator taskIter;
-    for (taskIter = tasks.begin(); taskIter != tasks.end(); taskIter++){
+	for (taskIter = tasks.begin(); taskIter != tasks.end(); taskIter++) {
 
-        // Don't update for completed tasks
-        if (taskIter->second->completed) {
-            myData.impatience[taskIter->first] = 0;
-            break;
-        }
+		// Don't update for completed tasks
+		if (taskIter->second->completed) {
+			myData.impatience[taskIter->first] = 0;
+		}
+		else {
 
-        // Only use the slow update rate [Girard, 2015]
-        // Only update for tasks not assigned to this avatar
-        if (taskIter->second->avatar != id && !hasAcquiesced) {		//If the agent has just acquiesced, no task is assigned
-            // Avatar assigned to task, so grow at slow rate
-            myData.impatience[taskIter->first] = impatienceRateTheta / myData.tau[taskIter->first];
-        } else {
-            myData.impatience[taskIter->first] =0;
-        }
+			// Only use the slow update rate [Girard, 2015]
+			// Only update for tasks not assigned to this avatar
+			if (taskIter->second->agentUUID != *this->parentAgent->getUUID()) {
+				if (!hasAcquiesced) {		//If the agent has just acquiesced, no task is assigned
+				// Avatar assigned to task, so grow at slow rate
+					myData.impatience[taskIter->first] = impatienceRateTheta / myData.tau[taskIter->first];
+				}
+			}
+			else {
+				myData.impatience[taskIter->first] = 0;
+			}
 
-    }
+
+		}
+		char message[500];
+		sprintf(message, "LAlliance::updateImpatience: The task is assigned to this avatar: %d, hasAcquiesced is true: %d, impatience is %f", taskIter->second->agentUUID == *this->parentAgent->getUUID(), hasAcquiesced, myData.impatience.at(taskIter->first));
+		parentAgent->logWrapper(LOG_LEVEL_VERBOSE, message);
+	}
     return 0;
 }
 

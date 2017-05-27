@@ -344,6 +344,9 @@ struct DDBParticleFilter {
 	bool predictionHeld; // was the latest prediction a "no change?"
 	std::list<DDBParticleRegion*> *regions;
 	int forwardMarker;
+	float trueX;
+	float trueY;
+	float trueR;
 
 	// Logging
 	int obsSinceLastWeightUpdate; // counts the observations applied since the last weight update
@@ -363,6 +366,7 @@ enum DDBPFINFO {
 	DDBPFINFO_OWNER			= 0x0001 << 7, // data = [UUID owner]
 	DDBPFINFO_EFFECTIVE_NUM_PARTICLES = 0x0001 << 8, // data = [float effective num particles]
 	DDBPFINFO_DEBUG			= 0x0001 << 9, // special flag used for debugging
+	DDBPFINFO_TRUEPOS		= 0x0001 << 10, //bypassing particle filter, using true positions
 };
 
 #define DDBPF_REGIONDEPRECIATIONTIME	(5*60*1000) // ms
@@ -399,6 +403,10 @@ struct DDBAvatar {
 	char retired; // 0 - active, 1 - retired, 2 - crashed (i.e. still physically present)
 	_timeb startTime;
 	_timeb endTime;
+
+	float trueX;
+	float trueY;
+	float trueR;
 };
 
 typedef std::map<UUID, DDBAvatar *, UUIDless> mapDDBAvatar;
@@ -415,6 +423,7 @@ enum DDBAVATARINFO_GET {
 	DDBAVATARINFO_RCAPACITY = 0x0001 << 8,  // data = [int capacity]
 	DDBAVATARINFO_RCARGO = 0x0001 << 9,		// data = [int cargoCount, char cargo, ...]
 	DDBAVATARINFO_RTIMECARD  = 0x0001 << 10, // data = [_timeb startTime, char retired <, endTime>]
+	DDBAVATARINFO_RTRUEPOS	 = 0x0001 << 11	 //data = [float x, float y, float r]
 };
 
 enum DDBAVATARINFO_SET {
@@ -423,6 +432,7 @@ enum DDBAVATARINFO_SET {
 	DDBAVATARINFO_CONTROLLER_RELEASE = 0x0001 << 2, // data = [UUID agent]
 	DDBAVATARINFO_CARGO		 = 0x0001 << 3, // data = [int count, bool load, unsigned char code, ...]
 	DDBAVATARINFO_RETIRE	 = 0x0001 << 4, // data = [char status, _timeb endTime]
+	DDBAVATARINFO_TRUEPOS = 0x0001 << 5,	 //data = [float x, float y, float r]
 };
 
 enum DDBAVATAR_CONTROLLERPRIORITY {
