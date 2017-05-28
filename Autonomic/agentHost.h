@@ -740,7 +740,7 @@ public:
 	//Learning data gathering
 	int LearningDataDump();
 	int WriteLearningData(DataStream * taskDataDS, DataStream * taskDS, mapDDBQLearningData *QLData, mapDDBAdviceData *adviceData);
-	int WritePerformanceData(mapDDBQLearningData *QLData);
+	int WritePerformanceData(mapDDBQLearningData *QLData, DataStream *taskDataDS);
 
 protected:
 

@@ -11004,8 +11004,8 @@ int AgentHost::LearningDataDump()
 
 
 
-		WritePerformanceData(&QLData);
-
+		WritePerformanceData(&QLData, &taskDataDS);
+		taskDataDS.rewind();
 		if (this->dStore->GetSimSteps() < MAX_ITERATION_COUNT) {	//Only store data if the run was not a failed run (something got stuck or otherwise failed, simulation-wise), otherwise the run will be repeated
 			WCHAR tempLearningDataFile[512];
 			wsprintf(tempLearningDataFile, _T("learningData%d.tmp"), STATE(AgentHost)->runNumber);
@@ -11168,7 +11168,7 @@ int AgentHost::WriteLearningData(DataStream *taskDataDS, DataStream *taskDS, map
 	return 0;
 }
 
-int AgentHost::WritePerformanceData(mapDDBQLearningData * QLData)
+int AgentHost::WritePerformanceData(mapDDBQLearningData * QLData, DataStream *taskDataDS)
 {
 	if (this->gatherData) {		//Collect performance data and save in .csv file
 
@@ -11184,6 +11184,35 @@ int AgentHost::WritePerformanceData(mapDDBQLearningData * QLData)
 			reward += qlIter.second.reward;
 		}
 
+		//TL part, for stddev
+
+		taskDataDS->unpackData(sizeof(UUID)); // discard thread
+		char taskDataOk = taskDataDS->unpackChar();	//DDBR_OK
+		taskDataDS->unpackBool();	//EnumTaskData
+		int numTaskDatas = taskDataDS->unpackInt32();
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::WritePerformanceData:numTaskDatas is %d", numTaskDatas);
+		if (taskDataOk != DDBR_OK) {
+			Log.log(LOG_LEVEL_NORMAL, "AgentHost::WritePerformanceData: DDBR_OK is false, aborting dump: taskDataOk is %c", taskDataOk);
+			return 1;
+		}
+		if (QLData->size() == 0 && numTaskDatas == 0)
+			return 0;	//No data to write
+
+		DDBTaskData taskData;
+		unsigned int count = 0;
+		float stddevTot = 0.0f;
+
+		for (int i = 0; i < numTaskDatas; i++) {
+			taskDataDS->unpackData(sizeof(UUID));	//Discard avatar id
+			taskDataDS->unpackTaskData(&taskData);
+			for (auto& stddevIter : taskData.stddev) {
+				Log.log(LOG_LEVEL_NORMAL, "AgentHost::WriteLearningData: 7: stddev is %f", stddevIter);
+				count++;
+				stddevTot += stddevIter.second;
+			}
+		}
+		float stddevAvg = stddevTot / (float)count;
+
 		std::ifstream testIfExists;
 		std::ofstream outputData;
 		std::ofstream failedRun;
@@ -11194,7 +11223,7 @@ int AgentHost::WritePerformanceData(mapDDBQLearningData * QLData)
 			Log.log(LOG_LEVEL_NORMAL, "AgentHost::WritePerformanceData: no performance records found, writing headers...");
 			testIfExists.close();
 			outputData.open("performanceData.csv", std::ios::app);
-			outputData << "Time," << "runNumber," << " totalActions," << "usefulActions," << "totalReward" << "," << "totalSimSteps" <<  "\n";
+			outputData << "Time," << "runNumber," << " totalActions," << "usefulActions," << "totalReward" << "," << "stddevAvg" << "," << "totalSimSteps" <<  "\n";
 			outputData.close();
 		}
 		else {					 //File exists, do not write headers
@@ -11220,7 +11249,7 @@ int AgentHost::WritePerformanceData(mapDDBQLearningData * QLData)
 			//outputData << asctime(utcTime) << "," << STATE(AgentHost)->runNumber << "," << totalActions << "," << usefulActions << "\n";
 			outputData << utcTime->tm_year + 1900 << "-" << setw(2) << setfill('0') << utcTime->tm_mon + 1 << "-" << setw(2) << setfill('0') << utcTime->tm_mday;
 			outputData << " " << setw(2) << setfill('0') << utcTime->tm_hour << ":" << setw(2) << setfill('0') << utcTime->tm_min << ":" << setw(2) << setfill('0') << utcTime->tm_sec << ",";
-			outputData << STATE(AgentHost)->runNumber << "," << totalActions << "," << usefulActions << "," << reward << "," << this->dStore->GetSimSteps() << "\n";
+			outputData << STATE(AgentHost)->runNumber << "," << totalActions << "," << usefulActions << "," << reward << "," << stddevAvg << "," << this->dStore->GetSimSteps() << "\n";
 			outputData.close();
 		}
 	}

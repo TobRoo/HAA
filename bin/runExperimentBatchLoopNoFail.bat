@@ -4,9 +4,13 @@
 :startLoop
 @ECHO Current run number is: %A%
 @start "hostLocal1" %~dp0\Autonomic1.exe hostCfgs\Experiment1RCISLNoFail\hostLocal1.cfg %A% %A% data\missions\missionRCISLExperiment1.ini
+timeout /t 1 /nobreak > nul
 @start "hostLocal2" %~dp0\Autonomic1.exe hostCfgs\Experiment1RCISLNoFail\hostLocal2.cfg %A% %A%
+timeout /t 1 /nobreak > nul
 @start "hostLocal3" %~dp0\Autonomic1.exe hostCfgs\Experiment1RCISLNoFail\hostLocal3.cfg %A% %A%
+timeout /t 1 /nobreak > nul
 @start "hostLocal4" %~dp0\Autonomic1.exe hostCfgs\Experiment1RCISLNoFail\hostLocal4.cfg %A% %A%
+timeout /t 1 /nobreak > nul
 @start "hostExclusive" %~dp0\Autonomic1.exe hostCfgs\Experiment1RCISLNoFail\hostExclusive.cfg %A% %A%
 timeout /t 10 /nobreak > nul
 goto RUNNING

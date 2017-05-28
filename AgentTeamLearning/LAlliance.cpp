@@ -74,7 +74,7 @@ int LAlliance::addTask(UUID id) {
 
     // Initialize tau as the half the max task time, and draw from a distribution
 	// since identical taus will cause problems in the impatience calculation.
-	myData.tau.insert(std::pair<UUID, int>(id, parentAgent->randomGenerator.NormalDistribution(0.5f*maxTaskTime, 2)));
+	myData.tau.insert(std::pair<UUID, int>(id, parentAgent->randomGenerator.NormalDistribution(0.5f*maxTaskTime, 20)));
 	myData.stddev.insert(std::pair<UUID, float>(id, 1.0f));
 	myData.mean.insert(std::pair<UUID, float>(id, myData.tau.at(id)));
     return 0;
