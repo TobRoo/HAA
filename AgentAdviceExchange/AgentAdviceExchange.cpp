@@ -347,7 +347,7 @@ int AgentAdviceExchange::formAdvice() {
 	Log.log(LOG_LEVEL_NORMAL, "RESPONSE: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0,this->getUUID()), Log.formatUUID(0, &STATE(AgentAdviceExchange)->ownerId), Log.formatUUID(0, &this->adviceRequestConv));
 	#endif
 
-	this->sendMessage(this->hostCon, MSG_RESPONSE, lds.stream(), lds.length(), &STATE(AgentAdviceExchange)->ownerId);
+	this->sendAgentMessage(&STATE(AgentAdviceExchange)->ownerId, MSG_RESPONSE, lds.stream(), lds.length());
 	lds.unlock();
 	//this->backup();
 	return 0;
@@ -673,7 +673,7 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 		//this->backup();
 		}
 		else {
-			Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage: Received request for advice, not ready, no replying.");
+			Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage: Received request for advice, not ready, not replying.");
 		}
 	}
 	break;
@@ -942,7 +942,9 @@ bool AgentAdviceExchange::convAdviceQuery(void *vpConv) {
 	this->adviserData[this->adviser].advice.clear();
 	for (int i = 0; i < this->num_actions_; i++) {
 		this->adviserData[this->adviser].advice.push_back(lds.unpackFloat32());
-		Log.log(0, "AgentAdviceExchange::convAdviceQuery:received qVal %f from adviser", this->adviserData[this->adviser].advice.begin());
+	}
+	for (auto advIter : this->adviserData.at(this->adviser).advice) {
+		Log.log(0, "AgentAdviceExchange::convAdviceQuery:received qVal %f from adviser %s", advIter, Log.formatUUID(0, &sender));
 	}
 
 	lds.unlock();

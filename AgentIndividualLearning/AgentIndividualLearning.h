@@ -39,7 +39,7 @@
 #include "..\\autonomic\\DDB.h"
 #include "QLearning.h"
 
-#define ADVICE_REQUEST_TIMEOUT	1200	//Wait ~one second for advice, otherwise proceed with own values
+#define ADVICE_REQUEST_TIMEOUT	100	//Wait 100 ms for advice (normally takes only ~1-2 ms), otherwise proceed with own values
 
 
 struct ActionPair {

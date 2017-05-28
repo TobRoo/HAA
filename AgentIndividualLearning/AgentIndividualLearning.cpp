@@ -1795,13 +1795,14 @@ int AgentIndividualLearning::conProcessMessage(spConnection con, unsigned char m
 			lds_qvals.packUUID(&STATE(AgentBase)->uuid);
 
 			// Pack the Q values
-			for (std::vector<float>::iterator q_iter = q_values.begin(); q_iter != q_values.end(); ++q_iter) {
-				lds_qvals.packFloat32(*q_iter);
+			for (auto q_iter : q_values) {
+				lds_qvals.packFloat32(q_iter);
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning_MSGS::MSG_REQUEST_Q_VALUES: sending qval %f", q_iter);
 			}
 			this->sendAgentMessage(&sender, MSG_RESPONSE, lds_qvals.stream(), lds_qvals.length() );
-#ifdef LOG_RESPONSES
-			Log.log(LOG_LEVEL_NORMAL, "RESPONSE: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &con->uuid), Log.formatUUID(0, &conv));
-#endif
+//#ifdef LOG_RESPONSES
+			Log.log(LOG_LEVEL_NORMAL, "RESPONSE: AgentIndividualLearning_MSGS::MSG_REQUEST_Q_VALUES: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, &sender), Log.formatUUID(0, &conv));
+//#endif
 			lds_qvals.unlock();
 			
 		}
