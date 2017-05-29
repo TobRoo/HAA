@@ -347,7 +347,9 @@ int AgentAdviceExchange::formAdvice() {
 	Log.log(LOG_LEVEL_NORMAL, "RESPONSE: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0,this->getUUID()), Log.formatUUID(0, &STATE(AgentAdviceExchange)->ownerId), Log.formatUUID(0, &this->adviceRequestConv));
 	#endif
 
-	this->sendAgentMessage(&STATE(AgentAdviceExchange)->ownerId, MSG_RESPONSE, lds.stream(), lds.length());
+	//this->sendAgentMessage(&STATE(AgentAdviceExchange)->ownerId, MSG_RESPONSE, lds.stream(), lds.length());
+	//this->sendMessageEx(this->hostCon, (unsigned char) MSG_RESPONSE, MSG_SIZE, 0 , (int)MSG_COMMON, lds.stream(), lds.length(), &STATE(AgentAdviceExchange)->ownerId);
+	this->sendMessage(this->hostCon, MSG_RESPONSE, lds.stream(), lds.length(), &STATE(AgentAdviceExchange)->ownerId);
 	lds.unlock();
 	//this->backup();
 	return 0;
@@ -632,14 +634,15 @@ int AgentAdviceExchange::conProcessMessage(spConnection con, unsigned char messa
 	case AgentAdviceExchange_MSGS::MSG_CONFIGURE:
 	{
 		lds.setData(data, len);
-		this->configureParameters(&lds);
+		if(!this->configuredParameters)
+			this->configureParameters(&lds);
 		lds.unlock();
 		break;
 	}
 	break;
 	case AgentAdviceExchange_MSGS::MSG_REQUEST_ADVICE:
 	{
-		if (!this->recoveryInProgress && STATE(AgentAdviceExchange)->parametersSet){	//Only go if fully initialized and not in recovery
+		if (!this->recoveryInProgress){// && STATE(AgentAdviceExchange)->parametersSet){	//Only go if fully initialized and not in recovery
 
 		Log.log(LOG_LEVEL_VERBOSE, "AgentAdviceExchange::conProcessMessage: Received request for advice.");
 
