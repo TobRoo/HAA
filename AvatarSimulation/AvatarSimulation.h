@@ -7,9 +7,9 @@
 
 #define AvatarSimulation_MOVE_FINISH_DELAY 1000 // ms
 
-#define AvatarSimulation_SIMWAKE_PERIOD	60 // ms
+#define AvatarSimulation_SIMWAKE_PERIOD	50 // ms
 
-#define AvatarSimulation_MOVECHECK_PERIOD	60 // ms
+#define AvatarSimulation_MOVECHECK_PERIOD	20 // ms
 
 #define AvatarSimulation_UNSET 999999 // unset flag
 
