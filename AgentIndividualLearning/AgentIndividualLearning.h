@@ -38,9 +38,10 @@
 
 #include "..\\autonomic\\DDB.h"
 #include "QLearning.h"
+#include <numeric>
 
-#define ADVICE_REQUEST_TIMEOUT	100	//Wait 100 ms for advice (normally takes only ~1-2 ms), otherwise proceed with own values
-
+#define ADVICE_REQUEST_TIMEOUT	50	//Wait 50 ms for advice (normally takes only ~1-2 ms), otherwise proceed with own values
+#define USE_ADVICE_EXCHANGE
 
 struct ActionPair {
     int action;
@@ -48,6 +49,7 @@ struct ActionPair {
 };
 
 struct AVATAR_INFO {
+	UUID avatarAgentId;
     bool ready; // avatar info is ready
     UUID pf;
     _timeb start;
@@ -59,6 +61,17 @@ struct AVATAR_INFO {
     bool locValid; // loc was successfully updated
 	ITEM_TYPES capacity;	//1 = light items, 2 = heavy items (0 = NON_COLLECTABLE, cannot carry items)
 };
+
+#ifdef USE_ADVICE_EXCHANGE
+typedef struct Adviser {
+	UUID id;					// Id of adviser individual learning agent
+	int avatarInstance;			// Instance of associated avatar
+	std::vector<float> advice;  // vector of advised quality values
+	float cq;                   // Current average quality
+	float bq;                   // Best average quality
+};
+#endif
+
 
 class AgentIndividualLearning : public AgentBase {
 
@@ -124,6 +137,7 @@ public:
 
 		float latestReward;	//Reward given for the latest action performed, used for upload and performance tracking
 
+
     };
 
 //-----------------------------------------------------------------------------
@@ -133,7 +147,6 @@ protected:
     UUID AgentIndividualLearning_recoveryLock1;
 	UUID AgentIndividualLearning_recoveryLock2;
 	UUID AgentIndividualLearning_recoveryLock3;
-	UUID AgentIndividualLearning_recoveryLock4;
 	UUID AgentIndividualLearning_recoveryLock5;
 
     DataStream ds; // shared DataStream object, for temporary, single thread, use only!
@@ -186,12 +199,6 @@ protected:
         INTERACT
     };
 
-	// Advice parameters
-	enum AdviceResults {
-		ADVICE_SUCCESS = 0,
-		ADVICE_FAILURE
-	};
-
     // Task data
     UUID taskId;
     DDBTask task;
@@ -206,8 +213,36 @@ protected:
 	// Random number generator
 	RandomGenerator *randomGenerator;
 
-	// TODO: REMOVE AFTER TESTING
-	int tempCounter;
+#ifdef USE_ADVICE_EXCHANGE
+
+	//Advice exchange parameters
+
+	float alpha;                                // Coefficient for current average quality metric cq
+	float beta;                                 // Coefficient for best avrage quality metric bq
+	float delta;                                // Coefficient for bq comparison
+	float rho;                                  // Coefficient for quality sum comparison
+
+
+	// Personal data and metrics
+	std::vector<float> q_vals_in;               // Incoming Q values received during advice request
+	std::vector<unsigned int> state_vector_in;  // Incoming state vector received during advice request
+	float q_avg_epoch_in;						 // Incoming average q-value received during advice request
+	float cq;                                   // Current average quality
+	float bq;                                   // Best average quality
+
+
+	std::map<UUID, Adviser, UUIDless> adviserData;   // All advice data for each adviser
+	Adviser adviser;							// This agent's adviser 
+
+	// Data monitoring
+	int condA_count;
+	int condB_count;
+	int condC_count;
+	int ask_count;
+
+	bool hasAgentList;
+
+#endif
 
 //-----------------------------------------------------------------------------
 // Functions
@@ -220,6 +255,16 @@ public:
     virtual int start( char *missionFile );		// start agent
     virtual int stop();			// stop agent
     virtual int step();			// run one step
+
+#ifdef USE_ADVICE_EXCHANGE
+	int formAdvice(UUID *conv, UUID *advisee);         // Performs the Advice Exchange algorithm and sends the advice back
+
+	int preRunUpdate();     // Performs the necessary updates before a new epoch begins
+	int postRunUpdate();   // Performs the necessary updates after an epoch is finished
+
+	int parseAdviserData();
+	int uploadAdviceData();
+#endif
 
 private:
 
@@ -236,7 +281,7 @@ private:
     float determineReward();
     bool validAction(ActionPair &action);
 
-	int spawnAgentAdviceExchange();
+	int spawnAgentAdviceExchange();		//Deprecated, use built-in
 
     //Learning data storage for multiple simulation runs - so far, only Q-Learning implemented
 
@@ -267,11 +312,13 @@ public:
         AgentIndividualLearning_CBR_convGetTaskList,
         AgentIndividualLearning_CBR_convGetTaskInfo,
         AgentIndividualLearning_CBR_convCollectLandmark,
-		AgentIndividualLearning_CBR_convRequestAgentAdviceExchange,
 		AgentIndividualLearning_CBR_convRequestAdvice,
 		AgentIndividualLearning_CBR_convGetRunNumber,
 		AgentIndividualLearning_CBR_convDepositLandmark,
 		AgentIndividualLearning_CBR_convGetQLearningData,
+#ifdef USE_ADVICE_EXCHANGE
+		AgentIndividualLearning_CBR_convGetAgentList,
+#endif
     };
 
     // Define callback functions (make sure they match CallbackRef above and are added to this->callback during agent creation)
@@ -289,13 +336,15 @@ public:
 
     bool convCollectLandmark(void * vpConv);
 	bool convDepositLandmark(void * vpConv);
-	bool convRequestAgentAdviceExchange(void *vpConv);
 	bool convRequestAdvice(void *vpConv);
 
 	bool convGetRunNumber(void * vpConv);
 
 	bool convGetQLearningData(void * vpConv);
 
+#ifdef USE_ADVICE_EXCHANGE
+	bool convGetAgentList(void *vpConv);
+#endif
 protected:
     virtual int	  freeze( UUID *ticket );
     virtual int   thaw( DataStream *ds, bool resumeReady = true );

@@ -1089,7 +1089,7 @@ int AvatarBase::spawnAgentTeamLearning() {
 
 int AvatarBase::spawnAgentIndividualLearning() {
 	UUID thread;
-	this->apb->apbSleep(100);	//Wait for map etc - Workaround!
+	//this->apb->apbSleep(100);	//Wait for map etc - Workaround!
 	if (!STATE(AvatarBase)->agentIndividualLearningSpawned) {
 		UUID aAgentIndividualLearninguuid;
 		UuidFromString((RPC_WSTR)_T(AgentIndividualLearning_UUID), &aAgentIndividualLearninguuid);

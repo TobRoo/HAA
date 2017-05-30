@@ -1,18 +1,14 @@
 @echo off
 @set /a "loopCount = 200"
-@set /a "A = 1"
+@set /a "A = 3"
 :startLoop
 @ECHO Current run number is: %A%
 @start "hostLocal1" %~dp0\Autonomic2.exe hostCfgs\Experiment2RCISLHighFail\hostLocal1.cfg %A% %A% data\missions\missionRCISLExperiment2HighFailure.ini
-timeout /t 1 /nobreak > nul
 @start "hostLocal2" %~dp0\Autonomic2.exe hostCfgs\Experiment2RCISLHighFail\hostLocal2.cfg %A% %A%
-timeout /t 1 /nobreak > nul
 @start "hostLocal3" %~dp0\Autonomic2.exe hostCfgs\Experiment2RCISLHighFail\hostLocal3.cfg %A% %A%
-timeout /t 1 /nobreak > nul
 @start "hostLocal4" %~dp0\Autonomic2.exe hostCfgs\Experiment2RCISLHighFail\hostLocal4.cfg %A% %A%
-timeout /t 1 /nobreak > nul
 @start "hostExclusive" %~dp0\Autonomic2.exe hostCfgs\Experiment2RCISLHighFail\hostExclusive.cfg %A% %A%
-timeout /t 1 /nobreak > nul
+timeout /t 10 /nobreak > nul
 goto RUNNING
 :WATCHDOG
 set number=0
