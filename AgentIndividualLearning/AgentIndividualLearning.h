@@ -254,7 +254,7 @@ public:
     virtual int step();			// run one step
 
 #ifdef USE_ADVICE_EXCHANGE
-	int formAdvice(UUID *conv, UUID *advisee);         // Performs the Advice Exchange algorithm and sends the advice back
+	int formAdvice(UUID *conv, UUID *advisee, std::vector<float> advice);         // Performs the Advice Exchange algorithm and sends the advice back
 
 	int preRunUpdate();     // Performs the necessary updates before a new epoch begins
 	int postRunUpdate();   // Performs the necessary updates after an epoch is finished

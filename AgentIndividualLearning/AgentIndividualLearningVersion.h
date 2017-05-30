@@ -24,7 +24,7 @@ namespace AgentIndividualLearning_MSGS {
 	
 	static const unsigned int MSG_SIZE[] = { // array of message size by MSGID - MSG_FIRST
 		-2,					// MSG_CONFIGURE
-		2*sizeof(UUID)+sizeof(float)+5*sizeof(float)+7*sizeof(unsigned int),                 // MSG_REQUEST_ADVICE
+		2*sizeof(UUID)+7*sizeof(unsigned int),                 // MSG_REQUEST_ADVICE
 		2 * sizeof(UUID) + 5 * sizeof(float),                 // MSG_REQUEST_Q_VALUES
 
 	};
