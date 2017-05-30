@@ -241,6 +241,8 @@ protected:
 
 #endif
 
+	UUID cbGoAfterResumeId; //Id for resume callback, does not need to be saved
+
 //-----------------------------------------------------------------------------
 // Functions
 
@@ -316,6 +318,7 @@ public:
 #ifdef USE_ADVICE_EXCHANGE
 		AgentIndividualLearning_CBR_convGetAgentList,
 #endif
+		AgentIndividualLearning_CBR_cbGoAfterResume,
     };
 
     // Define callback functions (make sure they match CallbackRef above and are added to this->callback during agent creation)
@@ -342,6 +345,7 @@ public:
 #ifdef USE_ADVICE_EXCHANGE
 	bool convGetAgentList(void *vpConv);
 #endif
+	bool cbGoAfterResume(void *vpConv);
 protected:
     virtual int	  freeze( UUID *ticket );
     virtual int   thaw( DataStream *ds, bool resumeReady = true );

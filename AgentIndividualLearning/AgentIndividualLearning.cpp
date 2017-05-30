@@ -173,6 +173,8 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
 	STATE(AgentIndividualLearning)->depositRequestSent = false;
 
 	STATE(AgentIndividualLearning)->isStuck = false;
+
+	this->cbGoAfterResumeId = nilUUID;
 	
     // Prepare callbacks
     this->callback[AgentIndividualLearning_CBR_convAction] = NEW_MEMBER_CB(AgentIndividualLearning, convAction);
@@ -193,6 +195,7 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
 #ifdef USE_ADVICE_EXCHANGE
 	this->callback[AgentIndividualLearning_CBR_convGetAgentList] = NEW_MEMBER_CB(AgentIndividualLearning, convGetAgentList);
 #endif
+	this->callback[AgentIndividualLearning_CBR_cbGoAfterResume] = NEW_MEMBER_CB(AgentIndividualLearning, cbGoAfterResume);
 }// end constructor
 
 //-----------------------------------------------------------------------------
@@ -311,8 +314,8 @@ int AgentIndividualLearning::postRunUpdate()
 {
 	// Update cq and bq
 	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::postRunUpdate: Old cq: %.2f, old bq: %.2f.", this->cq, this->bq);
-	this->cq = this->alpha*this->cq + (1.0f - this->alpha)*this->q_avg_epoch_in;
-	this->bq = max(this->q_avg_epoch_in, this->beta*this->bq);
+	this->cq = this->alpha*this->cq + (1.0f - this->alpha)*this->q_avg;
+	this->bq = max(this->q_avg, this->beta*this->bq);
 	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::postRunUpdate: New cq: %.2f, new bq: %.2f.", this->cq, this->bq);
 
 	// Send cq and bq to the DDB
@@ -642,6 +645,10 @@ int AgentIndividualLearning::step() {
 */
 int AgentIndividualLearning::updateStateData() {
 	DataStream lds;
+	if (this->cbGoAfterResumeId != nilUUID) {
+		removeTimeout(&this->cbGoAfterResumeId);
+		this->cbGoAfterResumeId = nilUUID;
+	}
 
     // Only update if avatar is ready
     if (!this->avatar.ready) {
@@ -1279,7 +1286,7 @@ int AgentIndividualLearning::policy(std::vector<float> &quality, std::vector<uns
 		float tau = log((1 - n*alpha) / experience_sum + n*alpha) / (minQ - maxQ);
 
 		for (int i = 0; i < num_actions_; ++i) {
-			exponents[i] = (float)exp(min(tau*quality[i] , 50)); // Need to prevent infinity
+			exponents[i] = (float)exp(min(tau*quality[i] , 35)); // Need to prevent infinity
 			exponents_sum += exponents[i];
 			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::policy: i: %d, exponents[i]: %f", i, exponents[i]);
 		}
@@ -3252,6 +3259,12 @@ bool AgentIndividualLearning::convGetAgentList(void *vpConv) {
 	return 0;
 }
 
+bool AgentIndividualLearning::cbGoAfterResume(void * vpConv)
+{
+	this->updateStateData(); //Enough time has passed, something is stuck (workaround)
+	return false;
+}
+
 //-----------------------------------------------------------------------------
 // State functions
 
@@ -3260,6 +3273,7 @@ int AgentIndividualLearning::freeze(UUID *ticket) {
 }// end freeze
 
 int AgentIndividualLearning::thaw(DataStream *ds, bool resumeReady) {
+	this->cbGoAfterResumeId = this->addTimeout(20000, AgentIndividualLearning_CBR_cbGoAfterResume);
     return AgentBase::thaw(ds, resumeReady);
 }// end thaw
 
@@ -3437,7 +3451,7 @@ int	AgentIndividualLearning::readState(DataStream *ds, bool top) {
 
 	// This agent's adviser 
 
-	this->adviser.id = advUUID;
+	ds->unpackUUID(&this->adviser.id);
 	this->adviser.avatarInstance = ds->unpackInt32();
 	_READ_STATE_VECTOR(float, &this->adviser.advice);
 	this->adviser.cq = ds->unpackFloat32();

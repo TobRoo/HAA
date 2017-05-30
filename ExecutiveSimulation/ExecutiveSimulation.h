@@ -7,7 +7,7 @@
 #define MAX_PATHS	256
 #define MAX_OBJECTS	256
 
-#define SIMULATION_STEP 5 // ms
+#define SIMULATION_STEP 10 // ms
 
 struct SimLandmark {
 	UUID id;
