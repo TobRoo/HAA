@@ -50,6 +50,7 @@ struct ActionPair {
 
 struct AVATAR_INFO {
 	UUID avatarAgentId;
+	char instance;
     bool ready; // avatar info is ready
     UUID pf;
     _timeb start;
@@ -114,15 +115,11 @@ public:
 
 
 		// Advice data
-		int agentAdviceExchangeSpawned;
-		UUID agentAdviceExchange;
-		UUID adviceRequestConv;
 
         UUID regionId;
         DDBRegion missionRegion;
 
         bool missionRegionReceived;
-		bool adviceAgentSpawned;
 
 		int avatarInstance;
 		int runNumber;

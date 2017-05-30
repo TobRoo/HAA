@@ -79,7 +79,6 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
     STATE(AgentIndividualLearning)->updateId = -1;
     STATE(AgentIndividualLearning)->actionConv = nilUUID;
     STATE(AgentIndividualLearning)->missionRegionReceived = false;
-	STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned = false;
     STATE(AgentIndividualLearning)->action.action = AvatarBase_Defs::AA_WAIT;
     STATE(AgentIndividualLearning)->action.val = 0.0;
 	STATE(AgentIndividualLearning)->stuckAction.action = AvatarBase_Defs::AA_WAIT;
@@ -110,9 +109,6 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
 
     //Load in learning data from previous runs (if such data exist)
    // this->parseLearningData();
-
-	//Advice exchange parameters
-	STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned = false;
 
     // Policy parameters
     this->softmax_temp_ = 0.10;
@@ -302,7 +298,6 @@ int AgentIndividualLearning::formAdvice(UUID *conv, UUID *advisee)
 #endif
 	this->sendMessage(this->hostCon, MSG_RESPONSE, lds.stream(), lds.length(), advisee);
 	lds.unlock();
-	//this->backup();
 	return 0;
 }
 
@@ -342,7 +337,6 @@ int AgentIndividualLearning::preRunUpdate()
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::preRunUpdate: Adviser for this run is %s.", Log.formatUUID(LOG_LEVEL_NORMAL, &this->adviser.id));
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::preRunUpdate: Adviser cq: %.2f.", best_cq);
 	}
-
 	return 0;
 }
 
@@ -394,9 +388,9 @@ int AgentIndividualLearning::parseAdviserData()
 				continue; // blank line
 
 			if (!strncmp(keyBuf, "[TLData]", 64)) {
-				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::parseLearningData: Found [TLData] section.");
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::parseAdviserData: Found [TLData] section.");
 				if (fscanf_s(fp, "id=%d\n", &id) != 1) {
-					Log.log(0, "AgentIndividualLearning::parseLearningData: badly formatted id");
+					Log.log(0, "AgentIndividualLearning::parseAdviserData: badly formatted id");
 					break;
 				}
 				while (fscanf_s(fp, "landmark_type=%d\n", &landmark_type) == 1) {
@@ -408,22 +402,22 @@ int AgentIndividualLearning::parseAdviserData()
 				}
 			}
 			else if (!strncmp(keyBuf, "[AdviserData]", 64)) {
-				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::parseLearningData: Found [AdviserData] section.");
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::parseAdviserData: Found [AdviserData] section.");
 				if (fscanf_s(fp, "id=%d\n", &id) != 1) {
-					Log.log(0, "AgentIndividualLearning::parseLearningData: badly formatted id");
+					Log.log(0, "AgentIndividualLearning::parseAdviserData: badly formatted id");
 					break;
 				}
 				if (fscanf_s(fp, "cq=%f\n", &cq) != 1) {
-					Log.log(0, "AgentIndividualLearning::parseLearningData: badly formatted cq");
+					Log.log(0, "AgentIndividualLearning::parseAdviserData: badly formatted cq");
 					break;
 				}
 				if (fscanf_s(fp, "bq=%f\n", &bq) != 1) {
-					Log.log(0, "AgentIndividualLearning::parseLearningData: badly formatted bq");
+					Log.log(0, "AgentIndividualLearning::parseAdviserData: badly formatted bq");
 					break;
 				}
-				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::parseLearningData:cq is %f, bq is %f", cq, bq);
+				Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::parseAdviserData:cq is %f, bq is %f", cq, bq);
 				if (id == STATE(AgentIndividualLearning)->avatarInstance) { // Data belongs to this agent
-					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::parseLearningData: found this agent's id.");
+					Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::parseAdviserData: found this agent's id.");
 					this->cq = cq;
 					this->bq = bq;
 				}
@@ -514,6 +508,9 @@ int AgentIndividualLearning::configureParameters(DataStream *ds) {
 	this->avatar.capacity = (ITEM_TYPES)ds->unpackInt32();
 	STATE(AgentIndividualLearning)->avatarInstance = ds->unpackInt32();
 
+
+
+
 	// Set the reward activation distance
 	// (must move at least at a 45 degree angle relative to target or goal)
 	if (STATE(AgentIndividualLearning)->avatarInstance == 0 || STATE(AgentIndividualLearning)->avatarInstance == 1 || STATE(AgentIndividualLearning)->avatarInstance == 4 || STATE(AgentIndividualLearning)->avatarInstance == 5)
@@ -561,7 +558,7 @@ int AgentIndividualLearning::configureParameters(DataStream *ds) {
 	//STATE(AgentIndividualLearning)->missionRegionReceived = true;
 
 
-	this->backup();
+
 	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::configureParameters: done.");
     // finishConfigureParameters will be called once the mission region info and run number are received
 
@@ -636,8 +633,6 @@ int AgentIndividualLearning::start(char *missionFile) {
     this->sendMessage(this->hostCon, MSG_DDB_WATCH_TYPE, lds.stream(), lds.length());
     lds.unlock();
 
-	STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned = true;
-
     Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::start: Preparing for first action");
     this->updateStateData();
 
@@ -682,7 +677,7 @@ int AgentIndividualLearning::updateStateData() {
 
     // Only update if avatar is ready
     if (!this->avatar.ready) {
-//        Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateData: Avatar not ready, sending wait action");
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateData: Avatar not ready, sending wait action");
         ActionPair action;
         action.action = AvatarBase_Defs::AA_WAIT;
         this->sendAction(action);
@@ -695,6 +690,7 @@ int AgentIndividualLearning::updateStateData() {
     _timeb tb; // just a dummy
     STATE(AgentIndividualLearning)->updateId++;
     this->avatar.locValid = false;
+	//Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateData: Avatar ready,proceeding...");
 #ifndef NO_RANDOM_ERROR
     //Request this avatar's location
     lds.reset();
@@ -727,6 +723,7 @@ int AgentIndividualLearning::updateStateData() {
 	lds.packUUID(&convoThread);
 	this->sendMessage(this->hostCon, MSG_DDB_AVATARGETINFO, lds.stream(), lds.length());
 	lds.unlock();
+	//Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateData: Avatar pos requested");
 #endif // !NO_RANDOM_ERROR
 #ifndef NO_RANDOM_ERROR
     //Request teammates locations
@@ -794,7 +791,12 @@ int AgentIndividualLearning::preActionUpdate() {
 
 	// Get advice
 	#ifdef USE_ADVICE_EXCHANGE
-		this->requestAdvice(q_vals, this->stateVector);
+	//if (!(this->adviser.id == nilUUID)) {
+	//	this->requestAdvice(q_vals, this->stateVector);
+	//}
+	//else {
+		formAction();
+	//}
 	#else
 		formAction();
 	#endif
@@ -1557,18 +1559,18 @@ bool AgentIndividualLearning::validAction(ActionPair &action) {
 */
 int AgentIndividualLearning::requestAdvice(std::vector<float> &q_vals, std::vector<unsigned int> &state_vector) {
 
-	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getAdvice: Sending request for advice");
+	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getAdvice: Sending request for advice to %s", Log.formatUUID(0, &this->adviser.id));
 
 	// Start the conversation
-	STATE(AgentIndividualLearning)->adviceRequestConv = this->conversationInitiate(AgentIndividualLearning_CBR_convRequestAdvice, ADVICE_REQUEST_TIMEOUT);
-	if (STATE(AgentIndividualLearning)->adviceRequestConv == nilUUID) {
+	UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convRequestAdvice, ADVICE_REQUEST_TIMEOUT);
+	if (thread == nilUUID) {
 		return 1;
 	}
 
 	// Send a message with the quality values and state vector
 	DataStream lds;
 	lds.reset();
-	lds.packUUID(&STATE(AgentIndividualLearning)->adviceRequestConv);
+	lds.packUUID(&thread);
 	lds.packUUID(&STATE(AgentBase)->uuid);
 
 	// Pack the average quality
@@ -1999,7 +2001,6 @@ int AgentIndividualLearning::conProcessMessage(spConnection con, unsigned char m
             lds.setData(data, len);
             this->configureParameters(&lds);
             lds.unlock();
-            break;
         }
             break;
 		case AgentIndividualLearning_MSGS::MSG_REQUEST_ADVICE:
@@ -2011,6 +2012,9 @@ int AgentIndividualLearning::conProcessMessage(spConnection con, unsigned char m
 			lds.unpackUUID(&conv);
 			lds.unpackUUID(&sender);
 
+			// Clear the old data
+			this->q_vals_in.clear();
+			this->state_vector_in.clear();
 
 			// Unpack the epoch average quality
 			this->q_avg_epoch_in = lds.unpackFloat32();
@@ -2018,7 +2022,7 @@ int AgentIndividualLearning::conProcessMessage(spConnection con, unsigned char m
 			// Unpack Q values
 			for (int i = 0; i < this->num_actions_; i++) {
 				this->q_vals_in.push_back(lds.unpackFloat32());
-				Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::conProcessMessage: Received request for advice, q_vals_in: %f", this->q_vals_in.back());
+				Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::conProcessMessage: Received request for advice from %s, q_vals_in: %f", Log.formatUUID(0, &sender), this->q_vals_in.back());
 			}
 			// Unpack state vector
 			for (int j = 0; j < this->num_state_vrbls_; j++) {
@@ -2152,12 +2156,14 @@ bool AgentIndividualLearning::convGetAvatarList(void *vpConv) {
                 this->avatar.ready = false;
                 this->avatar.start.time = 0;
                 this->avatar.retired = 0;
+				this->avatar.instance = agentType.instance;
                 this->avatarId = avatarId;
             }
             else {
                 this->otherAvatars[avatarId].ready = false;
                 this->otherAvatars[avatarId].start.time = 0;
                 this->otherAvatars[avatarId].retired = 0;
+				this->otherAvatars[avatarId].instance = agentType.instance;
             }
 
             // request avatar info
@@ -2182,7 +2188,7 @@ bool AgentIndividualLearning::convGetAvatarList(void *vpConv) {
 
 	if (!this->hasAgentList) {
 		// register as agent watcher
-		Log.log(0, "AgentAdviceExchange::start: registering as agent watcher");
+		Log.log(0, "AgentIndividualLearning::convGetAvatarList: registering as agent watcher");
 		this->ds.reset();
 		this->ds.packUUID(&STATE(AgentBase)->uuid);
 		this->ds.packInt32(DDB_AGENT);
@@ -2221,7 +2227,7 @@ bool AgentIndividualLearning::convGetAvatarInfo(void *vpConv) {
         _timeb startTime, endTime;
 		int capacity;
 
-        if (lds.unpackInt32() != (DDBAVATARINFO_RAGENT | DDBAVATARINFO_RPF | DDBAVATARINFO_RRADII | DDBAVATARINFO_RTIMECARD | DDBAVATARINFO_RCAPACITY)) {
+        if (lds.unpackInt32() != (DDBAVATARINFO_RAGENT | DDBAVATARINFO_RPF | DDBAVATARINFO_RRADII | DDBAVATARINFO_RCAPACITY | DDBAVATARINFO_RTIMECARD )) {
             lds.unlock();
             return 0; // what happened here?
         }
@@ -2230,17 +2236,18 @@ bool AgentIndividualLearning::convGetAvatarInfo(void *vpConv) {
         lds.unpackUUID(&pfId);
         innerR = lds.unpackFloat32();
         outerR = lds.unpackFloat32();
+		capacity = lds.unpackInt32();
         startTime = *(_timeb *)lds.unpackData(sizeof(_timeb));
         retired = lds.unpackChar();
         if (retired)
             endTime = *(_timeb *)lds.unpackData(sizeof(_timeb));
-		capacity = lds.unpackInt32();
         lds.unlock();
 
-        Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::convGetAvatarInfo: Recieved avatar (%s) pf id: %s",
+        Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::convGetAvatarInfo: Recieved avatar (%s) pf id: %s,",
                 Log.formatUUID(LOG_LEVEL_VERBOSE, &avatarId), Log.formatUUID(LOG_LEVEL_VERBOSE, &pfId));
 
         if (avatarId == this->avatarId) {
+			Log.log(LOG_LEVEL_VERBOSE, "AgentIndividualLearning::convGetAvatarInfo: Received this avatar's info.");
             // This is our avatar
             this->avatarAgentId = avatarAgent;
 			this->avatar.avatarAgentId = avatarAgent;
@@ -2624,7 +2631,7 @@ bool AgentIndividualLearning::convMissionRegion(void *vpConv) {
 
         STATE(AgentIndividualLearning)->missionRegionReceived = true;
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convMissionRegion 2");
-		if (STATE(AgentIndividualLearning)->missionRegionReceived && STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned)
+		if (STATE(AgentIndividualLearning)->missionRegionReceived)
 			this->finishConfigureParameters();
     }
     else {	
@@ -3124,10 +3131,7 @@ bool AgentIndividualLearning::convGetRunNumber(void * vpConv)
 	STATE(AgentIndividualLearning)->hasReceivedRunNumber = true;
 	recoveryCheck(&this->AgentIndividualLearning_recoveryLock2);
 
-	if (this->hasAgentList)
-		this->preRunUpdate();
-
-	if (STATE(AgentIndividualLearning)->missionRegionReceived && STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned)
+	if (STATE(AgentIndividualLearning)->missionRegionReceived)
 		this->finishConfigureParameters();
 	return false;
 }
@@ -3208,7 +3212,7 @@ bool AgentIndividualLearning::convGetAgentList(void *vpConv) {
 		UUID individualLearningAgentId;
 		UuidFromString((RPC_WSTR)_T(AgentIndividualLearning_UUID), &individualLearningAgentId);
 
-		// Scan agents of type AgentAdviceExchange
+		// Scan agents of type AgentIndividualLearning
 		Adviser empty_data;
 		for (int i = 0; i < count; i++) {
 			lds.unpackUUID(&agentId);
@@ -3226,7 +3230,7 @@ bool AgentIndividualLearning::convGetAgentList(void *vpConv) {
 							this->adviserData[agentId].id = agentId;
 							this->adviserData[agentId].bq = 0.0f;
 							this->adviserData[agentId].cq = 0.0f;
-							this->adviserData[agentId].avatarInstance = agentType.instance;
+							this->adviserData[agentId].avatarInstance = avatarIter.second.instance;
 						}
 					}
 				}
@@ -3250,11 +3254,12 @@ bool AgentIndividualLearning::convGetAgentList(void *vpConv) {
 		if (STATE(AgentIndividualLearning)->hasReceivedRunNumber) {
 			this->preRunUpdate();
 		}
+		Log.log(LOG_LEVEL_NORMAL, "AgentAdviceExchange::convGetAgentList: this->hasAgentList = true");
 			this->hasAgentList = true;
-
+			this->backup();
 
 	}
-	//this->finishConfigureParameters();
+	this->updateStateData();
 	return 0;
 }
 
@@ -3309,6 +3314,45 @@ int	AgentIndividualLearning::writeState(DataStream *ds, bool top) {
 	ds->packData(&usefulActions, sizeof(usefulActions));
 	ds->packFloat32(this->reward_activation_dist_);
 
+#ifdef USE_ADVICE_EXCHANGE
+	//Advice exchange data
+
+	// Initialize this agents performance metrics
+	ds->packFloat32(this->cq);
+	ds->packFloat32(this->bq);
+
+	// Zero counters
+	ds->packInt32(this->condA_count);
+	ds->packInt32(this->condB_count);
+	ds->packInt32(this->condC_count);
+	ds->packInt32(this->ask_count);
+
+	ds->packBool(this->hasAgentList);
+
+	_WRITE_STATE_VECTOR(float, &this->q_vals_in);               // Incoming Q values received during advice request
+	_WRITE_STATE_VECTOR(unsigned int, &this->state_vector_in);  // Incoming state vector received during advice request
+	ds->packFloat32(this->q_avg_epoch_in);						 // Incoming average q-value received during advice request
+
+	// All advice data for each adviser
+
+	ds->packInt32(this->adviserData.size());
+	for (auto& advIter : this->adviserData) {
+		ds->packUUID(&(UUID)advIter.second.id);
+		ds->packInt32(advIter.second.avatarInstance);
+		_WRITE_STATE_VECTOR(float, &advIter.second.advice);
+		ds->packFloat32(advIter.second.cq);
+		ds->packFloat32(advIter.second.bq);
+	}
+
+	// This agent's adviser 
+
+	ds->packUUID(&(UUID)adviser.id);
+	ds->packInt32(adviser.avatarInstance);
+	_WRITE_STATE_VECTOR(float, &adviser.advice);
+	ds->packFloat32(adviser.cq);
+	ds->packFloat32(adviser.bq);	
+#endif //USE_ADVICE_EXCHANGE
+
     return AgentBase::writeState(ds, false);
 }// end writeState
 
@@ -3341,13 +3385,13 @@ int	AgentIndividualLearning::readState(DataStream *ds, bool top) {
 	//_READ_STATE_VECTOR(float, &this->q_learning_.q_table_);
 	//_READ_STATE_VECTOR(unsigned int, &this->q_learning_.exp_table_);
 
-	_READ_STATE_VECTOR(float, &this->q_learning_.q_vals_);
-	_READ_STATE_VECTOR(unsigned int, &this->q_learning_.exp_vals_);
+//	_READ_STATE_VECTOR(float, &this->q_learning_.q_vals_);
+//	_READ_STATE_VECTOR(unsigned int, &this->q_learning_.exp_vals_);
 
-	_READ_STATE_VECTOR(float, &this->q_vals);
-	_READ_STATE_VECTOR(unsigned int, &this->exp_vals);
-	_READ_STATE_VECTOR(unsigned int, &this->stateVector);
-	_READ_STATE_VECTOR(unsigned int, &this->prevStateVector);
+//	_READ_STATE_VECTOR(float, &this->q_vals);
+//	_READ_STATE_VECTOR(unsigned int, &this->exp_vals);
+//	_READ_STATE_VECTOR(unsigned int, &this->stateVector);
+//	_READ_STATE_VECTOR(unsigned int, &this->prevStateVector);
 	q_avg = ds->unpackFloat32();
 
 	// Learning parameters
@@ -3366,6 +3410,59 @@ int	AgentIndividualLearning::readState(DataStream *ds, bool top) {
 	this->totalActions = *(unsigned long*)ds->unpackData(sizeof(unsigned long));
 	this->usefulActions = *(unsigned long*)ds->unpackData(sizeof(unsigned long));
 	this->reward_activation_dist_= ds->unpackFloat32();
+
+#ifdef USE_ADVICE_EXCHANGE
+	//Advice exchange data
+
+	// Initialize this agents performance metrics
+	this->cq = ds->unpackFloat32();
+	this->bq = ds->unpackFloat32();
+
+	// Zero counters
+	this->condA_count = ds->unpackInt32();
+	this->condB_count = ds->unpackInt32();
+	this->condC_count = ds->unpackInt32();
+	this->ask_count = ds->unpackInt32();
+
+	this->hasAgentList = ds->unpackBool();
+	if (this->hasAgentList)
+		Log.log(0, "WE HAVE THE AGENT LIST!");
+
+//	_READ_STATE_VECTOR(float, &this->q_vals_in);               // Incoming Q values received during advice request
+//	_READ_STATE_VECTOR(unsigned int, &this->state_vector_in);  // Incoming state vector received during advice request
+	this->q_avg_epoch_in = ds->unpackFloat32();						 // Incoming average q-value received during advice request
+
+																 // All advice data for each adviser
+
+	int adviserSize = ds->unpackInt32();
+	this->adviserData.clear();
+	UUID advUUID;
+	for (auto& advIter : this->adviserData) {
+		ds->unpackUUID(&advUUID);
+		this->adviserData[advUUID].id = advUUID;
+		this->adviserData[advUUID].avatarInstance = ds->unpackInt32();
+//		_READ_STATE_VECTOR(float, &this->adviserData[advUUID].advice);
+		this->adviserData[advUUID].cq = ds->unpackFloat32();
+		this->adviserData[advUUID].bq = ds->unpackFloat32();
+	}
+
+	// This agent's adviser 
+
+	this->adviser.id = advUUID;
+	this->adviser.avatarInstance = ds->unpackInt32();
+//	_READ_STATE_VECTOR(float, &this->adviser.advice);
+	this->adviser.cq = ds->unpackFloat32();
+	this->adviser.bq = ds->unpackFloat32();
+
+#endif //USE_ADVICE_EXCHANGE
+
+
+
+
+
+
+
+
 	Log.log(0, "My instance is: %d", STATE(AgentIndividualLearning)->avatarInstance);
     return AgentBase::readState(ds, false);
 }// end readState
@@ -3387,7 +3484,8 @@ int AgentIndividualLearning::recoveryFinish() {
 
 int AgentIndividualLearning::writeBackup(DataStream *ds) {
 
-	Log.log(0, "BACKUP WRITTEN!");
+	Log.log(0, "STARTING BACKUP ds length is %d", ds->length());
+
 
 	_WRITE_STATE(AgentIndividualLearning);
 
@@ -3428,12 +3526,53 @@ int AgentIndividualLearning::writeBackup(DataStream *ds) {
 	ds->packData(&usefulActions, sizeof(usefulActions));
 	ds->packFloat32(this->reward_activation_dist_);
 
+#ifdef USE_ADVICE_EXCHANGE
+	//Advice exchange data
+
+	// Initialize this agents performance metrics
+	ds->packFloat32(this->cq);
+	ds->packFloat32(this->bq);
+
+	// Zero counters
+	ds->packInt32(this->condA_count);
+	ds->packInt32(this->condB_count);
+	ds->packInt32(this->condC_count);
+	ds->packInt32(this->ask_count);
+
+	ds->packBool(this->hasAgentList);
+
+	_WRITE_STATE_VECTOR(float, &this->q_vals_in);               // Incoming Q values received during advice request
+	_WRITE_STATE_VECTOR(unsigned int, &this->state_vector_in);  // Incoming state vector received during advice request
+	ds->packFloat32(this->q_avg_epoch_in);						 // Incoming average q-value received during advice request
+
+																 // All advice data for each adviser
+
+	ds->packInt32(this->adviserData.size());
+	for (auto& advIter : this->adviserData) {
+		ds->packUUID(&(UUID)advIter.second.id);
+		ds->packInt32(advIter.second.avatarInstance);
+		_WRITE_STATE_VECTOR(float, &advIter.second.advice);
+		ds->packFloat32(advIter.second.cq);
+		ds->packFloat32(advIter.second.bq);
+	}
+
+	// This agent's adviser 
+
+	ds->packUUID(&(UUID)adviser.id);
+	ds->packInt32(adviser.avatarInstance);
+	_WRITE_STATE_VECTOR(float, &adviser.advice);
+	ds->packFloat32(adviser.cq);
+	ds->packFloat32(adviser.bq);
+
+#endif //USE_ADVICE_EXCHANGE
+	Log.log(0, "BACKUP WRITTEN ds length is %d", ds->length());
+	Log.log(0, "Saving adviser.bq = %f", adviser.bq);
     return AgentBase::writeBackup(ds);
 }// end writeBackup
 
 int AgentIndividualLearning::readBackup(DataStream *ds) {
     DataStream lds;
-
+	Log.log(0, "STARTING BACKUP READ ds length is %d", ds->length());
 	_READ_STATE(AgentIndividualLearning);
 
 	_READ_STATE_MAP(UUID, DDBRegion, &collectionRegions);
@@ -3473,6 +3612,52 @@ int AgentIndividualLearning::readBackup(DataStream *ds) {
 	this->usefulActions = *(unsigned long*)ds->unpackData(sizeof(unsigned long));
 	this->reward_activation_dist_ = ds->unpackFloat32();	
 
+#ifdef USE_ADVICE_EXCHANGE
+	//Advice exchange data
+
+	// Initialize this agents performance metrics
+	this->cq = ds->unpackFloat32();
+	this->bq = ds->unpackFloat32();
+
+	// Zero counters
+	this->condA_count = ds->unpackInt32();
+	this->condB_count = ds->unpackInt32();
+	this->condC_count = ds->unpackInt32();
+	this->ask_count = ds->unpackInt32();
+
+	this->hasAgentList = ds->unpackBool();
+	if (this->hasAgentList)
+		Log.log(0, "WE HAVE THE AGENT LIST!");
+
+	_READ_STATE_VECTOR(float, &this->q_vals_in);               // Incoming Q values received during advice request
+	_READ_STATE_VECTOR(unsigned int, &this->state_vector_in);  // Incoming state vector received during advice request
+	this->q_avg_epoch_in = ds->unpackFloat32();						 // Incoming average q-value received during advice request
+
+																	 // All advice data for each adviser
+
+	int adviserSize = ds->unpackInt32();
+	this->adviserData.clear();
+	UUID advUUID;
+	for (int i = 0; i < adviserSize; ++i ) {
+		ds->unpackUUID(&advUUID);
+		this->adviserData[advUUID].id = advUUID;
+		this->adviserData[advUUID].avatarInstance = ds->unpackInt32();
+		_READ_STATE_VECTOR(float, &this->adviserData[advUUID].advice);
+		this->adviserData[advUUID].cq = ds->unpackFloat32();
+		this->adviserData[advUUID].bq = ds->unpackFloat32();
+	}
+
+	// This agent's adviser 
+
+	this->adviser.id = advUUID;
+	this->adviser.avatarInstance = ds->unpackInt32();
+	_READ_STATE_VECTOR(float, &this->adviser.advice);
+	this->adviser.cq = ds->unpackFloat32();
+	this->adviser.bq = ds->unpackFloat32();
+	Log.log(0, "Reading adviser.bq = %f", adviser.bq);
+#endif //USE_ADVICE_EXCHANGE
+
+
 	if (!STATE(AgentIndividualLearning)->hasReceivedRunNumber) {
 		// request run number info
 		UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convGetRunNumber, DDB_REQUEST_TIMEOUT);
@@ -3490,11 +3675,11 @@ int AgentIndividualLearning::readBackup(DataStream *ds) {
 		this->recoveryLocks.push_back(this->AgentIndividualLearning_recoveryLock2);
 	}
 
-    if (STATE(AgentIndividualLearning)->missionRegionReceived && STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned) {
+    if (STATE(AgentIndividualLearning)->missionRegionReceived) {
 		if (!STATE(AgentIndividualLearning)->parametersSet)
 			this->finishConfigureParameters();
     }
-    else if (STATE(AgentIndividualLearning)->agentAdviceExchangeSpawned) {		//Only need mission region
+    else  {		//Only need mission region
         // get mission region
         UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convMissionRegion, DDB_REQUEST_TIMEOUT);
         if (thread == nilUUID) {
@@ -3511,23 +3696,6 @@ int AgentIndividualLearning::readBackup(DataStream *ds) {
 		this->recoveryLocks.push_back(this->AgentIndividualLearning_recoveryLock3);
 
     }
-	else {		//Need both mission region and agentAdviceExchange
-		// get mission region
-		UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convMissionRegion, DDB_REQUEST_TIMEOUT);
-		if (thread == nilUUID) {
-			return 1;
-		}
-		lds.reset();
-		lds.packUUID(&STATE(AgentIndividualLearning)->regionId);
-		lds.packUUID(&thread);
-		this->sendMessage(this->hostCon, MSG_DDB_RREGION, lds.stream(), lds.length());
-		lds.unlock();
-
-		// we have tasks to take care of before we can resume
-		apb->apbUuidCreate(&this->AgentIndividualLearning_recoveryLock3);
-		this->recoveryLocks.push_back(this->AgentIndividualLearning_recoveryLock3);
-
-	}
 
 	DataStream sds;
 
@@ -3563,7 +3731,7 @@ int AgentIndividualLearning::readBackup(DataStream *ds) {
 	// we have tasks to take care of before we can resume
 	apb->apbUuidCreate(&this->AgentIndividualLearning_recoveryLock5);
 	this->recoveryLocks.push_back(this->AgentIndividualLearning_recoveryLock5);
-
+	Log.log(0, "Reading adviser.bq = %f", adviser.bq);
     return AgentBase::readBackup(ds);
 }// end readBackup
 
