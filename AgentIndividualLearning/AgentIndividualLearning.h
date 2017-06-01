@@ -41,7 +41,7 @@
 #include <numeric>
 
 #define ADVICE_REQUEST_TIMEOUT	50	//Wait 50 ms for advice (normally takes only ~1-2 ms), otherwise proceed with own values
-#define USE_ADVICE_EXCHANGE
+//#define USE_ADVICE_EXCHANGE
 
 struct ActionPair {
     int action;
@@ -87,7 +87,6 @@ public:
         UUID ownerId;
         bool parametersSet;
         bool startDelayed; // start has been delayed because parameters are not set yet
-        int updateId;
 
         // State data
         float prev_pos_x;		// This avatar's position
@@ -108,8 +107,6 @@ public:
 
         // Action data
         ActionPair action;
-        UUID actionConv; // action conversation id
-        _timeb actionCompleteTime; // time that the last action was completed
 		
 		ActionPair stuckAction;	//Action to take in the case the avatar gets stuck out of bounds or in an obstacle (reversing the previous action)
 

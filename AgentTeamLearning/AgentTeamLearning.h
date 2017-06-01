@@ -9,8 +9,8 @@
 
 #include "LAlliance.h"
 
-#define DELTA_LEARN_TIME 3000 //time in ms between team learning iterations
-#define TL_AGENT_TIMEOUT 200	//The time in ms allowed for an agent to update its learning data in a round before it is assumed to have failed
+#define DELTA_LEARN_TIME 600 //time in ms between team learning iterations
+#define TL_AGENT_TIMEOUT 100	//The time in ms allowed for an agent to update its learning data in a round before it is assumed to have failed
 
 
 
