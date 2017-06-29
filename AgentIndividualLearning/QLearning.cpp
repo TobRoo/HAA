@@ -97,10 +97,10 @@ void QLearning::learn(std::vector<unsigned int> &state_now, std::vector<unsigned
     std::vector<float>::iterator quality_future = std::max_element(q_values_future.begin(), q_values_future.end());
 
     // Exponentially decrease learning rate with experience [Unknown]
-    //float alpha = this->alpha_max_/(float) exp(pow(exp_now, this->alpha_power_)/ this->alpha_denom_);
+    float alpha = this->alpha_max_/(float) exp(pow(exp_now, this->alpha_power_)/ this->alpha_denom_);
 	/*float alpha_rate_ = 1.0f;
 	float alpha = this->alpha_max_ / (float)(pow(exp_now + 1, alpha_rate_));*/
-	float alpha = this->alpha_max_ / (float)(exp_now + 1);
+	//float alpha = this->alpha_max_ / (float)(exp_now + 1);
 
     // Standard Q-learning update rule [Boutilier, 1999]
     float quality_update = quality_now + alpha*(reward + (gamma_* *quality_future) - quality_now);

@@ -187,7 +187,9 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
     this->callback[AgentIndividualLearning_CBR_convGetTaskInfo] = NEW_MEMBER_CB(AgentIndividualLearning, convGetTaskInfo);
     this->callback[AgentIndividualLearning_CBR_convCollectLandmark] = NEW_MEMBER_CB(AgentIndividualLearning, convCollectLandmark);
 	this->callback[AgentIndividualLearning_CBR_convDepositLandmark] = NEW_MEMBER_CB(AgentIndividualLearning, convDepositLandmark);
+#ifdef USE_ADVICE_EXCHANGE
 	this->callback[AgentIndividualLearning_CBR_convRequestAdvice] = NEW_MEMBER_CB(AgentIndividualLearning, convRequestAdvice);
+#endif
 	this->callback[AgentIndividualLearning_CBR_convGetRunNumber] = NEW_MEMBER_CB(AgentIndividualLearning, convGetRunNumber);
 	this->callback[AgentIndividualLearning_CBR_convGetQLearningData] = NEW_MEMBER_CB(AgentIndividualLearning, convGetQLearningData);
 #ifdef USE_ADVICE_EXCHANGE

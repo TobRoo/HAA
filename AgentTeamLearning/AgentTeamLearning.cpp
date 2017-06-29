@@ -1359,9 +1359,12 @@ bool AgentTeamLearning::convGetTaskInfo(void * vpConv) {
 		//Log.log(0, "AgentTeamLearning::convGetTaskInfo: task id: %s, landmarkId: %s, agentId: %s, avatarId: %s, type: %d, completed: %d", Log.formatUUID(0, &taskId), Log.formatUUID(0, &task->landmarkUUID), Log.formatUUID(0, &task->agentUUID), Log.formatUUID(0,&task->avatar), (int)task->type, task->completed);
 		// Has our task been completed?
 		if (taskId == this->lAllianceObject.myData.taskId && task->completed) {
+			Log.log(0, "AgentTeamLearning::convGetTaskInfo: our task is finished!");
 			this->lAllianceObject.finishTask();
 			this->mTaskList[taskId]->agentUUID = nilUUID;
 			this->mTaskList[taskId]->avatar = nilUUID;
+
+			Log.log(0, "AgentTeamLearning::convGetTaskInfo: this->mTaskList[taskId]->agentUUID: %s, this->mTaskList[taskId]->avatar: %s, this->lAllianceObject.myData.taskId: %s", Log.formatUUID(0, &this->mTaskList[taskId]->agentUUID), Log.formatUUID(0, &this->mTaskList[taskId]->avatar), Log.formatUUID(0, &this->lAllianceObject.myData.taskId));
 		}
 
 	}
@@ -1618,6 +1621,7 @@ bool AgentTeamLearning::convGetRoundInfo(void * vpConv)
 
 bool AgentTeamLearning::convUpdateTLData(void * vpConv)
 {
+	//Log.log(0, "AgentTeamLearning::convUpdateTLData: this->mTaskList[this->lAllianceObject.myData.taskId]->agentUUID: %s, this->mTaskList[this->lAllianceObject.myData.taskId]->avatar: %s, this->lAllianceObject.myData.taskId: %s", Log.formatUUID(0, &this->mTaskList[this->lAllianceObject.myData.taskId]->agentUUID), Log.formatUUID(0, &this->mTaskList[this->lAllianceObject.myData.taskId]->avatar), Log.formatUUID(0, &this->lAllianceObject.myData.taskId));
 
 	// Record our previous task
 	UUID prev_task_id = this->lAllianceObject.myData.taskId;

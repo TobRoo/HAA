@@ -1,16 +1,16 @@
 @echo off
 @set /a "loopCount = 200"
-@set /a "A = 1"
+@set /a "A = 31"
 :startLoop
 @ECHO Current run number is: %A%
 @start "hostLocal1" %~dp0\Autonomic1.exe hostCfgs\Experiment1RCISLNoFail\hostLocal1.cfg %A% %A% data\missions\missionRCISLExperiment1.ini
 timeout /t 1 /nobreak > nul
-@start "hostLocal2" %~dp0\Autonomic1.exe hostCfgs\Experiment1RCISLNoFail\hostLocal2.cfg %A% %A%
-timeout /t 1 /nobreak > nul
-@start "hostLocal3" %~dp0\Autonomic1.exe hostCfgs\Experiment1RCISLNoFail\hostLocal3.cfg %A% %A%
-timeout /t 1 /nobreak > nul
-@start "hostLocal4" %~dp0\Autonomic1.exe hostCfgs\Experiment1RCISLNoFail\hostLocal4.cfg %A% %A%
-timeout /t 1 /nobreak > nul
+rem @start "hostLocal2" %~dp0\Autonomic1.exe hostCfgs\Experiment1RCISLNoFail\hostLocal2.cfg %A% %A%
+rem timeout /t 1 /nobreak > nul
+rem @start "hostLocal3" %~dp0\Autonomic1.exe hostCfgs\Experiment1RCISLNoFail\hostLocal3.cfg %A% %A%
+rem timeout /t 1 /nobreak > nul
+rem @start "hostLocal4" %~dp0\Autonomic1.exe hostCfgs\Experiment1RCISLNoFail\hostLocal4.cfg %A% %A%
+rem timeout /t 1 /nobreak > nul
 @start "hostExclusive" %~dp0\Autonomic1.exe hostCfgs\Experiment1RCISLNoFail\hostExclusive.cfg %A% %A%
 timeout /t 10 /nobreak > nul
 goto RUNNING
@@ -18,7 +18,7 @@ goto RUNNING
 set number=0
 for /f "skip=3" %%x in ('tasklist /FI "IMAGENAME eq Autonomic1.exe"') do set /a number=number+1
 echo Total Autonomic1.exe tasks running: %number%
-if %number% geq 3 (
+if %number% geq 2 (
 goto RUNNING
 )
 echo Not running...
@@ -27,7 +27,7 @@ echo No hosts running, starting a new run...
 goto NEWRUN
 )
 
-echo 1 or 2 hosts running, sleeping and checking again...
+echo 1 host running, sleeping and checking again...
 timeout /t 20 /nobreak > nul
 set number=0
 for /f "skip=3" %%x in ('tasklist /FI "IMAGENAME eq Autonomic1.exe"') do set /a number=number+1

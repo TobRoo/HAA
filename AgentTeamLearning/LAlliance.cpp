@@ -33,7 +33,7 @@ LAlliance::LAlliance(AgentTeamLearning *parentAgent) {
 	maxTaskTime = 2000;// 2000;//50000;// 50;//500;//2000;
     motivFreq = 5;
     impatienceRateTheta = 1.0f;
-    stochasticUpdateTheta2 = 15.0f;
+    stochasticUpdateTheta2 = 0.15f;
     stochasticUpdateTheta3 = 0.3f;
     stochasticUpdateTheta4 = 2.0f;
 
@@ -305,7 +305,8 @@ int LAlliance::updateImpatience(const taskList &tasks, bool hasAcquiesced) {
 
 			// Only use the slow update rate [Girard, 2015]
 			// Only update for tasks not assigned to this avatar
-			if (taskIter->second->agentUUID != *this->parentAgent->getUUID()) {
+			if (myData.taskId != nilUUID) {	//Do not update impatience for any task while we have an assigned task
+			//if (taskIter->second->agentUUID != *this->parentAgent->getUUID()) {
 				if (!hasAcquiesced) {		//If the agent has just acquiesced, no task is assigned
 				// Avatar assigned to task, so grow at slow rate
 					myData.impatience[taskIter->first] = impatienceRateTheta / myData.tau[taskIter->first];
@@ -425,7 +426,8 @@ int LAlliance::updateTau() {
     // Compute the new value
     float beta = (float)exp(n / stochasticUpdateTheta4)/(stochasticUpdateTheta3
                                                          + (float)exp(n / stochasticUpdateTheta4));
-    float current_tau = beta*(prev_tau + exp(-n/stochasticUpdateTheta2)*(myData.psi - prev_tau));
+    //float current_tau = beta*(prev_tau + exp(-n/stochasticUpdateTheta2)*(myData.psi - prev_tau));
+	float current_tau = beta*(prev_tau + (stochasticUpdateTheta2 / (float)n)*(myData.psi - prev_tau));
 
     // Update the mean task time, and tau standard deviation
     float prev_mean = myData.mean[myData.taskId];

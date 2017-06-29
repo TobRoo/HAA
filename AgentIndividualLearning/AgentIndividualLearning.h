@@ -271,7 +271,9 @@ private:
 	int formAction();
     int getStateVector();
     int policy(std::vector<float> &quality, std::vector<unsigned int> &experience);
+#ifdef USE_ADVICE_EXCHANGE
 	int requestAdvice(std::vector<float> &quality, std::vector<unsigned int> &state_vector);
+#endif
     int sendAction(ActionPair action);
     int learn();
     float determineReward();
@@ -333,8 +335,9 @@ public:
 
     bool convCollectLandmark(void * vpConv);
 	bool convDepositLandmark(void * vpConv);
+#ifdef USE_ADVICE_EXCHANGE
 	bool convRequestAdvice(void *vpConv);
-
+#endif
 	bool convGetRunNumber(void * vpConv);
 
 	bool convGetQLearningData(void * vpConv);
