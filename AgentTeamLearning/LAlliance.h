@@ -81,7 +81,7 @@ public:
      * Performs all the necessary updates to the tracking metrics. Must be
      * called before chooseTask. Returns a bool indicating if a task was acquiesced.
      */
-    bool updateTaskProperties(const taskList &tasks);
+    bool updateTaskProperties(taskList &tasks);
 
 
     /* chooseTask
@@ -98,7 +98,7 @@ public:
      *
      * If no potential tasks are found, a nilUUID will be assigned
      */
-    int chooseTask(const taskList &tasks);
+    int chooseTask(taskList &tasks);
 
 
     /* updateImpatience
@@ -110,7 +110,7 @@ public:
      *
      * Impatience is set to zero for completed tasks and the assigned task.
      */
-    int updateImpatience(const taskList &tasks, bool hasAcquiesced);
+    int updateImpatience(taskList &tasks, bool hasAcquiesced);
 
 
     /* updateMotivation
@@ -120,7 +120,7 @@ public:
      *
      * Updated according to Equation (1) in [Lynne Parker, 1998]
      */
-    int updateMotivation(const taskList &tasks, bool hasAcquiesced);
+    int updateMotivation(taskList &tasks, bool hasAcquiesced);
 
 
     /* finishTask

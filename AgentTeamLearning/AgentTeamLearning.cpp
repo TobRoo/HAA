@@ -1016,6 +1016,11 @@ int AgentTeamLearning::conProcessMessage(spConnection con, unsigned char message
 	//	lds.unpackData(sizeof(UUID));	//Discard thread (for now - do we need a conversation?)
 		lds.unpackUUID(&nilTask);
 		Log.log(0, "AgentTeamLearning::conProcessMessage: Received acquiescence request from %s.", Log.formatUUID(0, &sender));
+		if (sender == *this->getUUID()) {
+			lds.unlock();
+			Log.log(0, "AgentTeamLearning::conProcessMessage: CRITICAL ERROR: RECEIVED ACQUIESCENCE REQUEST FROM SELF FOR TASK: %s", Log.formatUUID(0, &nilTask));
+			return 0;
+		}
 		if (this->mTaskList.find(nilTask) != this->mTaskList.end()) {
 			if (nilTask == this->lAllianceObject.myData.taskId) {
 				mTaskList[nilTask]->avatar = nilUUID;
@@ -1363,7 +1368,6 @@ bool AgentTeamLearning::convGetTaskInfo(void * vpConv) {
 			this->lAllianceObject.finishTask();
 			this->mTaskList[taskId]->agentUUID = nilUUID;
 			this->mTaskList[taskId]->avatar = nilUUID;
-
 			Log.log(0, "AgentTeamLearning::convGetTaskInfo: this->mTaskList[taskId]->agentUUID: %s, this->mTaskList[taskId]->avatar: %s, this->lAllianceObject.myData.taskId: %s", Log.formatUUID(0, &this->mTaskList[taskId]->agentUUID), Log.formatUUID(0, &this->mTaskList[taskId]->avatar), Log.formatUUID(0, &this->lAllianceObject.myData.taskId));
 		}
 

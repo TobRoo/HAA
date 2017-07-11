@@ -1,6 +1,6 @@
 @echo off
 @set /a "loopCount = 200"
-@set /a "A = 31"
+@set /a "A = 33"
 :startLoop
 @ECHO Current run number is: %A%
 @start "hostLocal1" %~dp0\Autonomic1.exe hostCfgs\Experiment1RCISLNoFail\hostLocal1.cfg %A% %A% data\missions\missionRCISLExperiment1.ini

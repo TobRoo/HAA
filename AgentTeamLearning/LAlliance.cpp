@@ -30,7 +30,7 @@
 LAlliance::LAlliance(AgentTeamLearning *parentAgent) {
 
     //// Algorithm variables (TODO: Load these in from a config file)
-	maxTaskTime = 2000;// 2000;//50000;// 50;//500;//2000;
+	maxTaskTime = 1000;// 2000;//50000;// 50;//500;//2000;
     motivFreq = 5;
     impatienceRateTheta = 1.0f;
     stochasticUpdateTheta2 = 0.15f;
@@ -87,7 +87,7 @@ int LAlliance::addTask(UUID id) {
  * called before chooseTask.
  */
 
-bool LAlliance::updateTaskProperties(const taskList &tasks) {
+bool LAlliance::updateTaskProperties(taskList &tasks) {
 
 	bool hasAcquiesced = false;
 
@@ -135,7 +135,7 @@ bool LAlliance::updateTaskProperties(const taskList &tasks) {
  * If no potential tasks are found, a nilUUID will be assigned
  */
 
-int LAlliance::chooseTask(const taskList &tasks) {
+int LAlliance::chooseTask(taskList &tasks) {
 
     // No need to choose a task if one is assigned
     if (myData.taskId != nilUUID) {
@@ -166,8 +166,16 @@ int LAlliance::chooseTask(const taskList &tasks) {
 			parentAgent->logWrapper(LOG_LEVEL_VERBOSE, message1);
         }
         else if (teammatesData.find(taskIter->second->avatar) != teammatesData.end()) {//Check, otherwise the map will be inserted with incorrect values
-            if (teammatesData.at(taskIter->second->avatar).psi < (teammatesData.at(taskIter->second->avatar).tau.at(taskIter->first)
-                                                               + teammatesData.at(taskIter->second->avatar).stddev.at(taskIter->first))) {
+			float tauMean = 0.0f;
+			for (auto& tauIter : teammatesData.at(taskIter->second->avatar).tau) {
+				tauMean += tauIter.second;
+			}
+			tauMean = tauMean / teammatesData.at(taskIter->second->avatar).tau.size();
+
+            /*if (teammatesData.at(taskIter->second->avatar).psi < (teammatesData.at(taskIter->second->avatar).tau.at(taskIter->first)
+                                                               + teammatesData.at(taskIter->second->avatar).stddev.at(taskIter->first))) {*/
+
+			if (teammatesData.at(taskIter->second->avatar).psi < (tauMean + teammatesData.at(taskIter->second->avatar).stddev.at(taskIter->first))) {
                 // An avatar is assigned, but it has not been engaged long enough to acquiesce
                 available = false;
 				char message2[100];
@@ -291,7 +299,7 @@ int LAlliance::chooseTask(const taskList &tasks) {
  * Impatience is set to zero for completed tasks and the assigned task.
  */
 
-int LAlliance::updateImpatience(const taskList &tasks, bool hasAcquiesced) {
+int LAlliance::updateImpatience(taskList &tasks, bool hasAcquiesced) {
 
     // Loop through each task, since impatience rates vary
     std::map<UUID, TASK, UUIDless>::const_iterator taskIter;
@@ -305,7 +313,7 @@ int LAlliance::updateImpatience(const taskList &tasks, bool hasAcquiesced) {
 
 			// Only use the slow update rate [Girard, 2015]
 			// Only update for tasks not assigned to this avatar
-			if (myData.taskId != nilUUID) {	//Do not update impatience for any task while we have an assigned task
+			if (myData.taskId == nilUUID) {	//Do not update impatience for any task while we have an assigned task
 			//if (taskIter->second->agentUUID != *this->parentAgent->getUUID()) {
 				if (!hasAcquiesced) {		//If the agent has just acquiesced, no task is assigned
 				// Avatar assigned to task, so grow at slow rate
@@ -334,7 +342,7 @@ int LAlliance::updateImpatience(const taskList &tasks, bool hasAcquiesced) {
  * Updated according to Equation (1) in [Lynne Parker, 1998]
  */
 
-int LAlliance::updateMotivation(const taskList &tasks, bool hasAcquiesced) {
+int LAlliance::updateMotivation(taskList &tasks, bool hasAcquiesced) {
 
     // Update for each task tasks
     std::map<UUID, TASK, UUIDless>::const_iterator iter;
@@ -424,8 +432,8 @@ int LAlliance::updateTau() {
 
 
     // Compute the new value
-    float beta = (float)exp(n / stochasticUpdateTheta4)/(stochasticUpdateTheta3
-                                                         + (float)exp(n / stochasticUpdateTheta4));
+    double beta = (double)exp(n / stochasticUpdateTheta4)/(stochasticUpdateTheta3
+                                                         + (double)exp(n / stochasticUpdateTheta4));
     //float current_tau = beta*(prev_tau + exp(-n/stochasticUpdateTheta2)*(myData.psi - prev_tau));
 	float current_tau = beta*(prev_tau + (stochasticUpdateTheta2 / (float)n)*(myData.psi - prev_tau));
 

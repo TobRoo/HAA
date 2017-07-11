@@ -801,8 +801,8 @@ int AgentIndividualLearning::formAction() {
 	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: TOP: this->q_avg is %f", this->q_avg);
 	this->q_avg = (this->q_vals[action - 1] + (float)this->totalActions*this->q_avg) / ((float)this->totalActions + 1);
 
-	float slowMove = 0.4f;
-	float fastMove = 0.8f;
+	float slowMove = 0.3f;
+	float fastMove = 0.4f;
 
 
 	// Form action
