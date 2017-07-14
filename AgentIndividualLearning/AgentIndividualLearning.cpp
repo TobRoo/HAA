@@ -121,7 +121,7 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
 
     // Action parameters
     this->backupFractionalSpeed = -1.0f;
-    this->num_actions_ = 5;
+    this->num_actions_ = 4;
     //---------------------------------------------------------------
 
 #ifdef USE_ADVICE_EXCHANGE
@@ -813,27 +813,27 @@ int AgentIndividualLearning::formAction() {
 			STATE(AgentIndividualLearning)->action.val = slowMove;
 		else
 			STATE(AgentIndividualLearning)->action.val = fastMove;
-		//Store the reverse action in case the avatar ends up just out of bounds or inside an obstacle
-		STATE(AgentIndividualLearning)->stuckAction.action = MOVE_BACKWARD;
-		if (STATE(AgentIndividualLearning)->avatarInstance == 0 || STATE(AgentIndividualLearning)->avatarInstance == 1 || STATE(AgentIndividualLearning)->avatarInstance == 4 || STATE(AgentIndividualLearning)->avatarInstance == 5)
-			STATE(AgentIndividualLearning)->stuckAction.val = -slowMove;
-		else
-			STATE(AgentIndividualLearning)->stuckAction.val = -fastMove;
+		////Store the reverse action in case the avatar ends up just out of bounds or inside an obstacle
+		//STATE(AgentIndividualLearning)->stuckAction.action = MOVE_BACKWARD;
+		//if (STATE(AgentIndividualLearning)->avatarInstance == 0 || STATE(AgentIndividualLearning)->avatarInstance == 1 || STATE(AgentIndividualLearning)->avatarInstance == 4 || STATE(AgentIndividualLearning)->avatarInstance == 5)
+		//	STATE(AgentIndividualLearning)->stuckAction.val = -slowMove;
+		//else
+		//	STATE(AgentIndividualLearning)->stuckAction.val = -fastMove;
 	}
-	else if (action == MOVE_BACKWARD) {
-		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action MOVE_BACKWARD");
-		STATE(AgentIndividualLearning)->action.action = MOVE_BACKWARD; //AvatarBase_Defs::AA_MOVE;
-		if (STATE(AgentIndividualLearning)->avatarInstance == 0 || STATE(AgentIndividualLearning)->avatarInstance == 1 || STATE(AgentIndividualLearning)->avatarInstance == 4 || STATE(AgentIndividualLearning)->avatarInstance == 5)
-			STATE(AgentIndividualLearning)->action.val = slowMove*backupFractionalSpeed;
-		else
-			STATE(AgentIndividualLearning)->action.val = fastMove*backupFractionalSpeed;
-		//Store the reverse action in case the avatar ends up just out of bounds or inside an obstacle
-		STATE(AgentIndividualLearning)->stuckAction.action = MOVE_FORWARD;
-		if (STATE(AgentIndividualLearning)->avatarInstance == 0 || STATE(AgentIndividualLearning)->avatarInstance == 1 || STATE(AgentIndividualLearning)->avatarInstance == 4 || STATE(AgentIndividualLearning)->avatarInstance == 5)
-			STATE(AgentIndividualLearning)->stuckAction.val = -slowMove*backupFractionalSpeed;
-		else
-			STATE(AgentIndividualLearning)->stuckAction.val = -fastMove*backupFractionalSpeed;
-	}
+	//else if (action == MOVE_BACKWARD) {
+	//	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action MOVE_BACKWARD");
+	//	STATE(AgentIndividualLearning)->action.action = MOVE_BACKWARD; //AvatarBase_Defs::AA_MOVE;
+	//	if (STATE(AgentIndividualLearning)->avatarInstance == 0 || STATE(AgentIndividualLearning)->avatarInstance == 1 || STATE(AgentIndividualLearning)->avatarInstance == 4 || STATE(AgentIndividualLearning)->avatarInstance == 5)
+	//		STATE(AgentIndividualLearning)->action.val = slowMove*backupFractionalSpeed;
+	//	else
+	//		STATE(AgentIndividualLearning)->action.val = fastMove*backupFractionalSpeed;
+	//	//Store the reverse action in case the avatar ends up just out of bounds or inside an obstacle
+	//	STATE(AgentIndividualLearning)->stuckAction.action = MOVE_FORWARD;
+	//	if (STATE(AgentIndividualLearning)->avatarInstance == 0 || STATE(AgentIndividualLearning)->avatarInstance == 1 || STATE(AgentIndividualLearning)->avatarInstance == 4 || STATE(AgentIndividualLearning)->avatarInstance == 5)
+	//		STATE(AgentIndividualLearning)->stuckAction.val = -slowMove*backupFractionalSpeed;
+	//	else
+	//		STATE(AgentIndividualLearning)->stuckAction.val = -fastMove*backupFractionalSpeed;
+	//}
 	else if (action == ROTATE_LEFT) {
 		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::formAction: Selected action ROTATE_LEFT");
 		STATE(AgentIndividualLearning)->action.action = ROTATE_LEFT; // AvatarBase_Defs::AA_ROTATE;
@@ -1103,7 +1103,7 @@ int AgentIndividualLearning::getStateVector() {
 
 
 	Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::getStateVector: pos_x %f, pos_y %f, prev_pos_x %f, prev_pos_y %f, distance travelled %f", pos_x, pos_y, STATE(AgentIndividualLearning)->prev_pos_x, STATE(AgentIndividualLearning)->prev_pos_y, sqrt(pow(pos_x - STATE(AgentIndividualLearning)->prev_pos_x, 2) + pow(pos_y - STATE(AgentIndividualLearning)->prev_pos_y, 2) ) );
-	if (STATE(AgentIndividualLearning)->action.action != MOVE_FORWARD && STATE(AgentIndividualLearning)->action.action != MOVE_BACKWARD) {
+	if (STATE(AgentIndividualLearning)->action.action != MOVE_FORWARD)/* && STATE(AgentIndividualLearning)->action.action != MOVE_BACKWARD)*/ {
 		if (sqrt(pow(pos_x - STATE(AgentIndividualLearning)->prev_pos_x, 2) + pow(pos_y - STATE(AgentIndividualLearning)->prev_pos_y, 2)) > reward_activation_dist_) {	//IF distance travelled exceeds reward activation distance during rotate or interact
 			Log.log(0, "AgentIndividualLearning::getStateVector: REWARD ERROR! INCORRECT DISTANCE ASSIGNMENT.");
 			Log.log(0, "AgentIndividualLearning::getStateVector: ACTION IS %d", STATE(AgentIndividualLearning)->action.action);
@@ -1428,7 +1428,7 @@ float AgentIndividualLearning::determineReward() {
 bool AgentIndividualLearning::validAction(ActionPair &action) {
 
     // Only need to consider movement actions
-    if (!(action.action == MOVE_FORWARD ||action.action == MOVE_BACKWARD )){
+    if (!(action.action == MOVE_FORWARD)) /*||action.action == MOVE_BACKWARD ))*/{
         return true;
     }
 
@@ -1779,9 +1779,9 @@ int AgentIndividualLearning::sendAction(ActionPair action) {
         case MOVE_FORWARD:
             lds.packInt32(AvatarBase_Defs::AA_MOVE);
             break;
-        case MOVE_BACKWARD:
+   /*     case MOVE_BACKWARD:
             lds.packInt32(AvatarBase_Defs::AA_MOVE);
-            break;
+            break;*/
         case ROTATE_LEFT:
             lds.packInt32(AvatarBase_Defs::AA_ROTATE);
             break;

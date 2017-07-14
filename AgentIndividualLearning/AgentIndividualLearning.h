@@ -187,7 +187,7 @@ protected:
     unsigned int num_actions_;                  // Number of possible actions
     enum ActionId {
         MOVE_FORWARD = 1,
-        MOVE_BACKWARD,
+       /* MOVE_BACKWARD,*/
         ROTATE_LEFT,
         ROTATE_RIGHT,
         INTERACT

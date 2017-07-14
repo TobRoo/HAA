@@ -51,7 +51,7 @@ QLearning::QLearning() {
     this->alpha_power_ = 2;
     this->num_state_vrbls_ = 7;
     this->state_resolution_ = {3, 3, 5, 3, 5, 3, 5};
-    this->num_actions_ = 5;
+    this->num_actions_ = 4;
 
     // Form encoder vector to multiply inputted state vectors by
     this->encoder_vector_.push_back(this->num_actions_);
