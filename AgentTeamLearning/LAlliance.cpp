@@ -418,7 +418,7 @@ int LAlliance::updateTau() {
 	parentAgent->logWrapper(LOG_LEVEL_VERBOSE, "updateTau: Updating tau values.");
 
     // Useful values
-    int n = myData.attempts[myData.taskId];
+    int n = min(177,myData.attempts[myData.taskId]);	// n>=178 causes nan values for beta (out of range issues) - at that number, beta is anyway for all practical purposes == 1
     unsigned int time_on_task = myData.psi;
 
     // Extract the old value
@@ -438,6 +438,8 @@ int LAlliance::updateTau() {
 	float current_tau = beta*(prev_tau + (stochasticUpdateTheta2 / (float)n)*(myData.psi - prev_tau));
 
     // Update the mean task time, and tau standard deviation
+	n = myData.attempts[myData.taskId];
+
     float prev_mean = myData.mean[myData.taskId];
     float prev_stddev = myData.stddev[myData.taskId];
     float current_mean, current_stddev;

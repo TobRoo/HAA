@@ -47,6 +47,7 @@ QLearning::QLearning() {
     // TODO: The data below should be loaded in from a config file
     gamma_ = 0.3f;
     this->alpha_max_ = 0.9f;
+	this->alpha_rate_ = 5000;
     this->alpha_denom_ = 300;
     this->alpha_power_ = 2;
     this->num_state_vrbls_ = 7;
@@ -97,7 +98,8 @@ void QLearning::learn(std::vector<unsigned int> &state_now, std::vector<unsigned
     std::vector<float>::iterator quality_future = std::max_element(q_values_future.begin(), q_values_future.end());
 
     // Exponentially decrease learning rate with experience [Unknown]
-    float alpha = this->alpha_max_/(float) exp(pow(exp_now, this->alpha_power_)/ this->alpha_denom_);
+   // float alpha = this->alpha_max_/(float) exp(pow(exp_now, this->alpha_power_)/ this->alpha_denom_);
+	float alpha = this->alpha_max_ * (float) exp(-exp_now / this->alpha_rate_);
 	/*float alpha_rate_ = 1.0f;
 	float alpha = this->alpha_max_ / (float)(pow(exp_now + 1, alpha_rate_));*/
 	//float alpha = this->alpha_max_ / (float)(exp_now + 1);

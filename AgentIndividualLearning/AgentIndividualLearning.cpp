@@ -42,8 +42,8 @@
 
 
 
-//#define USE_SOFTMAX_POLICY
-#define USE_GLIE_POLICY
+#define USE_SOFTMAX_POLICY
+//#define USE_GLIE_POLICY
 
 #ifdef USE_GLIE_POLICY
 #define GLIE_min_p  0.02; // Optional minimum allowable probability with GLIE policy
@@ -111,6 +111,17 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
     // Policy parameters
     this->softmax_temp_ = 0.10;
 
+#ifdef USE_SOFTMAX_POLICY
+	// Reward parameters
+	this->item_closer_reward_ = 0.5f;
+	this->item_further_reward_ = -0.3f;
+	this->robot_closer_reward_ = 0.3f;
+	this->robot_further_reward_ = -0.1f;
+	this->return_reward_ = 10.0f;
+	this->empty_reward_value_ = -0.01f;
+#endif
+
+#ifdef USE_GLIE_POLICY
     // Reward parameters
     this->item_closer_reward_ = 5.0f;
     this->item_further_reward_ = 0.1f;
@@ -118,6 +129,7 @@ AgentIndividualLearning::AgentIndividualLearning(spAddressPort ap, UUID *ticket,
     this->robot_further_reward_ = 0.1f;
     this->return_reward_ = 50.0f;
     this->empty_reward_value_ = 1.0f;
+#endif
 
     // Action parameters
     this->backupFractionalSpeed = -1.0f;
@@ -945,7 +957,9 @@ int AgentIndividualLearning::formAction() {
 	 // When the action is not valid retain the type, but zero the movement value
 	 // (so that it can still be used for learning)
 	if (!this->validAction(STATE(AgentIndividualLearning)->action)) {
-		STATE(AgentIndividualLearning)->action.val = 0.0;
+		if (!STATE(AgentIndividualLearning)->isStuck) {		//If stuck inside obstacle, override validAction
+			STATE(AgentIndividualLearning)->action.val = 0.0;
+		}
 	}
 	//if (STATE(AgentIndividualLearning)->isStuck)	//If stuck in forbidden terrain, immediately reverse
 	//	STATE(AgentIndividualLearning)->action = STATE(AgentIndividualLearning)->stuckAction;
@@ -1263,8 +1277,8 @@ int AgentIndividualLearning::policy(std::vector<float> &quality, std::vector<uns
 	//	(voids greedy in the limit with >0)
 
 	unsigned int experience_sum = 0;
-	float exponents_sum = 0.0f;
-	std::vector<float> exponents(num_actions_);
+	double exponents_sum = 0.0f;
+	std::vector<double> exponents(num_actions_);
 	std::vector<float> action_prob(num_actions_);
 
 	for (int i = 0; i < num_actions_; ++i) {
@@ -1283,13 +1297,13 @@ int AgentIndividualLearning::policy(std::vector<float> &quality, std::vector<uns
 
 
 
-	if (experience_sum >= 1 || quality_sum != 0.0f){
+	if (quality_sum != 0.0f){
 		unsigned int n = this->num_actions_;
 		float alpha = GLIE_min_p;
 		float tau = log((1 - n*alpha) / experience_sum + n*alpha) / (minQ - maxQ);
 
 		for (int i = 0; i < num_actions_; ++i) {
-			exponents[i] = (float)exp(min(tau*quality[i] , 35)); // Need to prevent infinity
+			exponents[i] = (double)exp(min(tau*quality[i] , 35)); // Need to prevent infinity
 			exponents_sum += exponents[i];
 			Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::policy: i: %d, exponents[i]: %f", i, exponents[i]);
 		}
@@ -2608,8 +2622,32 @@ bool AgentIndividualLearning::convMissionRegion(void *vpConv) {
 			this->finishConfigureParameters();
     }
     else {	
-        lds.unlock();
-		// TODO try again?
+
+		// Workaround, we know the mission region anyway
+
+		lds.unlock();
+		STATE(AgentIndividualLearning)->missionRegion.x = 0.0f;
+		STATE(AgentIndividualLearning)->missionRegion.y = 0.0f;
+		STATE(AgentIndividualLearning)->missionRegion.w = 10.0f;
+		STATE(AgentIndividualLearning)->missionRegion.h = 10.0f;
+
+		STATE(AgentIndividualLearning)->missionRegionReceived = true;
+		Log.log(LOG_LEVEL_NORMAL, "AgentIndividualLearning::convMissionRegion 2.error");
+		if (STATE(AgentIndividualLearning)->missionRegionReceived)
+			this->finishConfigureParameters();
+
+
+  //      lds.unlock();
+		////get mission region
+		//UUID thread = this->conversationInitiate(AgentIndividualLearning_CBR_convMissionRegion, DDB_REQUEST_TIMEOUT);
+		//if (thread == nilUUID) {
+		//	return 1;
+		//}
+		//this->ds.reset();
+		//this->ds.packUUID(&STATE(AgentIndividualLearning)->regionId);
+		//this->ds.packUUID(&thread);
+		//this->sendMessage(this->hostCon, MSG_DDB_RREGION, this->ds.stream(), this->ds.length());
+		//this->ds.unlock();
 		    }
 	recoveryCheck(&this->AgentIndividualLearning_recoveryLock3);
     return 0;

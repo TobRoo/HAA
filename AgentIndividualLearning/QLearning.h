@@ -50,6 +50,7 @@ public:
     float alpha_denom_;
     float alpha_power_;
     float alpha_max_;
+	float alpha_rate_;
 
     // Quality/Experience table
     unsigned int num_state_vrbls_;           // Number of variables in state vector

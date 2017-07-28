@@ -1089,7 +1089,7 @@ int AvatarBase::spawnAgentTeamLearning() {
 
 int AvatarBase::spawnAgentIndividualLearning() {
 	UUID thread;
-	//this->apb->apbSleep(100);	//Wait for map etc - Workaround!
+	this->apb->apbSleep(1000);	//Wait for map etc - Workaround!
 	if (!STATE(AvatarBase)->agentIndividualLearningSpawned) {
 		UUID aAgentIndividualLearninguuid;
 		UuidFromString((RPC_WSTR)_T(AgentIndividualLearning_UUID), &aAgentIndividualLearninguuid);
@@ -1104,6 +1104,7 @@ int AvatarBase::spawnAgentIndividualLearning() {
 		this->ds.packFloat32(0); // affinity
 		this->ds.packChar(DDBAGENT_PRIORITY_CRITICAL);
 		this->ds.packUUID(&thread);
+		Log.log(0, "AvatarBase::spawnAgentIndividualLearning(): spawn request thread is : %s", Log.formatUUID(0, &thread));
 		this->sendMessage(this->hostCon, MSG_RAGENT_SPAWN, this->ds.stream(), this->ds.length());
 		this->ds.unlock();
 
@@ -2098,6 +2099,7 @@ bool AvatarBase::convRequestAgentIndividualLearning(void *vpConv) {
 	else {
 		lds.unlock();
 
+		STATE(AvatarBase)->agentIndividualLearningSpawned = 0;
 		// TODO try again?
 	}
 

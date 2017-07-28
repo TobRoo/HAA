@@ -7514,6 +7514,7 @@ int AgentHost::AgentTransferInfoChanged( UUID *agent, int infoFlags ) {
 						lds.packBool( true );
 						lds.packUUID( agent );
 						this->sendAgentMessage( dStore->AgentGetParent( agent ), MSG_RESPONSE, lds.stream(), lds.length() );
+						Log.log(LOG_LEVEL_NORMAL, "RESPONSE: case DDBAGENT_STATUS_READY: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, dStore->AgentGetParent(agent)), Log.formatUUID(0, &ai->spawnThread));
 						#ifdef LOG_RESPONSES
 						Log.log(LOG_LEVEL_NORMAL, "RESPONSE: case DDBAGENT_STATUS_READY: Sending message from agent %s to agent %s in conversation %s", Log.formatUUID(0, this->getUUID()), Log.formatUUID(0, dStore->AgentGetParent(agent)), Log.formatUUID(0, &ai->spawnThread));
 						#endif
@@ -9241,7 +9242,7 @@ int AgentHost::ddbAgentGetInfo( UUID *id, int infoFlags, spConnection con, UUID 
 
 int AgentHost::ddbAgentSetInfo( UUID *id, DataStream *ds ) {
 	DataStream lds;
-
+	//Log.log(0, "AgentHost::OAC_DDB_AGENTSETINFO:ddbAgentSetInfo was called: ALERT");
 	// distribute
 	lds.reset();
 	lds.packUUID( this->getUUID() );
@@ -14736,9 +14737,87 @@ bool AgentHost::cbQueueCloseConnection( void *vpConId ) {
 
 bool AgentHost::cbMissionDone(void * vpConId)
 {
-	this->globalStateTransaction(OAC_MISSION_DONE, 0, 0);
+
+	UUID aTLTypeId;
+	UuidFromString((RPC_WSTR)_T(AgentTeamLearning_UUID), &aTLTypeId);
+	UUID aITTypeId;
+	UuidFromString((RPC_WSTR)_T(AgentIndividualLearning_UUID), &aITTypeId);
+	UUID aAETypeId;
+	UuidFromString((RPC_WSTR)_T(AgentAdviceExchange_UUID), &aAETypeId);
+	UUID eSTypeId;
+	UuidFromString((RPC_WSTR)_T(ExecutiveSimulation_UUID), &eSTypeId);
 
 
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::cbMissionDone: 1");
+	DataStream taskDataDS;
+	DataStream taskDS;
+
+
+	this->dStore->GetTaskData(&nilUUID, &taskDataDS, &nilUUID, true);
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::cbMissionDone: 2");
+	taskDataDS.rewind();
+	taskDataDS.unpackData(sizeof(UUID)); // discard thread
+	char taskDataOk = taskDataDS.unpackChar();	//DDBR_OK
+	bool enumTaskData = taskDataDS.unpackBool();	//EnumTaskData
+	int numTaskDatas = taskDataDS.unpackInt32();
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::cbMissionDone: taskDataOk is %d, enumTaskData is %d, numTaskDatas is %d", taskDataOk, enumTaskData, numTaskDatas);
+
+	
+	mapDDBQLearningData QLData = this->dStore->GetQLearningData();
+	Log.log(LOG_LEVEL_NORMAL, "AgentHost::cbMissionDone: size of QLData is %d, ", QLData.size());
+
+
+	unsigned int iLCount = 0;
+	unsigned int tLCount = 0;
+
+	for (auto& iterAgent : this->dStore->DDBAgents) {
+
+		//Check if learning or advice agent id matches the agent id
+		if (iterAgent.second->agentTypeId == aITTypeId) {
+			iLCount++;
+		}
+		if (iterAgent.second->agentTypeId == aTLTypeId) {
+			tLCount++;
+		}
+		}
+
+
+
+
+
+	if (iLCount != QLData.size() || tLCount != numTaskDatas) {
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::cbMissionDone: All agents have not reported learning values, resending request and going to sleep...");
+		Log.log(LOG_LEVEL_NORMAL, "AgentHost::cbMissionDone: iLCount is %d, QLData.size() is %d, tLCount is %d, numTaskDatas is %d", iLCount, QLData.size(), tLCount, numTaskDatas);
+		DataStream sds;
+
+		//Go through all agents and find the learning agents and advice agents
+		for (auto& iterAgent : this->dStore->DDBAgents) {
+
+			//Check if learning or advice agent id matches the agent id
+			if (iterAgent.second->agentTypeId == aITTypeId || iterAgent.second->agentTypeId == aTLTypeId || iterAgent.second->agentTypeId == aAETypeId || iterAgent.second->agentTypeId == eSTypeId) {
+				// Order agent to upload learning or advice data for next run
+
+				UUID agentUUID = iterAgent.first;
+				Log.log(0, "AgentHost::conProcessMessage: MSG_MISSION_DONE, messaging agent %s", Log.formatUUID(0, &agentUUID));
+				sds.reset();
+				sds.packChar(1); // success
+								 //this->sendMessage(con, MSG_MISSION_DONE, sds.stream(),sds.length(),&agentUUID);
+				sendAgentMessage(&agentUUID, MSG_MISSION_DONE, sds.stream(), sds.length());
+				sds.unlock();
+			}
+		}
+
+		UUID id = this->addTimeout(3000, AgentHost_CBR_cbMissionDone);
+		if (id == nilUUID) {
+			Log.log(0, "AgentHost::conProcessMessage: MSG_MISSION_DONE: addTimeout failed");
+			return 1;
+		}
+
+
+	}
+	else {
+		this->globalStateTransaction(OAC_MISSION_DONE, 0, 0);
+	}
 	return false;
 }
 
